@@ -5,5 +5,4 @@ packages:
   - "tests/*"
 
 onlyBuiltDependencies:
-  - electron
   - esbuild

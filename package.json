@@ -1,25 +1,22 @@
 {
-  "name": "agent-studio",
+  "name": "skraft-mcp",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "GPL-3.0-or-later",
   "type": "module",
   "packageManager": "pnpm@10.34.5",
   "engines": {
     "node": ">=22.12"
   },
   "scripts": {
-    "build": "pnpm --filter @agent-studio/desktop build",
-    "dev": "pnpm --filter @agent-studio/desktop dev",
-    "ext:build": "tsx scripts/extension-tools.ts build",
-    "ext:keys": "tsx scripts/extension-tools.ts keys",
-    "ext:pack": "tsx scripts/extension-tools.ts pack",
-    "smoke:copilot": "tsx scripts/smoke-copilot.ts",
+    "build": "pnpm --filter @agent-studio/mcp-skraft build",
+    "start": "pnpm --filter @agent-studio/mcp-skraft start",
+    "deployer": "pnpm --filter @agent-studio/mcp-skraft deployer",
+    "commandes": "pnpm --filter @agent-studio/mcp-skraft commandes",
+    "essai": "tsx scripts/essai-mcp-skraft.ts",
     "banc:revues": "tsx scripts/banc/revues-du-run.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json && tsc -p apps/desktop/tsconfig.web.json",
-    "e2e": "playwright test",
-    "smoke:claude": "tsx scripts/smoke-claude.ts"
+    "typecheck": "tsc -p tsconfig.json"
   },
   "devDependencies": {
     "@agent-studio/core": "workspace:*",
@@ -32,10 +29,8 @@
     "@agent-studio/workflow": "workspace:*",
     "@agent-studio/workspace": "workspace:*",
     "@modelcontextprotocol/sdk": "1.32.2",
-    "@playwright/test": "^1.63.0",
     "@types/node": "^22.19.0",
     "eslint": "^10.11.0",
-    "playwright": "^1.63.0",
     "tsx": "^4.23.15",
     "typescript": "~5.9.3",
     "vitest": "^4.1.11"

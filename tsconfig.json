@@ -12,17 +12,10 @@
     "extensions/*/src",
     "extensions/*/test",
     "tests/*/test",
-    "apps/desktop/src/main",
-    "apps/desktop/src/preload",
-    "apps/desktop/src/shared",
-    "apps/desktop/test",
     "apps/mcp-skraft/src",
     "apps/mcp-skraft/test",
     "scripts",
     "vitest.config.ts",
     "vitest.global-setup.ts"
-  ],
-  "exclude": [
-    "apps/desktop/test/renderer"
   ]
 }

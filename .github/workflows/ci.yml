@@ -28,8 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      # Aucun test n'importe `electron` : son binaire (~250 Mo) est inutile ici.
-      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
       CI: "true"
     steps:
       - uses: actions/checkout@v7
@@ -39,9 +37,7 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          # Version embarquée par Electron 44, donc celle sur laquelle l'application tourne
-          # réellement. Le modèle de permissions des extensions isolées exige `--permission`,
-          # disponible à partir de Node 22.13 / 23.5.
+          # Le modèle de permissions des scripts isolés exige `--permission` (Node 22.13 / 23.5).
           node-version: "24"
           cache: pnpm
 
@@ -54,63 +50,5 @@ jobs:
       - name: Lancer les tests
         run: pnpm test
 
-      - name: Construire l'application
+      - name: Construire le serveur MCP
         run: pnpm build
-
-  # Essais de bout en bout : la VRAIE application Electron, lancée depuis son build.
-  #
-  # Job séparé pour une raison concrète : il exige le binaire Electron (~250 Mo), que le job
-  # ci-dessus ne télécharge pas. Il ne part qu'une fois les types et la suite verts — inutile de
-  # payer ce téléchargement pour une branche qui ne compile pas.
-  #
-  # Aucune requête à Copilot : l'application démarre en mode d'essai, runtime scripté
-  # (apps/desktop/src/main/mode-essai.ts), et ce mode est impossible dans une application
-  # empaquetée.
-  bout-en-bout:
-    name: Essais de bout en bout (Electron)
-    needs: verification
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    env:
-      CI: "true"
-    steps:
-      - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-          cache: pnpm
-
-      # Sans ELECTRON_SKIP_BINARY_DOWNLOAD, contrairement au job précédent : ici le binaire sert.
-      - name: Installer les dépendances
-        run: pnpm install --frozen-lockfile
-
-      # Electron 44 télécharge son binaire PARESSEUSEMENT, au premier `require` : c'est
-      # `node_modules/electron/index.js` qui imprime « Downloading Electron binary... ». Le cache
-      # pnpm étant partagé avec le job précédent, qui installe en sautant ce téléchargement, il se
-      # produisait ici pendant un essai — un réseau lent aurait fait échouer un test au lieu d'une
-      # étape d'installation, désignant le mauvais coupable. Ce `require` emprunte exactement le
-      # même chemin de code, mais dans une étape à lui.
-      #
-      # (Une première tentative avec `pnpm rebuild electron` n'a rien fait : electron est déclaré
-      # dans `apps/desktop`, pas à la racine, et la commande était muette sans échouer.)
-      - name: S'assurer du binaire Electron
-        working-directory: apps/desktop
-        run: node -e "console.log('binaire Electron :', require('electron'))"
-
-      - name: Construire l'application
-        run: pnpm build
-
-      # Aucun navigateur à installer : `_electron` de Playwright pilote l'Electron du projet.
-      # `xvfb-run` fournit l'affichage que le runner n'a pas.
-      - name: Lancer les essais
-        run: xvfb-run -a pnpm e2e
-
-      - name: Verser les traces en cas d'échec
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: essais-bout-en-bout
-          path: test-results/
-          retention-days: 7
-          if-no-files-found: ignore
