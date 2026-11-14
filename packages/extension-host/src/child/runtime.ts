@@ -1,5 +1,6 @@
 import { pathToFileURL } from "node:url";
-import type { ExtensionContext, ExtensionModule, TaskDefinition } from "@skraft-mcp/extension-api";
+import type { TaskDefinition } from "@skraft-mcp/task-engine";
+import type { ExtensionContext, ExtensionModule } from "../contrat.js";
 import { createRpcEndpoint, type RpcEndpoint } from "../rpc/endpoint.js";
 import type { MessageChannelLike } from "../rpc/protocol.js";
 
@@ -80,7 +81,7 @@ export function runExtensionChild(channel: MessageChannelLike): RpcEndpoint {
       const t = tools.get(String(name));
       if (!t) throw new Error(`Outil inconnu dans l'hôte : ${String(name)}`);
       // Contexte de vérification du tour (ADR 0082), quand l'outil en est un.
-      return verification ? t.handler(args, verification as import("@skraft-mcp/extension-api").ContexteDeVerification) : t.handler(args);
+      return verification ? t.handler(args, verification as import("../contrat.js").ContexteDeVerification) : t.handler(args);
     },
     "hook.preToolUse": async ([id, call]) => {
       const h = hooks.get(Number(id));

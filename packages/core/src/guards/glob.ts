@@ -1,5 +1,6 @@
 /**
- * Les motifs glob sont définis dans `@skraft-mcp/extension-api` : une extension doit pouvoir
- * s'en servir sans dépendre du cœur (D10). Réexporté ici pour le reste du cœur.
+ * Les motifs glob sont définis dans `@skraft-mcp/stack-adapters`, qui en a besoin pour la
+ * disposition d'une pile. Réexportés ici pour le reste du cœur (ADR 0091 §3 : le détour par
+ * `extension-api` est retiré).
  */
-export { globToRegExp, matchesAny, matchesAnyIgnoringCase } from "@skraft-mcp/extension-api";
+export { globToRegExp, matchesAny, matchesAnyIgnoringCase } from "@skraft-mcp/stack-adapters";

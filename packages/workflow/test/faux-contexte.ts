@@ -1,5 +1,6 @@
 import { fixedClock, sequentialIds } from "@skraft-mcp/core/testing";
-import type { AgentRunResult, ExtensionContext, TestRun } from "@skraft-mcp/extension-api";
+import type { AgentRunResult, ExtensionContext } from "@skraft-mcp/extension-host";
+import type { TestRun } from "@skraft-mcp/stack-adapters";
 import { createTaskEngine, MemoryTaskStore, type TaskEngine, type TaskRecord } from "@skraft-mcp/task-engine";
 import { createWorkflowTask } from "../src/workflow-task.js";
 import type { DeclarationWorkflow, EtatWorkflow, Json } from "../src/protocols.js";

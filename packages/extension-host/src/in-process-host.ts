@@ -10,7 +10,7 @@ import type {
   ToolCallGuard,
   UsageRecorder,
 } from "@skraft-mcp/core";
-import type { ExtensionContext, ExtensionManifest, ExtensionModule } from "@skraft-mcp/extension-api";
+import type { ExtensionContext, ExtensionManifest, ExtensionModule } from "./contrat.js";
 import { fingerprintFiles, type StackAdapter } from "@skraft-mcp/stack-adapters";
 import type { TaskEngine } from "@skraft-mcp/task-engine";
 import type { Workspace } from "@skraft-mcp/workspace";
@@ -96,7 +96,7 @@ export async function activateInProcess(ext: LoadedExtension, deps: HostDeps): P
 
   const taskName = (name: string) => `${manifest.id}/${name}`;
   const declaredTools = new Map((manifest.contributes.tools ?? []).map((t) => [t.name, t]));
-  const extensionTools = new Map<string, import("@skraft-mcp/extension-api").ExtensionTool>();
+  const extensionTools = new Map<string, import("./contrat.js").ExtensionTool>();
   const testRuns = createTestRunService(deps);
   /** Outils de l'extension déclarés par l'agent : exécutés par le code de l'extension (§5.4). */
   const ownTools = (names: string[]): import("@skraft-mcp/core").ToolSpec[] =>

@@ -9,7 +9,7 @@
     "./testing": "./src/testing/index.ts"
   },
   "dependencies": {
-    "@skraft-mcp/extension-api": "workspace:*",
+    "@skraft-mcp/stack-adapters": "workspace:*",
     "zod": "^4.6.5"
   }
 }

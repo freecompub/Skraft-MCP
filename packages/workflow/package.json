@@ -8,15 +8,14 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@skraft-mcp/extension-api": "workspace:*",
+    "@skraft-mcp/core": "workspace:*",
+    "@skraft-mcp/extension-host": "workspace:*",
+    "@skraft-mcp/stack-adapters": "workspace:*",
     "@skraft-mcp/task-engine": "workspace:*",
     "acorn": "^8.18.0",
-    "zod": "^4.6.5",
-    "@skraft-mcp/extension-host": "workspace:*",
     "esbuild": "^0.28.2",
     "yaml": "^2.9.1",
-    "@skraft-mcp/stack-adapters": "workspace:*",
-    "@skraft-mcp/core": "workspace:*"
+    "zod": "^4.6.5"
   },
   "devDependencies": {}
 }

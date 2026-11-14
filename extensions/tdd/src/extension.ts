@@ -1,4 +1,5 @@
-import type { ExtensionContext, ExtensionModule, TaskDefinition } from "@skraft-mcp/extension-api";
+import type { ExtensionContext, ExtensionModule } from "@skraft-mcp/extension-host";
+import type { TaskDefinition } from "@skraft-mcp/task-engine";
 import { runTddEffect } from "./effects.js";
 import type { TddEffect, TddEvent, TddInput, TddState } from "./model.js";
 import { initialEffects, initialState, isTerminal, transition } from "./reducer.js";

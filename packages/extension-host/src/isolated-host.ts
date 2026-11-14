@@ -1,5 +1,6 @@
 import { dirname } from "node:path";
-import type { ExtensionContext, ExtensionManifest, ExtensionModule, TaskDefinition } from "@skraft-mcp/extension-api";
+import type { TaskDefinition } from "@skraft-mcp/task-engine";
+import type { ExtensionContext, ExtensionManifest, ExtensionModule } from "./contrat.js";
 import type { ActivationRequest } from "./child/runtime.js";
 import { activateInProcess, type ExtensionHandle, type HostDeps } from "./in-process-host.js";
 import { cheminReel, type ChildHandle, type ProcessLauncher } from "./launchers/protocol.js";

@@ -1,8 +1,9 @@
 /**
  * Erreurs et utilitaires qu'une extension peut employer sans dépendre du cœur (D10).
  *
- * Ces classes sont définies ici, et non dans `@skraft-mcp/core`, parce qu'une extension
- * tierce ne doit connaître que `@skraft-mcp/extension-api`. Le cœur les réexporte.
+ * Définies dans le cœur depuis l'ADR 0091 §3 : elles vivaient dans `extension-api`, pour qu'une
+ * extension tierce n'ait qu'un paquet à connaître. Il n'y a plus de tiers, et ce détour fermait
+ * un cycle entre les deux paquets.
  *
  * Elles franchissent la frontière de processus **par leur nom** : l'hôte sérialise l'erreur et
  * la reconstruit d'après `name` (`rpc/endpoint.ts`). Ce nom fait donc partie du contrat et ne

@@ -1,4 +1,4 @@
-import type { ExtensionManifest, Permission } from "@skraft-mcp/extension-api";
+import type { ExtensionManifest, Permission } from "./contrat.js";
 
 export class PermissionDeniedError extends Error {
   constructor(readonly extensionId: string, readonly permission: string) {

@@ -19,16 +19,15 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
     "@skraft-mcp/core": "workspace:*",
     "@skraft-mcp/extension-host": "workspace:*",
-    "@skraft-mcp/extension-packaging": "workspace:*",
     "@skraft-mcp/github-auth": "workspace:*",
     "@skraft-mcp/project-services": "workspace:*",
     "@skraft-mcp/runtime-claude": "workspace:*",
     "@skraft-mcp/runtime-copilot": "workspace:*",
     "@skraft-mcp/workflow": "workspace:*",
     "@skraft-mcp/workspace": "workspace:*",
-    "@modelcontextprotocol/sdk": "1.32.2",
     "@types/node": "^22.19.0",
     "eslint": "^10.11.0",
     "tsx": "^4.23.15",

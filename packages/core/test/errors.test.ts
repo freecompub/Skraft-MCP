@@ -3,10 +3,10 @@
  * d'après ce nom (`extension-host/src/rpc/endpoint.ts`). Le contrat est donc le nom, pas la classe.
  */
 import { describe, expect, it } from "vitest";
-import { EnvFailureError, TurnTimeoutError, WorkDefectError } from "../src/errors.js";
+import { EnvFailureError, TurnTimeoutError, WorkDefectError } from "../src/turns/errors.js";
 import { matchesAny } from "@skraft-mcp/stack-adapters";
 
-describe("Erreurs exposées aux extensions", () => {
+describe("Erreurs d'un tour d'agent", () => {
   it("portent le nom attendu par l'hôte", () => {
     expect(new WorkDefectError("x").name).toBe("WorkDefectError");
     expect(new EnvFailureError("x").name).toBe("EnvFailureError");

@@ -5,7 +5,7 @@
  * **vérification de chaque appel contre les permissions** (`fs:write:<motif>`, `git:*`,
  * `shell:test`). Le script, lui, n'en reçoit rien : il tourne isolé et ne voit que `w.*`.
  */
-import type { ExtensionManifest, ExtensionModule, Permission } from "@skraft-mcp/extension-api";
+import type { ExtensionManifest, ExtensionModule, Permission } from "@skraft-mcp/extension-host";
 import { activateInProcess, type ExtensionHandle, type HostDeps, type ProcessLauncher } from "@skraft-mcp/extension-host";
 import { verifierAccord, type AccordStore } from "../accord/accords.js";
 import type { WorkflowTrouve } from "../chargeur/chargeur.js";

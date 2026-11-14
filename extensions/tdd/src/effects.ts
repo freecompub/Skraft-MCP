@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { EnvFailureError, WorkDefectError } from "@skraft-mcp/extension-api";
-import type { AgentRunResult, EffectContext, ExtensionContext, TerminalOutput, TerminalToolName } from "@skraft-mcp/extension-api";
+import { EnvFailureError, WorkDefectError } from "@skraft-mcp/core";
+import type { TerminalOutput, TerminalToolName } from "@skraft-mcp/core";
+import type { AgentRunResult, ExtensionContext } from "@skraft-mcp/extension-host";
+import type { EffectContext } from "@skraft-mcp/task-engine";
 import { buildBrief } from "./brief.js";
 import type { TddEffect, TddState } from "./model.js";
 import type { Ev } from "./reducer.js";

@@ -2,7 +2,7 @@
 // @ts-nocheck — le workflow est en JavaScript, sans types (ADR 0055) : ce test vérifie son comportement, pas ses types.
 import { describe, expect, it } from "vitest";
 import { acOf, checkAcceptanceRed, checkPlans, checkValues, featureScenarios, planDeTest, testsDeLaStory, verifierEcarts } from "../../../workflows/skraft/distill.mjs";
-import { matchesAny } from "@skraft-mcp/extension-api";
+import { matchesAny } from "@skraft-mcp/stack-adapters";
 import { parseStory } from "../../../workflows/skraft/story.mjs";
 import { US12 } from "./story.test.js";
 

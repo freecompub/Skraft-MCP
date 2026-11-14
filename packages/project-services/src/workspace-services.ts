@@ -28,7 +28,7 @@ import {
   type Logger,
   type ToolSpec,
 } from "@skraft-mcp/core";
-import type { ExtensionManifest } from "@skraft-mcp/extension-api";
+import type { ExtensionManifest } from "@skraft-mcp/extension-host";
 import {
   activateInProcess,
   activateIsolated,

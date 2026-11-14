@@ -1,11 +1,11 @@
 import type { AgentEvent, AgentSession } from "../protocols/agent-runtime.js";
 
 /**
- * Ces erreurs sont définies dans `@skraft-mcp/extension-api` : une extension doit pouvoir les
+ * Ces erreurs sont définies dans `./errors.js` : le tour les lève, le reste du cœur les attrape.
  * lever sans dépendre du cœur (D10). Réexportées ici pour tout le reste du cœur.
  */
-export { EnvFailureError, TurnBudgetError, TurnContextError, TurnCostError, TurnTimeoutError, WorkDefectError } from "@skraft-mcp/extension-api";
-import { EnvFailureError, TurnBudgetError, TurnContextError, TurnCostError, TurnTimeoutError, WorkDefectError } from "@skraft-mcp/extension-api";
+export { EnvFailureError, TurnBudgetError, TurnContextError, TurnCostError, TurnTimeoutError, WorkDefectError } from "./errors.js";
+import { EnvFailureError, TurnBudgetError, TurnContextError, TurnCostError, TurnTimeoutError, WorkDefectError } from "./errors.js";
 
 /** Signe de vie émis hors session (sortie d'un outil long exécuté par notre code, §6.4). */
 export interface Heartbeat {

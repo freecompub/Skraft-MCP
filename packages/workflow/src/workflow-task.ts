@@ -1,4 +1,6 @@
-import { EnvFailureError, WorkDefectError, type ExtensionContext, type TaskDefinition, type TaskEvent } from "@skraft-mcp/extension-api";
+import { EnvFailureError, WorkDefectError } from "@skraft-mcp/core";
+import type { ExtensionContext } from "@skraft-mcp/extension-host";
+import type { TaskDefinition, TaskEvent } from "@skraft-mcp/task-engine";
 import { empreinteDe, ranger, relire } from "./contenus.js";
 import { createRejoueurLocal, type Rejoueur } from "./hote/rejoueur.js";
 import type { Arbitrage, DeclarationWorkflow, EffetWorkflow, EntreeJournal, EtatWorkflow, EvenementWorkflow, Json, NatureErreur, NomAppel } from "./protocols.js";

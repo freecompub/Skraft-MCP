@@ -1,6 +1,6 @@
 import { createHookRegistry, createInteractionService, createRegistry, type TaskAgentRunner, type TaskAgentSpec } from "@skraft-mcp/core";
 import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, RecordingCheckpoints, sequentialIds } from "@skraft-mcp/core/testing";
-import type { ExtensionContext, ExtensionManifest, ExtensionModule } from "@skraft-mcp/extension-api";
+import type { ExtensionContext, ExtensionManifest, ExtensionModule } from "@skraft-mcp/extension-host";
 import type { StackAdapter } from "@skraft-mcp/stack-adapters";
 import { createTaskEngine, MemoryTaskStore } from "@skraft-mcp/task-engine";
 import type { Workspace } from "@skraft-mcp/workspace";

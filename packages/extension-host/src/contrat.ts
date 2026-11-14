@@ -1,25 +1,14 @@
 /**
- * API publique des extensions (§5.4), version 0.1 : non figée avant la 1.0 (D14).
- * Une extension ne voit que `ExtensionContext` : aucun objet du SDK, aucune session (D10).
+ * Contrat hôte ↔ script : ce que l'hôte offre au script qu'il exécute, et la déclaration interne
+ * qu'il en tire. Repris de `@skraft-mcp/extension-api`, retiré par l'ADR 0091 §3 — le contrat
+ * survit, le baril et son API publique pour des tiers non.
+ *
+ * Les types de manifeste sont la déclaration que l'hôte fabrique depuis le `meta` d'un workflow
+ * (`manifesteDuWorkflow`) : ils partiront avec elle.
  */
 import type { Evidence, TerminalOutput, TerminalToolName } from "@skraft-mcp/core";
 import type { ArchitectureReport, CoupleBdd, DependencyRule, FormatReport, LintReport, MutationReport, TestRun } from "@skraft-mcp/stack-adapters";
 import type { SystemEvent, TaskDefinition } from "@skraft-mcp/task-engine";
-
-export const API_VERSION = "0.1.0";
-
-// Erreurs et utilitaires utilisables sans dépendre du cœur (D10). Voir `errors.ts`.
-export { EnvFailureError, TurnBudgetError, TurnContextError, TurnCostError, TurnTimeoutError, WorkDefectError } from "./errors.js";
-// Les globs viennent de `stack-adapters`, plus bas : une extension n'a qu'un paquet à connaître.
-export { globToRegExp, matchesAny, matchesAnyIgnoringCase } from "@skraft-mcp/stack-adapters";
-export { coverageForChanges, baselineProblems, bddNonDeclare, MANIFESTE } from "@skraft-mcp/stack-adapters";
-export { disjoncte, MEME_REFUS, memeRefus, type Refus } from "@skraft-mcp/core";
-// Barre de qualité du projet (ADR 0049) : `.agent-studio/quality.yaml`, commune aux extensions.
-export { coreFilesMissing, layerOf, parseQualityBar, type Layer, type QualityBar, type QualityBarSource } from "@skraft-mcp/stack-adapters";
-
-export type { Evidence, TerminalOutput, TerminalToolName, TestRun, SystemEvent, TaskDefinition };
-export type { ArchitectureReport, CoupleBdd, CoverageReport, DependencyRule, FormatReport, LintReport, MutationReport, TestResult } from "@skraft-mcp/stack-adapters";
-export type { TaskEvent, EffectContext } from "@skraft-mcp/task-engine";
 
 // ---------- Manifeste (§5.1) ------------------------------------------------------
 

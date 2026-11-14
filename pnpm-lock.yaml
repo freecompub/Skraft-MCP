@@ -17,9 +17,6 @@ importers:
       '@skraft-mcp/extension-host':
         specifier: workspace:*
         version: link:packages/extension-host
-      '@skraft-mcp/extension-packaging':
-        specifier: workspace:*
-        version: link:packages/extension-packaging
       '@skraft-mcp/github-auth':
         specifier: workspace:*
         version: link:packages/github-auth
@@ -102,16 +99,16 @@ importers:
 
   extensions/tdd:
     dependencies:
-      '@skraft-mcp/extension-api':
+      '@skraft-mcp/core':
         specifier: workspace:*
-        version: link:../../packages/extension-api
+        version: link:../../packages/core
+      '@skraft-mcp/extension-host':
+        specifier: workspace:*
+        version: link:../../packages/extension-host
       '@skraft-mcp/task-engine':
         specifier: workspace:*
         version: link:../../packages/task-engine
     devDependencies:
-      '@skraft-mcp/extension-host':
-        specifier: workspace:*
-        version: link:../../packages/extension-host
       '@skraft-mcp/stack-adapters':
         specifier: workspace:*
         version: link:../../packages/stack-adapters
@@ -124,33 +121,18 @@ importers:
 
   packages/core:
     dependencies:
-      '@skraft-mcp/extension-api':
-        specifier: workspace:*
-        version: link:../extension-api
-      zod:
-        specifier: ^4.6.5
-        version: 4.6.5
-
-  packages/extension-api:
-    dependencies:
-      '@skraft-mcp/core':
-        specifier: workspace:*
-        version: link:../core
       '@skraft-mcp/stack-adapters':
         specifier: workspace:*
         version: link:../stack-adapters
-      '@skraft-mcp/task-engine':
-        specifier: workspace:*
-        version: link:../task-engine
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
 
   packages/extension-host:
     dependencies:
       '@skraft-mcp/core':
         specifier: workspace:*
         version: link:../core
-      '@skraft-mcp/extension-api':
-        specifier: workspace:*
-        version: link:../extension-api
       '@skraft-mcp/stack-adapters':
         specifier: workspace:*
         version: link:../stack-adapters
@@ -165,43 +147,6 @@ importers:
         specifier: ^0.28.2
         version: 0.28.2
 
-  packages/extension-installer:
-    dependencies:
-      '@skraft-mcp/extension-api':
-        specifier: workspace:*
-        version: link:../extension-api
-      '@skraft-mcp/extension-manifest':
-        specifier: workspace:*
-        version: link:../extension-manifest
-      '@skraft-mcp/extension-packaging':
-        specifier: workspace:*
-        version: link:../extension-packaging
-      zod:
-        specifier: ^4.6.5
-        version: 4.6.5
-
-  packages/extension-manifest:
-    dependencies:
-      '@skraft-mcp/extension-api':
-        specifier: workspace:*
-        version: link:../extension-api
-      zod:
-        specifier: ^4.6.5
-        version: 4.6.5
-    devDependencies:
-      '@skraft-mcp/ext-tdd':
-        specifier: workspace:*
-        version: link:../../extensions/tdd
-
-  packages/extension-packaging:
-    dependencies:
-      fflate:
-        specifier: ^0.8.3
-        version: 0.8.3
-      zod:
-        specifier: ^4.6.5
-        version: 4.6.5
-
   packages/github-auth: {}
 
   packages/project-services:
@@ -209,15 +154,9 @@ importers:
       '@skraft-mcp/core':
         specifier: workspace:*
         version: link:../core
-      '@skraft-mcp/extension-api':
-        specifier: workspace:*
-        version: link:../extension-api
       '@skraft-mcp/extension-host':
         specifier: workspace:*
         version: link:../extension-host
-      '@skraft-mcp/extension-packaging':
-        specifier: workspace:*
-        version: link:../extension-packaging
       '@skraft-mcp/stack-adapters':
         specifier: workspace:*
         version: link:../stack-adapters
@@ -237,9 +176,6 @@ importers:
       '@skraft-mcp/ext-tdd':
         specifier: workspace:*
         version: link:../../extensions/tdd
-      '@skraft-mcp/extension-installer':
-        specifier: workspace:*
-        version: link:../extension-installer
 
   packages/runtime-claude:
     dependencies:
@@ -288,15 +224,9 @@ importers:
       '@skraft-mcp/core':
         specifier: workspace:*
         version: link:../core
-      '@skraft-mcp/extension-api':
-        specifier: workspace:*
-        version: link:../extension-api
       '@skraft-mcp/extension-host':
         specifier: workspace:*
         version: link:../extension-host
-      '@skraft-mcp/extension-manifest':
-        specifier: workspace:*
-        version: link:../extension-manifest
       '@skraft-mcp/stack-adapters':
         specifier: workspace:*
         version: link:../stack-adapters
@@ -325,9 +255,6 @@ importers:
       '@skraft-mcp/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@skraft-mcp/extension-api':
-        specifier: workspace:*
-        version: link:../../packages/extension-api
       '@skraft-mcp/extension-host':
         specifier: workspace:*
         version: link:../../packages/extension-host
@@ -1204,9 +1131,6 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
-
-  fflate@0.8.3:
-    resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
 
   file-entry-cache@11.1.5:
     resolution: {integrity: sha512-+PFTHITI08JIGhnNpGNI8T8inUpgZfk3GNEqfT9R2zZV2iFXg3CvqzSl/uEhs7TSGujYRELEANyDvS8Fj7+S7Q==}
@@ -2625,8 +2549,6 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
       picomatch: 4.0.7
-
-  fflate@0.8.3: {}
 
   file-entry-cache@11.1.5:
     dependencies:

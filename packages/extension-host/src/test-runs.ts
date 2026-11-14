@@ -1,6 +1,6 @@
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { matchesAnyIgnoringCase, type Clock, type Evidence, type EvidenceStore, type IdGenerator, type ToolCallGuard, type ToolSpec } from "@skraft-mcp/core";
-import type { EvidenceTag } from "@skraft-mcp/extension-api";
+import type { EvidenceTag } from "./contrat.js";
 import { fingerprintFiles, type StackAdapter, type TestRun } from "@skraft-mcp/stack-adapters";
 import type { Workspace } from "@skraft-mcp/workspace";
 

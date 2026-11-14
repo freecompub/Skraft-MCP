@@ -1,6 +1,6 @@
 import { createHookRegistry, createInteractionService, createRegistry, createTaskAgentRunner } from "@skraft-mcp/core";
 import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, RecordingCheckpoints, ScriptedRuntime, sequentialIds } from "@skraft-mcp/core/testing";
-import type { ExtensionContext, ExtensionManifest } from "@skraft-mcp/extension-api";
+import type { ExtensionContext, ExtensionManifest } from "@skraft-mcp/extension-host";
 import type { StackAdapter, TestRun } from "@skraft-mcp/stack-adapters";
 import { createTaskEngine, MemoryTaskStore } from "@skraft-mcp/task-engine";
 import { readOnlyGuard } from "../src/test-runs.js";

@@ -6,7 +6,6 @@
   "type": "module",
   "devDependencies": {
     "@skraft-mcp/core": "workspace:*",
-    "@skraft-mcp/extension-api": "workspace:*",
     "@skraft-mcp/extension-host": "workspace:*",
     "@skraft-mcp/stack-adapters": "workspace:*",
     "@skraft-mcp/task-engine": "workspace:*",

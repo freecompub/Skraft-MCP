@@ -56,9 +56,24 @@ signé — « la signature des paquets ne s'applique plus aux workflows ».
 2. **La racine de composition appartient au livrable.** `workspace-services.ts` se dissout :
    la composition rejoint `serveur/src/assemblage/` ; la découverte des workflows et la reprise des
    tâches rejoignent `moteur/journal/` ; l'activation d'extensions est supprimée.
-3. **Le sous-système d'extensions est retiré** : `extension-api`, `extension-installer`,
-   `extension-manifest`, `extension-packaging` et `extensions/tdd`. Les classes d'erreur rejoignent
-   `capacites/agents`. Le cycle meurt **par suppression**, sans paquet feuille ajouté.
+3. **Le sous-système d'extensions est retiré** : `extension-installer`, `extension-manifest`,
+   `extension-packaging` et `extensions/tdd` disparaissent. `extension-api`, lui, n'est pas
+   supprimé mais **scindé** — amendement du 2026-11-14, après mesure : `workflow-task.ts` importe
+   `ExtensionContext`, c'est-à-dire que le moteur de workflow est implémenté *sur* le contrat
+   d'extension, le workflow étant emballé en extension synthétique. Donc :
+   - les **classes d'erreur** rejoignent `capacites/agents` (le cœur), avec leurs tests ; leur `name`
+     reste le contrat qui franchit la frontière de processus (`rpc/endpoint.ts`) ;
+   - le **contrat hôte ↔ script** (`ExtensionContext`, `AgentRunOptions`, `AgentRunResult`,
+     `WorkspaceApi`, `GitApi`, `StackApi`, `TasksApi`, `InteractionsApi`, `HooksApi`, `ToolsApi`,
+     `ExtensionTool`, `EvidenceTag`, `ContexteDeVerification`…) rejoint l'hôte, futur
+     `moteur/bac-a-sable` : c'est lui qui l'offre ;
+   - les **ré-exports du baril** sont rebranchés sur leurs vraies sources (`core`,
+     `stack-adapters`, `task-engine`) ; `API_VERSION`, sans consommateur, disparaît ;
+   - les **types de manifeste** (`ExtensionManifest`, `Permission`, `ExtensionModule`) survivent
+     comme la déclaration interne que l'hôte fabrique depuis le `meta` ; ils partiront avec elle.
+
+   Le cycle meurt **par suppression** du baril, sans paquet feuille ajouté : le cœur ne dépend plus
+   de l'hôte, il prend ses globs chez `stack-adapters`, qui ne dépend de personne.
 4. `validateManifest` est remplacé par le schéma du `meta` (ADR 0055 §5).
 5. **Les noms disent ce que les paquets font** : `extension-host` devient `moteur/bac-a-sable`
    (le bac à sable qu'exige l'ADR 0055 §7) ; `core` devient `capacites/agents`.
@@ -73,6 +88,12 @@ signé — « la signature des paquets ne s'applique plus aux workflows ».
    ratifie la licence du paquet ; `deployer.mjs:126` livre déjà la GPL comme `LICENSE` racine du
    paquet npm.
 8. Ces invariants sont vérifiés par `tests/architecture`, pas par la vigilance.
+9. **Ordre des travaux** (arrêté le 2026-11-14) : `extensions/tdd` part **en dernier**. Il est la
+   fixture de sept cas de `workspace-services.test.ts` qui couvrent la machinerie d'hôte — cartes de
+   tâche, usage par état (D37), cycle interaction → relance, persistance au redémarrage (J3),
+   hygiène des sessions (ADR 0053), jalons et alertes — machinerie dont le workflow se sert aussi, et
+   que `activer.test.ts` ne couvre pas. Ces cas rejoindront leur maison définitive lors de la
+   dissolution de `project-services` (point 2) ; l'exemple ne s'échange qu'après, contre une fixture.
 
 ## Conséquences
 

@@ -3,7 +3,7 @@
  * les lentilles d'une revue) tournent en même temps. Le moteur de tâches exécute ses effets un par un :
  * la tâche les regroupe en un seul effet. Un agent qui écrit reste seul dans le sien.
  */
-import type { AgentRunResult } from "@skraft-mcp/extension-api";
+import type { AgentRunResult } from "@skraft-mcp/extension-host";
 import { describe, expect, it } from "vitest";
 import type { DeclarationWorkflow } from "../src/protocols.js";
 import { fauxContexte, lancer, sortie } from "./faux-contexte.js";

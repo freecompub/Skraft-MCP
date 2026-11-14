@@ -3,7 +3,7 @@
  * (lecture de fichiers système, permission non déclarée, hooks qui plantent, arrêt brutal).
  */
 import { readFileSync } from "node:fs";
-import type { ExtensionModule } from "@skraft-mcp/extension-api";
+import type { ExtensionModule } from "@skraft-mcp/extension-host";
 
 type S = { n: number; done: boolean; tests?: number };
 type E = { type: "TICK"; tests: number };
