@@ -9,6 +9,12 @@ le workflow ».
 Exécute une supersession déjà décidée par l'ADR 0055 (point 9 et conséquences), restée non réalisée.
 Concerne l'organisation du dépôt, pas le comportement d'un run.
 
+**Remplace l'ADR 0021** (« skraft distribuée à part, non signée pour l'instant ») : il distribuait
+skraft en paquet `.asx` installé comme une extension tierce, et exigeait pour cela le mode
+développeur (`developerMode: true` dans `admin.json`). Rien n'en subsiste — skraft est un serveur MCP
+(ADR 0068), `extensions/skraft` a disparu avec l'ADR 0055, et `ext:build`/`ext:pack` partent avec
+`extension-packaging`.
+
 ## Contexte
 
 Ce dépôt a été séparé d'agent-studio le 2026-11-14 (commit `8dc71a8`) avec l'historique de ses
@@ -71,6 +77,12 @@ signé — « la signature des paquets ne s'applique plus aux workflows ».
      `stack-adapters`, `task-engine`) ; `API_VERSION`, sans consommateur, disparaît ;
    - les **types de manifeste** (`ExtensionManifest`, `Permission`, `ExtensionModule`) survivent
      comme la déclaration interne que l'hôte fabrique depuis le `meta` ; ils partiront avec elle.
+
+   La **surface de configuration** de cette distribution part avec elle : `trustedPublishers`,
+   `revocation` et `developerMode` sortent d'`admin.json`. Le schéma n'étant pas fermé, un fichier
+   qui les porte encore reste accepté et le reste de sa configuration s'applique ; un test le fixe.
+   `admin.json` ne garde donc que ce que le README documente : la politique, le mode, et les
+   programmes qu'une pile peut lancer.
 
    Le cycle meurt **par suppression** du baril, sans paquet feuille ajouté : le cœur ne dépend plus
    de l'hôte, il prend ses globs chez `stack-adapters`, qui ne dépend de personne.

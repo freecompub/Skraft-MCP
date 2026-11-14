@@ -49,43 +49,23 @@ const schema = z.object({
       permissionPolicy: z.enum(["prudente", "souple"]).optional(),
     })
     .optional(),
-  trustedPublishers: z
-    .array(z.object({ publisher: z.string(), keyId: z.string(), publicKeyPem: z.string(), trustedUpdates: z.boolean().default(false) }))
-    .default([]),
-  developerMode: z.boolean().default(false),
   /** Remplace la liste par défaut — un poste administré doit pouvoir restreindre, pas seulement élargir. */
   allowedPrograms: z.array(nomDeProgramme).optional(),
   /** L'utilisateur peut-il accepter un programme hors de la liste, quand on le lui demande (ADR 0075) ? */
   programConsent: z.boolean().default(true),
-  revocation: z.object({ file: z.string().optional(), url: z.string().url().optional(), rootPublicKeyPem: z.string() }).optional(),
 });
-
-/**
- * Éditeur approuvé par l'administrateur. Repris de `extension-packaging`, retiré par l'ADR 0091 §3 :
- * la signature des paquets ne s'applique plus (ADR 0055, conséquences). Le champ reste lu pour ne
- * pas refuser un `admin.json` qui le porte encore ; rien ne le consomme.
- */
-export interface TrustedPublisher {
-  publisher: string;
-  keyId: string;
-  publicKeyPem: string;
-  trustedUpdates: boolean;
-}
 
 export interface AdminConfig {
   /** Chemin du fichier lu, ou « défaut ». */
   source: string;
   permissionPolicy: PermissionPolicy;
   defaultMode: UiMode;
-  trustedPublishers: TrustedPublisher[];
-  developerMode: boolean;
   /** Programmes qu'un profil de stack peut lancer (D47, O12). */
   allowedPrograms: string[];
   /** D'où vient cette liste, en une phrase à citer quand un programme est refusé (09/11). */
   origineDesProgrammes: string;
   /** L'utilisateur peut accepter un programme hors de la liste, si on peut le lui demander (ADR 0075). */
   programConsent: boolean;
-  revocation: { file?: string; url?: string; rootPublicKeyPem: string } | null;
   error?: string;
 }
 
@@ -101,17 +81,14 @@ export async function loadAdminConfig(path: string): Promise<AdminConfig> {
   try {
     raw = await readFile(path, "utf8");
   } catch {
-    // Poste personnel sans administration : développeur, sans éditeur tiers approuvé.
+    // Poste personnel sans administration : la politique la plus souple.
     return {
       source: "défaut",
       permissionPolicy: "souple",
       defaultMode: "advanced",
-      trustedPublishers: [],
-      developerMode: false,
       allowedPrograms: [...DEFAULT_ALLOWED_PROGRAMS],
       programConsent: true,
       origineDesProgrammes: `Liste par défaut : aucun fichier d'administration à ${path}. Pour la changer, y écrire \`allowedPrograms\` (qui remplace la liste par défaut, sans s'y ajouter), ou désigner un autre fichier par la variable AGENT_STUDIO_ADMIN_CONFIG.`,
-      revocation: null,
     };
   }
   let parsed: z.infer<typeof schema>;
@@ -124,26 +101,22 @@ export async function loadAdminConfig(path: string): Promise<AdminConfig> {
     // Configuration refusée : on n'autorise aucun programme. Retomber sur la liste par défaut
     // appliquerait des permissions que l'administrateur n'a pas relues.
     const error = err instanceof Error ? err.message : String(err);
-    return { source: path, permissionPolicy: "prudente", defaultMode: "simple", trustedPublishers: [], developerMode: false, allowedPrograms: [], programConsent: false, origineDesProgrammes: `${path} est refusé (${error}) : aucun programme n'est autorisé.`, revocation: null, error };
+    return { source: path, permissionPolicy: "prudente", defaultMode: "simple", allowedPrograms: [], programConsent: false, origineDesProgrammes: `${path} est refusé (${error}) : aucun programme n'est autorisé.`, error };
   }
   // Ancienne forme : un rôle technique donnait « souple » et le mode avancé, les autres « prudente » et simple.
   const ancien = parsed.profile;
   const technique = ancien ? ["developpeur", "architecte", "administrateur"].includes(ancien.role) : true;
   const permissionPolicy = parsed.permissionPolicy ?? ancien?.permissionPolicy ?? (technique ? "souple" : "prudente");
   const defaultMode = parsed.defaultMode ?? ancien?.defaultMode ?? (technique ? "advanced" : "simple");
-  const rev = parsed.revocation;
   return {
     source: path,
     permissionPolicy,
     defaultMode,
-    trustedPublishers: parsed.trustedPublishers,
-    developerMode: parsed.developerMode,
     // Le fichier remplace la liste ; sans mention, celle par défaut s'applique.
     allowedPrograms: parsed.allowedPrograms ?? [...DEFAULT_ALLOWED_PROGRAMS],
     programConsent: parsed.programConsent,
     origineDesProgrammes: parsed.allowedPrograms
       ? `Liste de \`allowedPrograms\` dans ${path} ; elle remplace la liste par défaut, qui ne s'applique donc pas.`
       : `Liste par défaut : ${path} ne contient pas \`allowedPrograms\`. L'y ajouter remplace la liste par défaut, sans s'y ajouter.`,
-    revocation: rev ? { rootPublicKeyPem: rev.rootPublicKeyPem, ...(rev.file ? { file: rev.file } : {}), ...(rev.url ? { url: rev.url } : {}) } : null,
   };
 }

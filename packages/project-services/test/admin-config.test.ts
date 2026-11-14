@@ -12,9 +12,9 @@ describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
   });
   afterEach(() => rm(dir, { recursive: true, force: true }));
 
-  it("sans fichier : politique souple, mode avancé, aucun éditeur approuvé, pas de mode développeur (choix provisoire)", async () => {
+  it("sans fichier : politique souple, mode avancé", async () => {
     const c = await loadAdminConfig(join(dir, "absent.json"));
-    expect(c).toMatchObject({ source: "défaut", permissionPolicy: "souple", defaultMode: "advanced", trustedPublishers: [], developerMode: false, revocation: null });
+    expect(c).toMatchObject({ source: "défaut", permissionPolicy: "souple", defaultMode: "advanced" });
     expect(c).not.toHaveProperty("profile");
   });
 
@@ -52,7 +52,7 @@ describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
 
     it("fichier sans `allowedPrograms` : la liste par défaut, et le fichier lu", async () => {
       const file = join(dir, "admin.json");
-      await writeFile(file, JSON.stringify({ developerMode: false }));
+      await writeFile(file, JSON.stringify({ permissionPolicy: "souple" }));
       expect((await loadAdminConfig(file)).origineDesProgrammes).toBe(
         `Liste par défaut : ${file} ne contient pas \`allowedPrograms\`. L'y ajouter remplace la liste par défaut, sans s'y ajouter.`,
       );
@@ -100,23 +100,35 @@ describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
     expect(c.allowedPrograms).toEqual([]); // configuration refusée : on n'autorise rien
   });
 
-  it("politique et mode posés par l'administrateur ; éditeurs approuvés ; révocation", async () => {
+  it("politique et mode posés par l'administrateur", async () => {
+    const file = join(dir, "admin.json");
+    await writeFile(file, JSON.stringify({ permissionPolicy: "prudente", defaultMode: "simple" }));
+    const c = await loadAdminConfig(file);
+    expect(c.source).toBe(file);
+    expect(c).toMatchObject({ permissionPolicy: "prudente", defaultMode: "simple" });
+  });
+
+  /**
+   * `trustedPublishers`, `revocation` et `developerMode` réglaient l'installation d'une extension
+   * en paquet signé (ADR 0012, 0021), que l'ADR 0091 §3 a retirée. Un poste administré peut encore
+   * les porter : le fichier reste accepté et le reste de sa configuration s'applique.
+   */
+  it("les clés de la distribution en paquet, retirées : ignorées, jamais refusées", async () => {
     const file = join(dir, "admin.json");
     await writeFile(
       file,
       JSON.stringify({
         permissionPolicy: "prudente",
-        defaultMode: "simple",
+        allowedPrograms: ["dotnet"],
         trustedPublishers: [{ publisher: "tiers", keyId: "abc", publicKeyPem: "PEM", trustedUpdates: true }],
-        developerMode: false,
+        developerMode: true,
         revocation: { file: "/etc/agent-studio/revocation.json", rootPublicKeyPem: "ROOT" },
       }),
     );
     const c = await loadAdminConfig(file);
-    expect(c.source).toBe(file);
-    expect(c).toMatchObject({ permissionPolicy: "prudente", defaultMode: "simple" });
-    expect(c.trustedPublishers).toHaveLength(1);
-    expect(c.revocation).toEqual({ file: "/etc/agent-studio/revocation.json", rootPublicKeyPem: "ROOT" });
+    expect(c.error).toBeUndefined();
+    expect(c).toMatchObject({ permissionPolicy: "prudente", allowedPrograms: ["dotnet"] });
+    for (const k of ["trustedPublishers", "developerMode", "revocation"]) expect(c).not.toHaveProperty(k);
   });
 
   it("ancienne forme (`profile`) : la politique et le mode qu'elle donnait sont gardés, le rôle ne sert plus à rien d'autre", async () => {
