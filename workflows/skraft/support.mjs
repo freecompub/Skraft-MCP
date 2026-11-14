@@ -1,7 +1,7 @@
 // Converti en JavaScript le 2026-10-10 depuis extensions/skraft-workflow/src/support.ts (ADR 0055).
 // Repris de extensions/skraft/src/effects.ts et config.ts (2026-10-08) : skraft-workflow est
 // indépendante de skraft et n'en importe rien.
-import { empreinte } from "@agent-studio/workflow";
+import { empreinte } from "@skraft-mcp/workflow";
 /** Empreinte sha256 d'un contenu, en hexadécimal : calcul pur fourni par la plateforme. */
 export const sha256 = (texte) => empreinte(texte).slice("sha256:".length);
 /** Recrée l'arborescence de la story (ADR 0037) : Git ne suit pas les dossiers vides. */

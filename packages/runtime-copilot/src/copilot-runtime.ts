@@ -1,5 +1,5 @@
 import type { ModelInfo, SessionConfigBase } from "@github/copilot-sdk";
-import type { AgentEvent, AgentRuntime, AgentSession, AgentSessionConfig, Logger, ToolCallRequest } from "@agent-studio/core";
+import type { AgentEvent, AgentRuntime, AgentSession, AgentSessionConfig, Logger, ToolCallRequest } from "@skraft-mcp/core";
 import { mapSessionEvent } from "./events/map-session-event.js";
 import { createPermissionHandler } from "./permissions/permission-handler.js";
 import type { CopilotClientPort, CopilotSessionPort } from "./protocols.js";

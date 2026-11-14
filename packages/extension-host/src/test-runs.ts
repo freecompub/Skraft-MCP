@@ -1,8 +1,8 @@
 import { isAbsolute, relative, resolve, sep } from "node:path";
-import { matchesAnyIgnoringCase, type Clock, type Evidence, type EvidenceStore, type IdGenerator, type ToolCallGuard, type ToolSpec } from "@agent-studio/core";
-import type { EvidenceTag } from "@agent-studio/extension-api";
-import { fingerprintFiles, type StackAdapter, type TestRun } from "@agent-studio/stack-adapters";
-import type { Workspace } from "@agent-studio/workspace";
+import { matchesAnyIgnoringCase, type Clock, type Evidence, type EvidenceStore, type IdGenerator, type ToolCallGuard, type ToolSpec } from "@skraft-mcp/core";
+import type { EvidenceTag } from "@skraft-mcp/extension-api";
+import { fingerprintFiles, type StackAdapter, type TestRun } from "@skraft-mcp/stack-adapters";
+import type { Workspace } from "@skraft-mcp/workspace";
 
 export interface TestRunServiceDeps {
   workspace: Workspace;

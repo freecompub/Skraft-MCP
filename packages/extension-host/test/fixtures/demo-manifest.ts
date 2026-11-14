@@ -1,4 +1,4 @@
-import type { ExtensionManifest } from "@agent-studio/extension-api";
+import type { ExtensionManifest } from "@skraft-mcp/extension-api";
 
 /** Sans git:commit : la commande « commit » doit être refusée (D11). */
 export const DEMO_MANIFEST: ExtensionManifest = {

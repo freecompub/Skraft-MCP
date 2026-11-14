@@ -1,11 +1,11 @@
-import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, MemoryTaskSessionStore, ScriptedRuntime, sequentialIds } from "@agent-studio/core/testing";
-import { manifest as tddManifest, tddExtension } from "@agent-studio/ext-tdd";
-import { MemoryTaskStore } from "@agent-studio/task-engine";
-import type { Workspace } from "@agent-studio/workspace";
+import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, MemoryTaskSessionStore, ScriptedRuntime, sequentialIds } from "@skraft-mcp/core/testing";
+import { manifest as tddManifest, tddExtension } from "@skraft-mcp/ext-tdd";
+import { MemoryTaskStore } from "@skraft-mcp/task-engine";
+import type { Workspace } from "@skraft-mcp/workspace";
 import { chmod, cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { createUsageRecorder } from "@agent-studio/core";
+import { createUsageRecorder } from "@skraft-mcp/core";
 import { describe, expect, it } from "vitest";
 import type { InteractionDto, TaskCardDto } from "../src/dto.js";
 import { workspaceServicesFactory } from "../src/workspace-services.js";

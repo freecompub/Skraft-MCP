@@ -1,29 +1,29 @@
 {
-  "name": "@agent-studio/mcp-skraft",
+  "name": "@skraft-mcp/serveur",
   "version": "0.0.0",
   "private": true,
   "license": "GPL-3.0-or-later",
   "type": "module",
   "dependencies": {
-    "@agent-studio/core": "workspace:*",
-    "@agent-studio/extension-host": "workspace:*",
-    "@agent-studio/github-auth": "workspace:*",
-    "@agent-studio/project-services": "workspace:*",
-    "@agent-studio/runtime-claude": "workspace:*",
-    "@agent-studio/runtime-copilot": "workspace:*",
-    "@agent-studio/stack-adapters": "workspace:*",
-    "@agent-studio/workflow": "workspace:*",
-    "@agent-studio/workspace": "workspace:*",
+    "@skraft-mcp/core": "workspace:*",
+    "@skraft-mcp/extension-host": "workspace:*",
+    "@skraft-mcp/github-auth": "workspace:*",
+    "@skraft-mcp/project-services": "workspace:*",
+    "@skraft-mcp/runtime-claude": "workspace:*",
+    "@skraft-mcp/runtime-copilot": "workspace:*",
+    "@skraft-mcp/stack-adapters": "workspace:*",
+    "@skraft-mcp/workflow": "workspace:*",
+    "@skraft-mcp/workspace": "workspace:*",
     "@github/copilot-sdk": "1.0.14",
     "@modelcontextprotocol/sdk": "1.32.2",
     "esbuild": "^0.28.2",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@agent-studio/task-engine": "workspace:*"
+    "@skraft-mcp/task-engine": "workspace:*"
   },
   "bin": {
-    "agent-studio-mcp-skraft": "dist/main.mjs"
+    "skraft-mcp": "dist/main.mjs"
   },
   "scripts": {
     "build": "node scripts/build.mjs",

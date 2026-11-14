@@ -4,7 +4,7 @@
 * ratification des ADR. Reproduit le réducteur de skraft ; les écarts du §13 de `docs/09` ne sont
 * pas tranchés ici.
 */
-import { correspond as matchesAny, essayer, PanneEnvironnement } from "@agent-studio/workflow";
+import { correspond as matchesAny, essayer, PanneEnvironnement } from "@skraft-mcp/workflow";
 import { ecrireLeRegistre, releverLesDefauts } from "./registre.mjs";
 import { avecStory, conventionAdr, ligneNumerotation, motifsNumerosPris, numeroAdr, numerotationAdrs, parseAdr, setAdrStatus, storyDe, suitLaConvention } from "./adr.mjs";
 import { checkDesign, matriceDeCoherence, matriceMarkdown, ligneNomsDuModele, MODEL_DOCS, routerMotifsDeDesign } from "./design.mjs";

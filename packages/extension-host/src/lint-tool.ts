@@ -1,5 +1,5 @@
-import type { ToolSpec } from "@agent-studio/core";
-import type { LintReport } from "@agent-studio/stack-adapters";
+import type { ToolSpec } from "@skraft-mcp/core";
+import type { LintReport } from "@skraft-mcp/stack-adapters";
 
 /**
  * Outil `run_lint` : le linter **du projet**, accessible à l'agent pendant son travail.

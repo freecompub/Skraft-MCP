@@ -1,5 +1,5 @@
 /** Extension tierce de démonstration (« tiers.lint ») : compte les fichiers TypeScript du projet. */
-import type { ExtensionModule } from "@agent-studio/extension-api";
+import type { ExtensionModule } from "@skraft-mcp/extension-api";
 
 const lint: ExtensionModule = {
   activate(ctx) {

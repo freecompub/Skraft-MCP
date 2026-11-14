@@ -3,7 +3,7 @@
  * liée à l'issue (« Closes #n »), sur la branche par défaut du dépôt. C'est une publication : l'appelant
  * l'a fait accepter par l'utilisateur avant. `git` et `gh` sont injectés ; sans shell.
  */
-import type { RefIssue } from "@agent-studio/github-auth";
+import type { RefIssue } from "@skraft-mcp/github-auth";
 
 export type Executer = (cmd: string, args: string[]) => Promise<{ code: number; sortie: string }>;
 

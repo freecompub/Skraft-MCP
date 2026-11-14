@@ -1,4 +1,4 @@
-import type { TaskEvent } from "@agent-studio/task-engine";
+import type { TaskEvent } from "@skraft-mcp/task-engine";
 import type { Step, TddEffect, TddEvent, TddInput, TddState } from "./model.js";
 
 export type Ev = TaskEvent<TddEvent>;

@@ -1,4 +1,4 @@
-import { EnvFailureError, WorkDefectError } from "@agent-studio/core";
+import { EnvFailureError, WorkDefectError } from "@skraft-mcp/core";
 import type { MessageChannelLike, RpcMessage } from "./protocol.js";
 
 export type RpcHandler = (args: unknown[], ctx: { signal: AbortSignal }) => Promise<unknown>;

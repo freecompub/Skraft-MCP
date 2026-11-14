@@ -1,4 +1,4 @@
-import type { ExtensionManifest } from "@agent-studio/extension-api";
+import type { ExtensionManifest } from "@skraft-mcp/extension-api";
 import { z } from "zod";
 import { satisfies } from "./semver.js";
 

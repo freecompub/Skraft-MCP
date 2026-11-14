@@ -1,5 +1,5 @@
-import { LANCEURS_BDD, LECTEURS_PAR_SECTION, type ParseOptions } from "@agent-studio/stack-adapters";
-import type { Logger, TaskAgentRunner } from "@agent-studio/core";
+import { LANCEURS_BDD, LECTEURS_PAR_SECTION, type ParseOptions } from "@skraft-mcp/stack-adapters";
+import type { Logger, TaskAgentRunner } from "@skraft-mcp/core";
 import type { Decouverte, DemandeDecouverte, ReponseDecouverte } from "./decouverte-de-pile.js";
 
 /**

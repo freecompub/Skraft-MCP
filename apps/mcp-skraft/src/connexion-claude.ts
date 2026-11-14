@@ -3,8 +3,8 @@
  * avec l'application). Elle est interactive (navigateur) : le serveur ne la mène pas, il dit quoi
  * taper. Aucun secret ne passe par ici.
  */
-import type { AgentRuntime } from "@agent-studio/core";
-import { etatConnexionClaude, type LanceurClaude } from "@agent-studio/runtime-claude";
+import type { AgentRuntime } from "@skraft-mcp/core";
+import { etatConnexionClaude, type LanceurClaude } from "@skraft-mcp/runtime-claude";
 import { runtimeParesseux } from "./connexion.js";
 
 export function createConnexionClaude(d: Pick<LanceurClaude, "statut">) {

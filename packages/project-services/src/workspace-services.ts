@@ -27,8 +27,8 @@ import {
   type IdGenerator,
   type Logger,
   type ToolSpec,
-} from "@agent-studio/core";
-import type { ExtensionManifest } from "@agent-studio/extension-api";
+} from "@skraft-mcp/core";
+import type { ExtensionManifest } from "@skraft-mcp/extension-api";
 import {
   activateInProcess,
   activateIsolated,
@@ -36,7 +36,7 @@ import {
   type IsolatedExtension,
   type LoadedExtension,
   type ProcessLauncher,
-} from "@agent-studio/extension-host";
+} from "@skraft-mcp/extension-host";
 import {
   createNodeProcessRunner,
   createComposedAdapter,
@@ -59,16 +59,16 @@ import {
   type Composant,
   type StackProfile,
   type StackAdapter,
-} from "@agent-studio/stack-adapters";
-import { createJsonTaskStore, createTaskEngine, type TaskRecord, type TaskStore } from "@agent-studio/task-engine";
-import type { Workspace } from "@agent-studio/workspace";
-import type { ConfirmAnswer, UserConfirmer } from "@agent-studio/core";
+} from "@skraft-mcp/stack-adapters";
+import { createJsonTaskStore, createTaskEngine, type TaskRecord, type TaskStore } from "@skraft-mcp/task-engine";
+import type { Workspace } from "@skraft-mcp/workspace";
+import type { ConfirmAnswer, UserConfirmer } from "@skraft-mcp/core";
 import { createProgrammesAcceptesFichier, type ProgrammesAcceptes } from "./programmes-acceptes.js";
 import { createDecouverteParAgent } from "./decouverte-de-pile-agent.js";
 import type { Decouverte } from "./decouverte-de-pile.js";
 import type { InteractionDto, TaskCardDto } from "./dto.js";
 import type { SourcePile, WorkspaceServices, WorkspaceServicesFactory } from "./protocols.js";
-import { activerWorkflow, createJsonAccordStore, lireEntrees, rapportDuWorkflow, resumeAccord, syntaxeCommande, trouverWorkflows, type AccordStore, type EtatWorkflow, type WorkflowTrouve } from "@agent-studio/workflow";
+import { activerWorkflow, createJsonAccordStore, lireEntrees, rapportDuWorkflow, resumeAccord, syntaxeCommande, trouverWorkflows, type AccordStore, type EtatWorkflow, type WorkflowTrouve } from "@skraft-mcp/workflow";
 import { createStackCommand, type ProfilDeclare, type StackCommandDeps } from "./stack-command.js";
 
 /** Extension à activer : dans le principal (tests, J2) ou dans son propre processus (J4). */

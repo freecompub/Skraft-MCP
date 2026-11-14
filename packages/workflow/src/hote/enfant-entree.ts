@@ -1,5 +1,5 @@
 /** Point d'entrée du processus enfant d'un workflow (bundle ESM autonome), comme celui des extensions. */
-import type { MessageChannelLike, RpcMessage } from "@agent-studio/extension-host";
+import type { MessageChannelLike, RpcMessage } from "@skraft-mcp/extension-host";
 import { lancerEnfantWorkflow } from "./enfant.js";
 
 interface ParentPort {

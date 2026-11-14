@@ -8,7 +8,7 @@
 */
 import { ecrireLeRegistre, releverLesDefauts } from "./registre.mjs";
 import { leconsPour } from "./lecons.mjs";
-import { disjoncte, memeRefus, problemesTestsExistants, couvertureDuDiff, couchesManquantes as coreFilesMissing, correspond as matchesAny, Escalade, lireBarreDeQualite as parseQualityBar, PanneEnvironnement, SauterPhase, TourInterrompu } from "@agent-studio/workflow";
+import { disjoncte, memeRefus, problemesTestsExistants, couvertureDuDiff, couchesManquantes as coreFilesMissing, correspond as matchesAny, Escalade, lireBarreDeQualite as parseQualityBar, PanneEnvironnement, SauterPhase, TourInterrompu } from "@skraft-mcp/workflow";
 import { buildBrief, ecrirePassation, fichierDePassation, lignePile } from "./brief.mjs";
 import { causeDEchec, optionsSelonLaCause, sansTestsObsoletes, texteDeLaCause, checkCoverage, checkDependencies, checkFormat, checkLint, checkMutation, restreindreAuChangement, checkRedGreenSequence, concerns, defaultDependencyRules, lignesSousLeSeuil, mutantsSousLeSeuil, planScenarios, sansLignesExemptees } from "./deliver.mjs";
 import { levelEffects } from "./difficulty.mjs";

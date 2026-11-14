@@ -3,7 +3,7 @@
 * Phase DISTILL en workflow : scénarios et tests d'acceptance, porte gherkin, porte valeurs, RED
 * d'acceptance exécuté par le code (D20), puis gel des tests d'acceptance (D21) et revue.
 */
-import { correspond as matchesAny, essayer } from "@agent-studio/workflow";
+import { correspond as matchesAny, essayer } from "@skraft-mcp/workflow";
 import { checkAcceptanceRed, checkPlans, checkValues, planDeTest, testsDeLaStory } from "./distill.mjs";
 import { checkGherkin, checkTitresBdd, dossiersDesFeatures, gherkinDeLaStory, gherkinDuDisque } from "./gherkin.mjs";
 import { ecrireLeRegistre, releverLesDefauts } from "./registre.mjs";

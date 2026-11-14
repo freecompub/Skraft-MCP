@@ -1,5 +1,5 @@
 import type { PermissionRequest } from "@github/copilot-sdk";
-import type { ToolCallGuard, ToolCallRequest } from "@agent-studio/core";
+import type { ToolCallGuard, ToolCallRequest } from "@skraft-mcp/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createPermissionHandler } from "../src/permissions/permission-handler.js";
 import { toToolCallRequest } from "../src/permissions/to-tool-call-request.js";

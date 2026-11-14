@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { EnvFailureError, TurnTimeoutError, WorkDefectError } from "../src/errors.js";
-import { matchesAny } from "@agent-studio/stack-adapters";
+import { matchesAny } from "@skraft-mcp/stack-adapters";
 
 describe("Erreurs exposées aux extensions", () => {
   it("portent le nom attendu par l'hôte", () => {

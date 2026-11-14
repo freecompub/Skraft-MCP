@@ -7,7 +7,7 @@
 import { randomBytes } from "node:crypto";
 import { createServer, type IncomingMessage } from "node:http";
 import type { AddressInfo } from "node:net";
-import { decideSafely, type GuardDecision, type ToolCallGuard, type ToolCallRequest, type ToolSpec } from "@agent-studio/core";
+import { decideSafely, type GuardDecision, type ToolCallGuard, type ToolCallRequest, type ToolSpec } from "@skraft-mcp/core";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";

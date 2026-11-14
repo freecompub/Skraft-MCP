@@ -8,7 +8,7 @@
  *    vienne de l'issue, de ses commentaires ou de ses dépendances. Trois essais au plus.
  * Le format de story est celui du workflow, qu'on lit avec son propre code (`parseStory`).
  */
-import { bloqueursOuverts, lireRefIssue, rendreContexte, type RefIssue, type UsGithub } from "@agent-studio/github-auth";
+import { bloqueursOuverts, lireRefIssue, rendreContexte, type RefIssue, type UsGithub } from "@skraft-mcp/github-auth";
 import { extractLiterals, normalizeLiteral, parseStory, slugOf } from "../../../workflows/skraft/story.mjs";
 
 export interface GhLecteur {

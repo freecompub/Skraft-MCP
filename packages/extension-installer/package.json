@@ -1,5 +1,5 @@
 {
-  "name": "@agent-studio/extension-installer",
+  "name": "@skraft-mcp/extension-installer",
   "version": "0.0.0",
   "private": true,
   "license": "GPL-3.0-or-later",
@@ -8,9 +8,9 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@agent-studio/extension-api": "workspace:*",
-    "@agent-studio/extension-manifest": "workspace:*",
-    "@agent-studio/extension-packaging": "workspace:*",
+    "@skraft-mcp/extension-api": "workspace:*",
+    "@skraft-mcp/extension-manifest": "workspace:*",
+    "@skraft-mcp/extension-packaging": "workspace:*",
     "zod": "^4.6.5"
   }
 }

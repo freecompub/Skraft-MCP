@@ -3,7 +3,7 @@
  * rejoue le journal à la demande du principal. Il n'exécute aucun effet : les appels `w.*` sont
  * rendus au principal comme effets à exécuter (`docs/09` §6).
  */
-import { createRpcEndpoint, type MessageChannelLike, type RpcEndpoint } from "@agent-studio/extension-host";
+import { createRpcEndpoint, type MessageChannelLike, type RpcEndpoint } from "@skraft-mcp/extension-host";
 import type { EntreeOutil, EtatWorkflow, OutilsWorkflow, ScriptWorkflow } from "../protocols.js";
 import { rejouer } from "../rejeu.js";
 import { evaluerScript } from "./bac-a-sable.js";

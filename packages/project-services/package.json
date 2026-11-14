@@ -1,5 +1,5 @@
 {
-  "name": "@agent-studio/project-services",
+  "name": "@skraft-mcp/project-services",
   "version": "0.0.0",
   "private": true,
   "license": "GPL-3.0-or-later",
@@ -9,18 +9,18 @@
     "./dto": "./src/dto.ts"
   },
   "dependencies": {
-    "@agent-studio/core": "workspace:*",
-    "@agent-studio/extension-api": "workspace:*",
-    "@agent-studio/extension-host": "workspace:*",
-    "@agent-studio/extension-packaging": "workspace:*",
-    "@agent-studio/stack-adapters": "workspace:*",
-    "@agent-studio/task-engine": "workspace:*",
-    "@agent-studio/workflow": "workspace:*",
-    "@agent-studio/workspace": "workspace:*",
+    "@skraft-mcp/core": "workspace:*",
+    "@skraft-mcp/extension-api": "workspace:*",
+    "@skraft-mcp/extension-host": "workspace:*",
+    "@skraft-mcp/extension-packaging": "workspace:*",
+    "@skraft-mcp/stack-adapters": "workspace:*",
+    "@skraft-mcp/task-engine": "workspace:*",
+    "@skraft-mcp/workflow": "workspace:*",
+    "@skraft-mcp/workspace": "workspace:*",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@agent-studio/ext-tdd": "workspace:*",
-    "@agent-studio/extension-installer": "workspace:*"
+    "@skraft-mcp/ext-tdd": "workspace:*",
+    "@skraft-mcp/extension-installer": "workspace:*"
   }
 }

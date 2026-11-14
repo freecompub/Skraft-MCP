@@ -23,7 +23,7 @@ export function evaluerScript(code: string, bib: Bibliotheque = bibliothequeParD
   vm.runInContext(PREAMBULE, ctx);
   const module = { exports: {} as Record<string, unknown> };
   const exiger = (nom: string) => {
-    if (nom === "@agent-studio/workflow") return bib;
+    if (nom === "@skraft-mcp/workflow") return bib;
     throw new Error(`import interdit dans un workflow : ${nom}`);
   };
   const fabrique = vm.runInContext(`(function (module, exports, require) {\n${code}\n})`, ctx, { filename: "workflow.mjs", timeout: 5_000 }) as (

@@ -1,4 +1,4 @@
-import { EnvFailureError } from "@agent-studio/extension-api";
+import { EnvFailureError } from "@skraft-mcp/extension-api";
 import { describe, expect, it } from "vitest";
 import { agir, essayer } from "../src/aides.js";
 import { Escalade, PanneEnvironnement, SauterPhase, TourInterrompu } from "../src/erreurs.js";

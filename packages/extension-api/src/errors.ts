@@ -1,8 +1,8 @@
 /**
  * Erreurs et utilitaires qu'une extension peut employer sans dépendre du cœur (D10).
  *
- * Ces classes sont définies ici, et non dans `@agent-studio/core`, parce qu'une extension
- * tierce ne doit connaître que `@agent-studio/extension-api`. Le cœur les réexporte.
+ * Ces classes sont définies ici, et non dans `@skraft-mcp/core`, parce qu'une extension
+ * tierce ne doit connaître que `@skraft-mcp/extension-api`. Le cœur les réexporte.
  *
  * Elles franchissent la frontière de processus **par leur nom** : l'hôte sérialise l'erreur et
  * la reconstruit d'après `name` (`rpc/endpoint.ts`). Ce nom fait donc partie du contrat et ne

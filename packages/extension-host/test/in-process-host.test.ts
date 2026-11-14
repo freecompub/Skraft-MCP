@@ -1,9 +1,9 @@
-import { createHookRegistry, createInteractionService, createRegistry, type TaskAgentRunner, type TaskAgentSpec } from "@agent-studio/core";
-import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, RecordingCheckpoints, sequentialIds } from "@agent-studio/core/testing";
-import type { ExtensionContext, ExtensionManifest, ExtensionModule } from "@agent-studio/extension-api";
-import type { StackAdapter } from "@agent-studio/stack-adapters";
-import { createTaskEngine, MemoryTaskStore } from "@agent-studio/task-engine";
-import type { Workspace } from "@agent-studio/workspace";
+import { createHookRegistry, createInteractionService, createRegistry, type TaskAgentRunner, type TaskAgentSpec } from "@skraft-mcp/core";
+import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, RecordingCheckpoints, sequentialIds } from "@skraft-mcp/core/testing";
+import type { ExtensionContext, ExtensionManifest, ExtensionModule } from "@skraft-mcp/extension-api";
+import type { StackAdapter } from "@skraft-mcp/stack-adapters";
+import { createTaskEngine, MemoryTaskStore } from "@skraft-mcp/task-engine";
+import type { Workspace } from "@skraft-mcp/workspace";
 import { describe, expect, it } from "vitest";
 import { activateInProcess, type HostDeps } from "../src/in-process-host.js";
 import { PermissionDeniedError } from "../src/permissions.js";
@@ -187,7 +187,7 @@ describe("Hôte d'extension en processus", () => {
         },
       };
       const env = setup(manifest);
-      let tools: import("@agent-studio/core").ToolSpec[] = [];
+      let tools: import("@skraft-mcp/core").ToolSpec[] = [];
       let prompt = "";
       env.deps.agents = {
         run: async (spec, _p, opts) => {
@@ -342,7 +342,7 @@ describe("Hôte d'extension en processus", () => {
   });
 
   it("readOnly : écriture refusée sur les motifs gelés (@stack:* résolus), le reste du périmètre reste permis", async () => {
-    let seen: import("@agent-studio/core").ToolCallGuard[] = [];
+    let seen: import("@skraft-mcp/core").ToolCallGuard[] = [];
     const env = setup();
     env.deps.agents = { releaseTask: async () => {}, releaseRoles: async () => {}, releaseAll: async () => {}, run: async (_s, _p, opts) => ((seen = opts?.guards ?? []), { output: { summary: "", files: [] } as never }) };
     let ctx!: ExtensionContext;

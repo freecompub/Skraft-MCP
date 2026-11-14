@@ -1,10 +1,10 @@
-import { createHookRegistry, createInteractionService, createRegistry, createTaskAgentRunner } from "@agent-studio/core";
-import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, RecordingCheckpoints, ScriptedRuntime, sequentialIds } from "@agent-studio/core/testing";
-import type { ExtensionContext, ExtensionManifest } from "@agent-studio/extension-api";
-import type { StackAdapter, TestRun } from "@agent-studio/stack-adapters";
-import { createTaskEngine, MemoryTaskStore } from "@agent-studio/task-engine";
+import { createHookRegistry, createInteractionService, createRegistry, createTaskAgentRunner } from "@skraft-mcp/core";
+import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, RecordingCheckpoints, ScriptedRuntime, sequentialIds } from "@skraft-mcp/core/testing";
+import type { ExtensionContext, ExtensionManifest } from "@skraft-mcp/extension-api";
+import type { StackAdapter, TestRun } from "@skraft-mcp/stack-adapters";
+import { createTaskEngine, MemoryTaskStore } from "@skraft-mcp/task-engine";
 import { readOnlyGuard } from "../src/test-runs.js";
-import type { Workspace } from "@agent-studio/workspace";
+import type { Workspace } from "@skraft-mcp/workspace";
 import { describe, expect, it } from "vitest";
 import { activateInProcess } from "../src/in-process-host.js";
 import { summarizeRun } from "../src/test-runs.js";

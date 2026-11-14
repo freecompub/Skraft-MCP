@@ -82,7 +82,7 @@ coexistent pendant la migration.
 
 ```ts
 // extensions/skraft/workflows/livrer-story.ts
-import { workflow, essayer } from "@agent-studio/workflow";
+import { workflow, essayer } from "@skraft-mcp/workflow";
 import { parseStory, slugOf } from "../src/story.js";                 // fonctions pures existantes
 import { levelEffects } from "../src/difficulty.js";
 import { checkResearch } from "../src/research.js";
@@ -248,7 +248,7 @@ contrat actuel `TaskDefinition` (`packages/task-engine/src/protocols.ts`) :
 Le rejeu n'est correct que si le script fait la même chose à chaque passage. Le fichier tourne dans
 le processus isolé de l'extension (D9), avec retirés ou figés : `Date`, `Math.random`, `crypto`,
 `setTimeout`, `setInterval`, `fs`, le réseau, `process`. Seuls sont importables les modules de
-l'extension et `@agent-studio/workflow`.
+l'extension et `@skraft-mcp/workflow`.
 
 Ce qui échapperait quand même est **détecté** : l'appel rejoué ne correspond plus au journal, et la
 tâche s'arrête en le disant, au lieu de diverger en silence.
@@ -574,7 +574,7 @@ Chaque étape a son critère de sortie ; on ne passe pas à la suivante sans lui
 - **Coût du rejeu** des fonctions pures lourdes (§6.6) : à mesurer.
 - **Déterminisme des dépendances** : une bibliothèque importée par le script qui lit l'heure ou le
   hasard serait détectée au rejeu, mais tard. Les imports autorisés sont limités (§6.4).
-- **API publique** : `@agent-studio/workflow` fait partie de l'API `ctx` versionnée (D13) ; elle
+- **API publique** : `@skraft-mcp/workflow` fait partie de l'API `ctx` versionnée (D13) ; elle
   ne se fige qu'après deux extensions réelles migrées (D14).
 - **D15** (JavaScript/TypeScript seul, OUVERT) : le workflow est en JavaScript ; rien ne change
   pour cette question.

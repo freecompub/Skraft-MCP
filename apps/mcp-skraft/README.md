@@ -11,7 +11,7 @@ chaque phase revue par des lentilles. Le travail est commité sur la branche `sk
 ## Construire
 
 ```bash
-pnpm --filter @agent-studio/mcp-skraft build   # dist/main.mjs, dist/workflow-child.mjs, dist/workflows/skraft/
+pnpm --filter @skraft-mcp/serveur build   # dist/main.mjs, dist/workflow-child.mjs, dist/workflows/skraft/
 ```
 
 Le workflow est **copié** dans `dist/` au build : toute modification de `workflows/skraft/` demande de
@@ -35,8 +35,8 @@ et pose les commandes `/skraft-…` :
 
 ```bash
 pnpm install
-pnpm --filter @agent-studio/mcp-skraft deployer
-pnpm --filter @agent-studio/mcp-skraft deployer -- --env AGENT_STUDIO_ADMIN_CONFIG=/chemin/admin.json
+pnpm --filter @skraft-mcp/serveur deployer
+pnpm --filter @skraft-mcp/serveur deployer -- --env AGENT_STUDIO_ADMIN_CONFIG=/chemin/admin.json
 ```
 
 | Option | Effet |
@@ -48,7 +48,7 @@ pnpm --filter @agent-studio/mcp-skraft deployer -- --env AGENT_STUDIO_ADMIN_CONF
 | `--projet <dossier>` | Les commandes dans `<dossier>/.claude/skills` plutôt que pour l'utilisateur. |
 | `--npm <dossier>` | Prépare le paquet npm (serveur construit, commandes, licence) et le compresse (`npm pack`). |
 | `--npm <dossier> --publier` | … et le publie (`npm publish --access public`). Rien n'est publié sans elle. |
-| `--nom <nom>` | Nom du paquet npm, si `@agent-studio/mcp-skraft` n'est pas disponible. |
+| `--nom <nom>` | Nom du paquet npm, si `@skraft-mcp/serveur` n'est pas disponible. |
 | `--desinstaller` | Retire l'inscription du serveur dans chaque client, et nos commandes `/skraft-…`. |
 | `--desinstaller --forcer` | Retire aussi une inscription `skraft` qui pointe ailleurs (un autre dépôt, le paquet npm). |
 | `--desinstaller --donnees` | Efface aussi `~/.agent-studio/mcp-skraft` (runs, journaux, dépôts et programmes acceptés), et lui seul. |
@@ -103,9 +103,9 @@ l'utilisateur.
 Les installer, pour Copilot CLI et Claude Code à la fois :
 
 ```bash
-pnpm --filter @agent-studio/mcp-skraft commandes                     # ~/.claude/skills et ~/.copilot/skills
-pnpm --filter @agent-studio/mcp-skraft commandes -- --projet <dossier> # <dossier>/.claude/skills, lu par les deux
-pnpm --filter @agent-studio/mcp-skraft commandes -- --retirer          # retire nos liens, et eux seuls
+pnpm --filter @skraft-mcp/serveur commandes                     # ~/.claude/skills et ~/.copilot/skills
+pnpm --filter @skraft-mcp/serveur commandes -- --projet <dossier> # <dossier>/.claude/skills, lu par les deux
+pnpm --filter @skraft-mcp/serveur commandes -- --retirer          # retire nos liens, et eux seuls
 ```
 
 Le script pose des **liens** vers `skills/` (des jonctions sous Windows), pas des copies : corriger
@@ -334,7 +334,7 @@ serveur construit, donne l'accord, répond avec le répondeur du banc, et affich
 Il consomme de vraies requêtes.
 
 ```bash
-pnpm --filter @agent-studio/mcp-skraft build
+pnpm --filter @skraft-mcp/serveur build
 PATH=$HOME/.dotnet:$PATH DOTNET_ROOT=$HOME/.dotnet pnpm tsx scripts/essai-mcp-skraft.ts \
   https://github.com/freecompub/exemple-dotnet-tdd.git stories/US-2.md docs/runs/reponses-us-2.json \
   --runtime=claude --pile=pile.yaml [--base=<commit>] [--auto]

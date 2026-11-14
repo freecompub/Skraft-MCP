@@ -1,4 +1,4 @@
-import { manifest as tddManifest } from "@agent-studio/ext-tdd";
+import { manifest as tddManifest } from "@skraft-mcp/ext-tdd";
 import { describe, expect, it } from "vitest";
 import { validateManifest } from "../src/validate.js";
 

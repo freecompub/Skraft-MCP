@@ -4,7 +4,7 @@
  * l'hôte. On ne suppose rien du client : il dit au démarrage s'il sait le faire. S'il ne le dit pas,
  * ou si la question n'aboutit pas, la réponse est « non » — le refus explique alors quoi corriger.
  */
-import type { ConfirmAnswer, UserConfirmer } from "@agent-studio/core";
+import type { ConfirmAnswer, UserConfirmer } from "@skraft-mcp/core";
 import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
 
 export type ClientQuiDemande = Pick<Server, "getClientCapabilities" | "elicitInput">;

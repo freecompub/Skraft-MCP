@@ -3,7 +3,7 @@
  * mener la connexion lui-même (elle est interactive) : il dit quoi taper. Le runtime n'est démarré
  * qu'une fois connecté.
  */
-import type { AgentRuntime } from "@agent-studio/core";
+import type { AgentRuntime } from "@skraft-mcp/core";
 import { describe, expect, it } from "vitest";
 import { createConnexionClaude } from "../src/connexion-claude.js";
 

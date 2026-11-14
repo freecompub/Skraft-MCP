@@ -7,14 +7,14 @@
 import { createHash, randomUUID } from "node:crypto";
 import { appendFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { createJsonLogger, createLazyRuntime, createTaskAgentRunner } from "@agent-studio/core";
-import { createNodeLauncher } from "@agent-studio/extension-host";
-import { createGhAuth, createGhIssues, createNodeCommandRunner, createNodeProcessSpawner } from "@agent-studio/github-auth";
-import { defaultAdminConfigPath, loadAdminConfig, workspaceServicesFactory } from "@agent-studio/project-services";
-import { createClaudeRuntime, createLanceurClaude, MODELES_CLAUDE } from "@agent-studio/runtime-claude";
-import { createCopilotClient, createCopilotRuntime } from "@agent-studio/runtime-copilot";
-import { createTypeScriptAdapter } from "@agent-studio/stack-adapters";
-import { cliGitRunnerFactory, openWorkspace } from "@agent-studio/workspace";
+import { createJsonLogger, createLazyRuntime, createTaskAgentRunner } from "@skraft-mcp/core";
+import { createNodeLauncher } from "@skraft-mcp/extension-host";
+import { createGhAuth, createGhIssues, createNodeCommandRunner, createNodeProcessSpawner } from "@skraft-mcp/github-auth";
+import { defaultAdminConfigPath, loadAdminConfig, workspaceServicesFactory } from "@skraft-mcp/project-services";
+import { createClaudeRuntime, createLanceurClaude, MODELES_CLAUDE } from "@skraft-mcp/runtime-claude";
+import { createCopilotClient, createCopilotRuntime } from "@skraft-mcp/runtime-copilot";
+import { createTypeScriptAdapter } from "@skraft-mcp/stack-adapters";
+import { cliGitRunnerFactory, openWorkspace } from "@skraft-mcp/workspace";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { cheminConfiguration, lireConfiguration } from "./config.js";
 import { createConnexion } from "./connexion.js";
@@ -134,7 +134,7 @@ export async function assemblerServeur(o: OptionsAssemblage): Promise<{ ok: true
         r(err ? { code: typeof err.code === "number" ? err.code : 1, sortie: `${stderr}${stdout}` } : { code: 0, sortie: stdout }),
       ),
     );
-  const publier = async (q: { root: string; ref: import("@agent-studio/github-auth").RefIssue; branche: string; bilan: string }) => {
+  const publier = async (q: { root: string; ref: import("@skraft-mcp/github-auth").RefIssue; branche: string; bilan: string }) => {
     const aide = [`-c`, `credential.https://${q.ref.hostname}.helper=`, `-c`, `credential.https://${q.ref.hostname}.helper=!gh auth git-credential`];
     const avecAide: Executer = (cmd, args) => executer(cmd, cmd === "git" ? [...aide, ...args] : args);
     const titre = (await executer("gh", ["api", "--hostname", q.ref.hostname, `repos/${q.ref.owner}/${q.ref.repo}/issues/${q.ref.numero}`, "--jq", ".title"])).sortie.trim();

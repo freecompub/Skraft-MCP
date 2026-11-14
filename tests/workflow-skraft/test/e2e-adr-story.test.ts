@@ -5,7 +5,7 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ScriptedRuntime, type ScriptedBehavior } from "@agent-studio/core/testing";
+import { ScriptedRuntime, type ScriptedBehavior } from "@skraft-mcp/core/testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { renderAdr } from "../../../workflows/skraft/adr.mjs";
 import { answerQuestions, assemble, createProject, git, put, shutdownHosts, simulatedAgents, until } from "./support/harness.js";

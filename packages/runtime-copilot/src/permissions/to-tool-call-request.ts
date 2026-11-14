@@ -1,5 +1,5 @@
 import type { PermissionRequest } from "@github/copilot-sdk";
-import type { ToolCallRequest } from "@agent-studio/core";
+import type { ToolCallRequest } from "@skraft-mcp/core";
 
 /**
  * Normalise une demande de permission du SDK. On s'appuie sur les sortes de permission

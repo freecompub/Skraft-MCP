@@ -5,7 +5,7 @@
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { AgentEvent } from "@agent-studio/core";
+import type { AgentEvent } from "@skraft-mcp/core";
 import { describe, expect, it } from "vitest";
 import { argumentsDuTour, contexteLongPossible } from "../src/arguments.js";
 import { createTraducteur } from "../src/evenements.js";

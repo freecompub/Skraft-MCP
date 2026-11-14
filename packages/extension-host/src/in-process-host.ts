@@ -9,16 +9,16 @@ import type {
   TaskAgentRunner,
   ToolCallGuard,
   UsageRecorder,
-} from "@agent-studio/core";
-import type { ExtensionContext, ExtensionManifest, ExtensionModule } from "@agent-studio/extension-api";
-import { fingerprintFiles, type StackAdapter } from "@agent-studio/stack-adapters";
-import type { TaskEngine } from "@agent-studio/task-engine";
-import type { Workspace } from "@agent-studio/workspace";
-import { matchesAny } from "@agent-studio/core";
+} from "@skraft-mcp/core";
+import type { ExtensionContext, ExtensionManifest, ExtensionModule } from "@skraft-mcp/extension-api";
+import { fingerprintFiles, type StackAdapter } from "@skraft-mcp/stack-adapters";
+import type { TaskEngine } from "@skraft-mcp/task-engine";
+import type { Workspace } from "@skraft-mcp/workspace";
+import { matchesAny } from "@skraft-mcp/core";
 import { PermissionDeniedError, permissionChecker } from "./permissions.js";
 import { createTestRunService, readOnlyGuard, runTestsTool, testFreezeGuard } from "./test-runs.js";
 import { runLintTool } from "./lint-tool.js";
-import { listFilesTool, type ModelClass, type TraceStore } from "@agent-studio/core";
+import { listFilesTool, type ModelClass, type TraceStore } from "@skraft-mcp/core";
 import { extensionFileReader, loadAgentPrompts, loadSkillTool } from "./agent-prompts.js";
 
 /** Sortie des messages d'extension vers la conversation, origine comprise (D34). */
@@ -96,10 +96,10 @@ export async function activateInProcess(ext: LoadedExtension, deps: HostDeps): P
 
   const taskName = (name: string) => `${manifest.id}/${name}`;
   const declaredTools = new Map((manifest.contributes.tools ?? []).map((t) => [t.name, t]));
-  const extensionTools = new Map<string, import("@agent-studio/extension-api").ExtensionTool>();
+  const extensionTools = new Map<string, import("@skraft-mcp/extension-api").ExtensionTool>();
   const testRuns = createTestRunService(deps);
   /** Outils de l'extension déclarés par l'agent : exécutés par le code de l'extension (§5.4). */
-  const ownTools = (names: string[]): import("@agent-studio/core").ToolSpec[] =>
+  const ownTools = (names: string[]): import("@skraft-mcp/core").ToolSpec[] =>
     names
       .map((n) => extensionTools.get(n))
       .filter((t): t is NonNullable<typeof t> => !!t)
@@ -140,7 +140,7 @@ export async function activateInProcess(ext: LoadedExtension, deps: HostDeps): P
           return Object.fromEntries(await Promise.all(chemins.map(async (p) => [p, await deps.workspace.files.read(p)] as const)));
         };
         const empreinte = () => fingerprintFiles(deps.workspace.files, designes);
-        const outilsDeLAgent = (): import("@agent-studio/core").ToolSpec[] =>
+        const outilsDeLAgent = (): import("@skraft-mcp/core").ToolSpec[] =>
           ownTools(a.tools ?? []).map((t) => {
             if (!verif || t.name !== verif.outil) return t;
             const outil = extensionTools.get(t.name)!;
@@ -191,7 +191,7 @@ export async function activateInProcess(ext: LoadedExtension, deps: HostDeps): P
             ...(taskId && a.memoire !== "tour" ? { resumeKey: `${taskId}/${manifest.id}/${name}` } : {}),
             // Trace d'exécution (ADR 0032) : tout ce que ce tour échange, et pourquoi il s'arrête.
             ...(taskId ? { trace: { taskId, ...(phase ? { phase } : {}) } } : {}),
-            ...(deps.usage && taskId && phase ? { onUsage: (u: import("@agent-studio/core").UsageDelta) => void deps.usage!.add(taskId, phase, u).catch(() => undefined) } : {}),
+            ...(deps.usage && taskId && phase ? { onUsage: (u: import("@skraft-mcp/core").UsageDelta) => void deps.usage!.add(taskId, phase, u).catch(() => undefined) } : {}),
             ...(avantSortie ? { avantSortie } : {}),
             tools: (beat: () => void) => [
               ...outilsDeLAgent(),

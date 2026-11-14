@@ -1,5 +1,5 @@
 import { defineTool, type Tool } from "@github/copilot-sdk";
-import type { ToolSpec } from "@agent-studio/core";
+import type { ToolSpec } from "@skraft-mcp/core";
 
 /**
  * Nos outils sont exécutés par notre code : ils ne passent pas par l'invite de permission

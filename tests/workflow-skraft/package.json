@@ -1,16 +1,16 @@
 {
-  "name": "@agent-studio/tests-workflow-skraft",
+  "name": "@skraft-mcp/tests-workflow-skraft",
   "version": "0.0.0",
   "private": true,
   "license": "GPL-3.0-or-later",
   "type": "module",
   "devDependencies": {
-    "@agent-studio/core": "workspace:*",
-    "@agent-studio/extension-api": "workspace:*",
-    "@agent-studio/extension-host": "workspace:*",
-    "@agent-studio/stack-adapters": "workspace:*",
-    "@agent-studio/task-engine": "workspace:*",
-    "@agent-studio/workflow": "workspace:*",
-    "@agent-studio/workspace": "workspace:*"
+    "@skraft-mcp/core": "workspace:*",
+    "@skraft-mcp/extension-api": "workspace:*",
+    "@skraft-mcp/extension-host": "workspace:*",
+    "@skraft-mcp/stack-adapters": "workspace:*",
+    "@skraft-mcp/task-engine": "workspace:*",
+    "@skraft-mcp/workflow": "workspace:*",
+    "@skraft-mcp/workspace": "workspace:*"
   }
 }

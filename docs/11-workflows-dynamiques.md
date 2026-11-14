@@ -43,7 +43,7 @@ machine ou dans le projet, et qu'on lance par une commande ou que l'agent princi
   LICENSE             GPL-3.0-or-later (provenance skraft-plugin, ADR 0012)
 ```
 
-Le script n'importe que des fichiers **de son dossier** et `@agent-studio/workflow` (fourni par
+Le script n'importe que des fichiers **de son dossier** et `@skraft-mcp/workflow` (fourni par
 la plateforme : aides, erreurs et calculs purs, §8). Aucun autre module, aucun accès Node ;
 l'heure passe par `w.maintenant()`.
 
@@ -182,7 +182,7 @@ n'est vue qu'à la reprise suivante (le code déjà chargé continue).
   fait jusqu'ici). Deux raisons : le rejeu (un script qui lit l'heure prendrait un autre chemin
   après une reprise) et la sécurité (rien ne sort sans passer par `w.*`, donc par le `meta`).
 - **Permis** : les **calculs purs** dont les contrôles ont besoin, fournis par
-  `@agent-studio/workflow` (relevé fait sur skraft le 2026-10-09 : aucune heure, aucun hasard,
+  `@skraft-mcp/workflow` (relevé fait sur skraft le 2026-10-09 : aucune heure, aucun hasard,
   aucun réseau dans ses contrôles, mais des calculs venus de modules) :
   - `empreinte(texte)` (sha256 ; skraft l'utilisait par `node:crypto`) ;
   - `correspond(motifs, chemin)` et la résolution de motifs de fichiers ;
@@ -197,18 +197,18 @@ n'est vue qu'à la reprise suivante (le code déjà chargé continue).
   la plateforme note l'heure dans le journal ; au rejeu, le script reçoit la même. C'est la façon
   dont les moteurs de workflow durables rendent l'heure compatible avec le rejeu. `Date` reste
   interdit. (Le hasard pourrait suivre le même chemin, `w.aleatoire()`, si un workflow en a besoin.)
-- Le script ne voit que `w` et `@agent-studio/workflow`. Les appels `w.*` sont exécutés par le
+- Le script ne voit que `w` et `@skraft-mcp/workflow`. Les appels `w.*` sont exécutés par le
   processus principal, bornés par `meta.permissions` et `meta.agents`.
 
 **Réalisation (2026-10-10, `packages/workflow/src/hote/`)** — trois barrières, chacune testée :
 
 1. **Compilation** (`compiler.ts`, esbuild) : un seul code à partir de `workflow.mjs` ; tout import
-   autre qu'un fichier du dossier ou `@agent-studio/workflow` est refusé avant exécution, y compris
+   autre qu'un fichier du dossier ou `@skraft-mcp/workflow` est refusé avant exécution, y compris
    `import("node:…")`.
 2. **Bac à sable** (`bac-a-sable.ts`, `node:vm`) : `Date` et `Math.random` lèvent une erreur qui
    dit quoi faire (`w.maintenant()`) ; pas de minuteries, de `process`, de `fetch` ; génération de
    code interdite (`eval`, `Function`). Le `require` du code compilé ne connaît que
-   `@agent-studio/workflow`. **Ce n'est pas une frontière de sécurité** : un objet venu du
+   `@skraft-mcp/workflow`. **Ce n'est pas une frontière de sécurité** : un objet venu du
    processus (`w.lireFichier.constructor.constructor`) donne accès à `process`.
 3. **Processus enfant sous `--permission`** (`rejoueur.ts`, lanceur des extensions) : lecture de
    son seul runtime, aucune écriture, aucun sous-processus. C'est **la** frontière : le test

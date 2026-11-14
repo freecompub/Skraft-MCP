@@ -8,8 +8,8 @@
  * des permissions (§8.5).
  */
 import { describe, expect, it, vi } from "vitest";
-import type { StackProfile } from "@agent-studio/stack-adapters";
-import { parseStackProfile } from "@agent-studio/stack-adapters";
+import type { StackProfile } from "@skraft-mcp/stack-adapters";
+import { parseStackProfile } from "@skraft-mcp/stack-adapters";
 import { createStackCommand, type StackCommandDeps } from "../src/stack-command.js";
 
 /** Extrait de la liste par défaut de l'administrateur : les modèles proposés doivent s'y tenir. */
@@ -297,7 +297,7 @@ layout:
     expect(demande).toMatch(/vitest/);
     expect(ecrits).toHaveLength(1);
     expect(h.ecrits).toEqual([]);
-    const { lireFichierProjet } = await import("@agent-studio/stack-adapters");
+    const { lireFichierProjet } = await import("@skraft-mcp/stack-adapters");
     const relu = lireFichierProjet(`composants:\n${ecrits[0]!.split("\n").map((l) => (l ? `  ${l}` : l)).join("\n")}`);
     if ("error" in relu) throw new Error(relu.error);
     expect(relu.composants?.map((c) => [c.nom, c.racine])).toEqual([["api", "services/api"], ["web", "web"]]);
@@ -400,7 +400,7 @@ describe("/stack init — le BDD du projet", () => {
       ecrireComposants: async (yaml) => void ecrits.push(yaml),
     });
     await h.lancer("init");
-    const { lireFichierProjet } = await import("@agent-studio/stack-adapters");
+    const { lireFichierProjet } = await import("@skraft-mcp/stack-adapters");
     const relu = lireFichierProjet(`composants:\n${ecrits[0]!.split("\n").map((l) => (l ? `  ${l}` : l)).join("\n")}`);
     if ("error" in relu) throw new Error(relu.error);
     const web = parseStackProfile(relu.composants!.find((c) => c.nom === "web")!.pile, { allowedPrograms: AUTORISES });

@@ -3,7 +3,7 @@
  * ouvert, contexte écrit, story reprise telle quelle ou mise en forme par un agent, puis vérifiée par le
  * code (aucune valeur inventée). gh, le disque et l'agent sont doublés.
  */
-import type { IssueLue, UsGithub } from "@agent-studio/github-auth";
+import type { IssueLue, UsGithub } from "@skraft-mcp/github-auth";
 import { describe, expect, it } from "vitest";
 import { preparerUsGithub, type MiseEnForme } from "../src/us-github.js";
 

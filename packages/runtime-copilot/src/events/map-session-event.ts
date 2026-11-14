@@ -1,5 +1,5 @@
 import type { SessionEvent } from "@github/copilot-sdk";
-import type { AgentEvent } from "@agent-studio/core";
+import type { AgentEvent } from "@skraft-mcp/core";
 
 const ACTIVITY: AgentEvent = { type: "activity" };
 

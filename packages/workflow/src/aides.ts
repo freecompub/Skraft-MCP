@@ -4,7 +4,7 @@
  */
 import { Escalade, TourInterrompu } from "./erreurs.js";
 import type { OptionsAgent, W } from "./protocols.js";
-import { disjoncte, memeRefus, type Refus } from "@agent-studio/core";
+import { disjoncte, memeRefus, type Refus } from "@skraft-mcp/core";
 
 /**
  * Rejet d'un essai : des motifs de porte, ou les défauts d'une revue (ADR 0042, 0046). `garanti`

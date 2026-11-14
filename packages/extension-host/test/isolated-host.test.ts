@@ -6,11 +6,11 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createHookRegistry, createInteractionService, createRegistry, type TaskAgentRunner } from "@agent-studio/core";
-import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, RecordingCheckpoints, sequentialIds } from "@agent-studio/core/testing";
-import type { StackAdapter } from "@agent-studio/stack-adapters";
-import { createTaskEngine, MemoryTaskStore } from "@agent-studio/task-engine";
-import type { Workspace } from "@agent-studio/workspace";
+import { createHookRegistry, createInteractionService, createRegistry, type TaskAgentRunner } from "@skraft-mcp/core";
+import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, RecordingCheckpoints, sequentialIds } from "@skraft-mcp/core/testing";
+import type { StackAdapter } from "@skraft-mcp/stack-adapters";
+import { createTaskEngine, MemoryTaskStore } from "@skraft-mcp/task-engine";
+import type { Workspace } from "@skraft-mcp/workspace";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { HostDeps } from "../src/in-process-host.js";
 import { activateIsolated, type IsolatedHandle } from "../src/isolated-host.js";
@@ -151,7 +151,7 @@ describe("Hôte d'extension isolé (processus Node réel)", () => {
     expect(await guard!.check({ kind: "shell", toolName: "bash", command: "rm -rf /" })).toEqual({ decision: "deny", reason: "[diabeo.demo] rm interdit par la démo" });
     expect(await guard!.check({ kind: "shell", toolName: "bash", command: "ls" })).toEqual({ decision: "allow" });
     // Dans une session, la chaîne composée transforme plantage et délai en refus (D28).
-    const { composeGuards } = await import("@agent-studio/core");
+    const { composeGuards } = await import("@skraft-mcp/core");
     const chain = composeGuards(d.hooks.guards(), { timeoutMs: 1_000 });
     expect(await chain.check({ kind: "shell", toolName: "bash", command: "boom" })).toMatchObject({ decision: "deny" });
     expect(await chain.check({ kind: "shell", toolName: "bash", command: "lent" })).toMatchObject({ decision: "deny" });
@@ -159,8 +159,8 @@ describe("Hôte d'extension isolé (processus Node réel)", () => {
 
   it("outil de l'extension appelé par un agent : exécuté dans le processus de l'extension", async () => {
     const env = deps();
-    const { ScriptedRuntime } = await import("@agent-studio/core/testing");
-    const { createTaskAgentRunner } = await import("@agent-studio/core");
+    const { ScriptedRuntime } = await import("@skraft-mcp/core/testing");
+    const { createTaskAgentRunner } = await import("@skraft-mcp/core");
     const runtime = new ScriptedRuntime();
     let reply: unknown;
     runtime.behave("diabeo.demo/echoer", async (t) => {

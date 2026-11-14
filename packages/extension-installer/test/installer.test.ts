@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { generateKeyPair, packExtension, signRevocationList, type RevocationList } from "@agent-studio/extension-packaging";
+import { generateKeyPair, packExtension, signRevocationList, type RevocationList } from "@skraft-mcp/extension-packaging";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createExtensionInstaller, type ConsentRequest } from "../src/installer.js";
 

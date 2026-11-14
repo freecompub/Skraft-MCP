@@ -7,8 +7,8 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Evidence } from "@agent-studio/core";
-import { ScriptedRuntime, type ScriptedBehavior } from "@agent-studio/core/testing";
+import type { Evidence } from "@skraft-mcp/core";
+import { ScriptedRuntime, type ScriptedBehavior } from "@skraft-mcp/core/testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { TddState } from "../src/index.js";
 import { assemble, CAP_SRC, CAP_TEST, createProject, devAgent, git, phaseOf, planner, put, ROLE, testAgent, until, HOST_MODES, shutdownHosts } from "./support/harness.js";

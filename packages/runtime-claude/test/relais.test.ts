@@ -3,7 +3,7 @@
  * `claude -p` appelle pour nos outils et pour chaque demande de permission. Piloté ici par un vrai
  * client MCP HTTP, sans Claude.
  */
-import type { GuardDecision, ToolCallGuard, ToolCallRequest, ToolSpec } from "@agent-studio/core";
+import type { GuardDecision, ToolCallGuard, ToolCallRequest, ToolSpec } from "@skraft-mcp/core";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { afterEach, describe, expect, it } from "vitest";
