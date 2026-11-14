@@ -1,5 +1,4 @@
 import { readFile } from "node:fs/promises";
-import type { TrustedPublisher } from "@skraft-mcp/extension-packaging";
 import { z } from "zod";
 
 /**
@@ -60,6 +59,18 @@ const schema = z.object({
   programConsent: z.boolean().default(true),
   revocation: z.object({ file: z.string().optional(), url: z.string().url().optional(), rootPublicKeyPem: z.string() }).optional(),
 });
+
+/**
+ * Éditeur approuvé par l'administrateur. Repris de `extension-packaging`, retiré par l'ADR 0091 §3 :
+ * la signature des paquets ne s'applique plus (ADR 0055, conséquences). Le champ reste lu pour ne
+ * pas refuser un `admin.json` qui le porte encore ; rien ne le consomme.
+ */
+export interface TrustedPublisher {
+  publisher: string;
+  keyId: string;
+  publicKeyPem: string;
+  trustedUpdates: boolean;
+}
 
 export interface AdminConfig {
   /** Chemin du fichier lu, ou « défaut ». */

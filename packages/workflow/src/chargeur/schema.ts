@@ -11,6 +11,12 @@ const NOM = /^[a-z][a-z0-9-]{0,39}$/;
 export const OUTILS_PLATEFORME = ["list_files", "run_tests", "run_lint", "report_blocker"] as const;
 const SKILL = /^[a-z][a-z0-9-]*(#.+)?$/;
 const texte = (max: number) => z.string().trim().min(1).max(max);
+/**
+ * Motif d'écriture : un glob, ou `@stack:<emplacement>`. Sans espace — il devient une permission
+ * `fs:write:<motif>`, dont la grammaire n'en admet aucune (ADR 0091 §4, repris de la validation de
+ * manifeste que cet ADR retire).
+ */
+const motifDEcriture = texte(200).refine((m) => !/\s/.test(m), "motif d'écriture : pas d'espace");
 
 const agent = z
   .object({
@@ -43,7 +49,7 @@ export const schemaMeta = z
     /** Retiré (ADR 0087) : refusé avec sa raison plutôt que comme un champ inconnu. */
     humains: z.unknown().refine(() => false, "humains n'existe plus (ADR 0087) : aucune question n'est réservée à un profil, n'importe qui y répond. Retire ce champ du meta.").optional(),
     permissions: z
-      .object({ ecriture: z.array(texte(200)).default([]), tests: z.boolean().default(false), git: z.array(z.enum(["branche", "commit", "revert"])).default([]) })
+      .object({ ecriture: z.array(motifDEcriture).default([]), tests: z.boolean().default(false), git: z.array(z.enum(["branche", "commit", "revert"])).default([]) })
       .strict()
       .default({ ecriture: [], tests: false, git: [] }),
     /** Outils apportés par le workflow à ses agents (ADR 0082) ; leur code est exporté par le script (`outils`). */

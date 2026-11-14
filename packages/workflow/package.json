@@ -16,7 +16,6 @@
     "esbuild": "^0.28.2",
     "yaml": "^2.9.1",
     "@skraft-mcp/stack-adapters": "workspace:*",
-    "@skraft-mcp/extension-manifest": "workspace:*",
     "@skraft-mcp/core": "workspace:*"
   },
   "devDependencies": {}

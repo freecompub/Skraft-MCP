@@ -5,9 +5,8 @@
  * **vérification de chaque appel contre les permissions** (`fs:write:<motif>`, `git:*`,
  * `shell:test`). Le script, lui, n'en reçoit rien : il tourne isolé et ne voit que `w.*`.
  */
-import { API_VERSION, type ExtensionManifest, type ExtensionModule, type Permission } from "@skraft-mcp/extension-api";
+import type { ExtensionManifest, ExtensionModule, Permission } from "@skraft-mcp/extension-api";
 import { activateInProcess, type ExtensionHandle, type HostDeps, type ProcessLauncher } from "@skraft-mcp/extension-host";
-import { validateManifest } from "@skraft-mcp/extension-manifest";
 import { verifierAccord, type AccordStore } from "../accord/accords.js";
 import type { WorkflowTrouve } from "../chargeur/chargeur.js";
 import type { MetaWorkflow } from "../chargeur/schema.js";
@@ -123,9 +122,10 @@ export interface OptionsActivation {
 export async function activerWorkflow(w: WorkflowTrouve, deps: HostDeps, o: OptionsActivation): Promise<{ ok: true; handle: ExtensionHandle; manifest: ExtensionManifest } | { ok: false; motifs: string[] }> {
   const compilation = await compilerWorkflow(w.dossier);
   if (!compilation.ok) return { ok: false, motifs: compilation.motifs };
-  const v = validateManifest(manifesteDuWorkflow(w), { appApi: API_VERSION });
-  if (!v.ok) return { ok: false, motifs: v.errors };
-  const manifest = v.manifest;
+  // Le `meta` est validé par son propre schéma au chargement, sans exécuter le script (ADR 0055 §5,
+  // ADR 0091 §4). La déclaration qu'on en tire est construite par le code, pas écrite à la main : la
+  // revalider ne vérifiait que notre propre fabrication.
+  const manifest = manifesteDuWorkflow(w);
   const m = w.meta;
 
   const rejoueur = createRejoueurIsole({

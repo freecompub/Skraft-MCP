@@ -192,6 +192,15 @@ describe("validation du meta", () => {
     expect(await motifsDe(avecHumains)).toEqual([expect.stringMatching(/humains.*ADR 0087.*aucune question n'est réservée/)]);
   });
 
+  /**
+   * Seul contrôle que la validation de manifeste ajoutait au schéma du `meta` (ADR 0091 §4) : la
+   * grammaire des permissions refusait `fs:write:<motif>` contenant une espace. Le schéma le reprend,
+   * pour que le manifeste puisse partir sans rien perdre.
+   */
+  it("motif d'écriture avec une espace : refusé", async () => {
+    expect(await motifsDe(META.replace('"docs/adr/**"', '"docs/mes adr/**"'))).toEqual([expect.stringMatching(/permissions\.ecriture.*espace/)]);
+  });
+
   it("sortie, classe ou mémoire inconnues : refusées", async () => {
     expect(await motifsDe(META.replace('sortie: "report_phase"', 'sortie: "rapport"'))).toEqual([expect.stringMatching(/sortie/)]);
   });
