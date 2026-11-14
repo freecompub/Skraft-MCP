@@ -4,7 +4,7 @@
  * démarrage, il lance) ; les autres **consultent**.
  */
 import type { UserConfirmer } from "@skraft-mcp/core";
-import type { WorkspaceServices } from "@skraft-mcp/project-services";
+import type { WorkspaceServices } from "./assemblage/protocols.js";
 import type { Piles } from "./piles.js";
 import type { Verrou } from "./verrou.js";
 

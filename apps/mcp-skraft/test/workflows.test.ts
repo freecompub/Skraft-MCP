@@ -11,7 +11,7 @@ import { MemoryTaskStore } from "@skraft-mcp/task-engine";
 import type { TraceEntry, TraceStore } from "@skraft-mcp/core";
 import type { Workspace } from "@skraft-mcp/workspace";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { workspaceServicesFactory } from "../src/workspace-services.js";
+import { workspaceServicesFactory } from "../src/assemblage/services-du-projet.js";
 
 let racine: string;
 let enfant: string;

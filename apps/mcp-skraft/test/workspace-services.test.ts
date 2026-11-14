@@ -7,10 +7,10 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createUsageRecorder } from "@skraft-mcp/core";
 import { describe, expect, it } from "vitest";
-import type { InteractionDto, TaskCardDto } from "../src/dto.js";
-import { workspaceServicesFactory } from "../src/workspace-services.js";
+import type { InteractionDto, TaskCardDto } from "../src/assemblage/dto.js";
+import { workspaceServicesFactory } from "../src/assemblage/services-du-projet.js";
 import { ROLE_DECOUVREUR } from "@skraft-mcp/pile-projet";
-import { FICHIERS_NODE as FICHIERS, PILE_NODE } from "../../pile-projet/test/support/pile-node.js";
+import { FICHIERS_NODE as FICHIERS, PILE_NODE } from "../../../packages/pile-projet/test/support/pile-node.js";
 
 function fakeWorkspace(): Workspace {
   let n = 0;

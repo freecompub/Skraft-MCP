@@ -20,9 +20,6 @@ importers:
       '@skraft-mcp/github-auth':
         specifier: workspace:*
         version: link:packages/github-auth
-      '@skraft-mcp/project-services':
-        specifier: workspace:*
-        version: link:packages/project-services
       '@skraft-mcp/runtime-claude':
         specifier: workspace:*
         version: link:packages/runtime-claude
@@ -62,6 +59,9 @@ importers:
       '@skraft-mcp/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@skraft-mcp/ext-tdd':
+        specifier: workspace:*
+        version: link:../../extensions/tdd
       '@skraft-mcp/extension-host':
         specifier: workspace:*
         version: link:../../packages/extension-host
@@ -71,9 +71,6 @@ importers:
       '@skraft-mcp/pile-projet':
         specifier: workspace:*
         version: link:../../packages/pile-projet
-      '@skraft-mcp/project-services':
-        specifier: workspace:*
-        version: link:../../packages/project-services
       '@skraft-mcp/runtime-claude':
         specifier: workspace:*
         version: link:../../packages/runtime-claude
@@ -83,6 +80,9 @@ importers:
       '@skraft-mcp/stack-adapters':
         specifier: workspace:*
         version: link:../../packages/stack-adapters
+      '@skraft-mcp/task-engine':
+        specifier: workspace:*
+        version: link:../../packages/task-engine
       '@skraft-mcp/workflow':
         specifier: workspace:*
         version: link:../../packages/workflow
@@ -95,10 +95,6 @@ importers:
       zod:
         specifier: ^4.6.5
         version: 4.6.5
-    devDependencies:
-      '@skraft-mcp/task-engine':
-        specifier: workspace:*
-        version: link:../../packages/task-engine
 
   extensions/tdd:
     dependencies:
@@ -167,37 +163,6 @@ importers:
       '@skraft-mcp/workspace':
         specifier: workspace:*
         version: link:../workspace
-
-  packages/project-services:
-    dependencies:
-      '@skraft-mcp/core':
-        specifier: workspace:*
-        version: link:../core
-      '@skraft-mcp/extension-host':
-        specifier: workspace:*
-        version: link:../extension-host
-      '@skraft-mcp/pile-projet':
-        specifier: workspace:*
-        version: link:../pile-projet
-      '@skraft-mcp/stack-adapters':
-        specifier: workspace:*
-        version: link:../stack-adapters
-      '@skraft-mcp/task-engine':
-        specifier: workspace:*
-        version: link:../task-engine
-      '@skraft-mcp/workflow':
-        specifier: workspace:*
-        version: link:../workflow
-      '@skraft-mcp/workspace':
-        specifier: workspace:*
-        version: link:../workspace
-      zod:
-        specifier: ^4.6.5
-        version: 4.6.5
-    devDependencies:
-      '@skraft-mcp/ext-tdd':
-        specifier: workspace:*
-        version: link:../../extensions/tdd
 
   packages/runtime-claude:
     dependencies:

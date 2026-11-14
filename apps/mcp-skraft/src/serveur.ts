@@ -4,7 +4,7 @@
  * `skraft_etat` rend du JSON.
  */
 import { fileURLToPath } from "node:url";
-import { AucunePile } from "@skraft-mcp/project-services";
+import { AucunePile } from "./assemblage/services-du-projet.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { confirmerParLeClient } from "./confirmation.js";

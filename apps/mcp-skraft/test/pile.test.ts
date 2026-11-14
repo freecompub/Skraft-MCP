@@ -11,7 +11,7 @@ import type { ConfirmAnswer, ConfirmRequest } from "@skraft-mcp/core";
 import { MemoryTaskStore } from "@skraft-mcp/task-engine";
 import type { Workspace } from "@skraft-mcp/workspace";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { workspaceServicesFactory } from "../src/workspace-services.js";
+import { workspaceServicesFactory } from "../src/assemblage/services-du-projet.js";
 
 let base: string;
 beforeAll(async () => {

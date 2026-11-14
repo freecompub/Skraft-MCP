@@ -8,7 +8,7 @@ import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { fixedClock, MemoryEvidenceStore, MemoryTaskSessionStore, ScriptedRuntime, sequentialIds } from "@skraft-mcp/core/testing";
 import { bundle, createNodeLauncher } from "@skraft-mcp/extension-host";
-import { workspaceServicesFactory } from "@skraft-mcp/project-services";
+import { workspaceServicesFactory } from "../src/assemblage/services-du-projet.js";
 import { MemoryTaskStore } from "@skraft-mcp/task-engine";
 import type { Workspace } from "@skraft-mcp/workspace";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";

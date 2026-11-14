@@ -23,7 +23,6 @@
     "@skraft-mcp/core": "workspace:*",
     "@skraft-mcp/extension-host": "workspace:*",
     "@skraft-mcp/github-auth": "workspace:*",
-    "@skraft-mcp/project-services": "workspace:*",
     "@skraft-mcp/runtime-claude": "workspace:*",
     "@skraft-mcp/runtime-copilot": "workspace:*",
     "@skraft-mcp/workflow": "workspace:*",

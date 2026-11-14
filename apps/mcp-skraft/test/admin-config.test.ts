@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { defaultAdminConfigPath, loadAdminConfig } from "../src/admin-config.js";
-import { DEFAULT_ALLOWED_PROGRAMS_FOR_TESTS } from "../../stack-adapters/test/support/programmes.js";
+import { DEFAULT_ALLOWED_PROGRAMS_FOR_TESTS } from "../../../packages/stack-adapters/test/support/programmes.js";
 
 describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
   let dir: string;

@@ -1,10 +1,10 @@
 /**
  * Services d'un projet pour le serveur MCP : les mêmes que l'application de bureau
- * (`@skraft-mcp/project-services`), sans fenêtre. Les messages de la conversation vont au journal
+ * (`./assemblage/`), sans fenêtre. Les messages de la conversation vont au journal
  * du projet, lu par `skraft_etat`.
  */
 import type { AgentRuntime, ModelClass, UserConfirmer } from "@skraft-mcp/core";
-import type { WorkspaceServices, WorkspaceServicesFactory } from "@skraft-mcp/project-services";
+import type { WorkspaceServices, WorkspaceServicesFactory } from "./assemblage/protocols.js";
 import type { Workspace } from "@skraft-mcp/workspace";
 import type { OuvertureServices } from "./projets.js";
 
