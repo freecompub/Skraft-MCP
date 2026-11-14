@@ -4,7 +4,7 @@
  * de `.agent-studio/projet.yaml` avant les anciens fichiers ; `projet.yaml` est gelé pour les agents.
  */
 import { describe, expect, it } from "vitest";
-import { barreDeQualite } from "../../../workflows/skraft/livraison.mjs";
+import { barreDeQualite } from "../../../workflows/skraft/livraison-socle.mjs";
 import { GELÉS } from "../../../workflows/skraft/support.mjs";
 
 const fauxW = (fichiers: Record<string, string>) => ({
