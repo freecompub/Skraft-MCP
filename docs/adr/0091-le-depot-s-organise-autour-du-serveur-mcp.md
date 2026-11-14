@@ -2,9 +2,9 @@
 
 ## Statut
 
-**Proposé** le 2026-11-14, à ratifier par le responsable du projet, qui en a demandé l'étude :
-« propose moi une restructuration, où le serveur mcp c'est le but principal, pour faire fonctionner
-le workflow ».
+**Accepté** le 2026-11-14 par le responsable du projet : « on valide l'ADR ». Il en avait demandé
+l'étude : « propose moi une restructuration, où le serveur mcp c'est le but principal, pour faire
+fonctionner le workflow ».
 
 Exécute une supersession déjà décidée par l'ADR 0055 (point 9 et conséquences), restée non réalisée.
 Concerne l'organisation du dépôt, pas le comportement d'un run.

@@ -56,7 +56,10 @@ async function racineJetable() {
   await cp(join(RACINE, "scripts"), join(r, "scripts"), { recursive: true });
   await mkdir(join(r, "dist", "workflows", "skraft"), { recursive: true });
   await writeFile(join(r, "dist", "main.mjs"), "// serveur\n");
-  await writeFile(join(r, "dist", "workflows", "skraft", "LICENSE"), "GNU GENERAL PUBLIC LICENSE\n");
+  // Le LICENSE du dépôt, à la racine : c'est celui du paquet (ADR 0092). Celui du workflow reste
+  // dans ses sources, comme la GPL l'exige, mais ce n'est pas lui qui licencie le paquet.
+  await writeFile(join(r, "..", "LICENSE"), "GNU GENERAL PUBLIC LICENSE — dépôt\n");
+  await writeFile(join(r, "dist", "workflows", "skraft", "LICENSE"), "GNU GENERAL PUBLIC LICENSE — workflow\n");
   return r;
 }
 afterEach(() => rm(tmp, { recursive: true, force: true }));
@@ -138,6 +141,9 @@ describe("deployer", () => {
     expect(Object.keys(pkg.dependencies)).toEqual(["@github/copilot-sdk", "esbuild"]);
     expect(pkg.private).toBeUndefined();
     for (const f of ["dist/main.mjs", "skills/skraft-etat/SKILL.md", "scripts/installer-commandes.mjs", "LICENSE", "README.md"]) expect((await stat(join(tmp, "paquet", f))).isFile(), f).toBe(true);
+    // Le paquet est licencié par le LICENSE du dépôt, pas par celui que la charge utile embarque :
+    // retirer le workflow ne doit pas priver le paquet de sa licence (ADR 0092).
+    expect(await readFile(join(tmp, "paquet", "LICENSE"), "utf8")).toBe("GNU GENERAL PUBLIC LICENSE — dépôt\n");
     expect(d.lances).toContain("npm pack");
     expect(d.lances.some((l) => l.startsWith("npm publish"))).toBe(false);
     expect(d.lances.some((l) => / mcp add /.test(l))).toBe(false);

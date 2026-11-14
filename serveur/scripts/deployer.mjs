@@ -122,8 +122,10 @@ async function preparerPaquet(o, deps, lignes) {
   await mkdir(join(dossier, "scripts"), { recursive: true });
   await cp(join(racine, "scripts", "installer-commandes.mjs"), join(dossier, "scripts", "installer-commandes.mjs"));
   await cp(join(racine, "README.md"), join(dossier, "README.md"));
-  // Le workflow skraft embarqué est sous GPL-3.0-or-later (CLAUDE.md) : le paquet l'est donc aussi.
-  await cp(join(racine, "dist", "workflows", "skraft", "LICENSE"), join(dossier, "LICENSE"));
+  // Tout le dépôt est sous GPL-3.0-or-later (ADR 0092) : le paquet est licencié par le LICENSE du
+  // dépôt, et non par celui que le workflow embarque — retirer la charge utile ne doit pas priver le
+  // paquet de sa licence. Celui du workflow reste dans ses sources, comme la GPL l'exige.
+  await cp(join(racine, "..", "LICENSE"), join(dossier, "LICENSE"));
   const garder = ["@github/copilot-sdk", "esbuild"];
   const paquet = {
     name: o.nom ?? pkg.name,

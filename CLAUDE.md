@@ -21,6 +21,8 @@ Toute la documentation est en français ; écrire les ADR, messages et libellés
 - Un fichier repris de skraft-plugin porte sa provenance en commentaire. Une reprise ne déplace jamais
   vers le LLM une décision que le code prend.
 - Commits conventionnels (`feat:`, `fix:`, `test:`, `refactor:`, `docs:`).
+- Tout le dépôt est sous **GPL-3.0-or-later** (ADR 0092), sans frontière interne : un fichier ajouté
+  l'est aussi, et chaque `package.json` le déclare.
 
 ## Principe
 

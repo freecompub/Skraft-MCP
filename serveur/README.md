@@ -351,5 +351,8 @@ journal (`logs/mcp-skraft.log`). Rien n'est écrit dans le dépôt en dehors du 
 
 ## Licence
 
-Le workflow skraft est sous GPL-3.0-or-later (`dist/workflows/skraft/LICENSE`), livré avec ses
-sources. La licence du reste du paquet n'est pas encore fixée : il n'est pas à distribuer en l'état.
+**GPL-3.0-or-later**, pour tout le dépôt et donc pour tout le paquet (ADR 0092). Le `LICENSE` du
+paquet est celui du dépôt ; le workflow skraft embarque le sien dans ses sources
+(`dist/workflows/skraft/LICENSE`), livrées avec lui comme la GPL l'exige.
+
+Qui distribue un binaire dérivé de ce paquet doit en fournir les sources, le workflow compris.
