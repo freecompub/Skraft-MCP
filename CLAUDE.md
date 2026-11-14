@@ -13,11 +13,16 @@ Toute la documentation est en français ; écrire les ADR, messages et libellés
   testées sans LLM, sans Git, sans disque.
 - Toute nouvelle décision technique → ADR dans `docs/adr/NNNN-titre.md` (contexte, décision,
   conséquences, alternatives, statut).
-- Le workflow est **copié** dans `apps/mcp-skraft/dist/` au build : après une modification de
+- Le workflow est **copié** dans `serveur/dist/` au build : après une modification de
   `workflows/skraft/`, reconstruire (`pnpm build`).
+- Le dépôt s'organise autour du serveur MCP (ADR 0091) : `serveur/` est le livrable, `moteur/` ce qui
+  exécute un workflow, `capacites/` ce que `w.*` sait faire, `workflows/skraft/` la charge utile.
+  `tests/architecture` tient ces invariants ; ne pas les contourner, les faire évoluer par un ADR.
 - Un fichier repris de skraft-plugin porte sa provenance en commentaire. Une reprise ne déplace jamais
   vers le LLM une décision que le code prend.
 - Commits conventionnels (`feat:`, `fix:`, `test:`, `refactor:`, `docs:`).
+- Tout le dépôt est sous **GPL-3.0-or-later** (ADR 0092), sans frontière interne : un fichier ajouté
+  l'est aussi, et chaque `package.json` le déclare.
 
 ## Principe
 

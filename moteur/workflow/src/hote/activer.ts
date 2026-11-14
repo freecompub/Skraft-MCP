@@ -1,0 +1,177 @@
+/**
+ * Activation d'un workflow trouvé (ADR 0055, `docs/11` §6, §7, §8). L'utilisateur ne voit que le
+ * `meta` ; en interne, la plateforme en tire une déclaration et s'appuie sur la machinerie qui
+ * exécute déjà les effets des extensions — composition des prompts, gardes, preuves, et
+ * **vérification de chaque appel contre les permissions** (`fs:write:<motif>`, `git:*`,
+ * `shell:test`). Le script, lui, n'en reçoit rien : il tourne isolé et ne voit que `w.*`.
+ */
+import type { ExtensionManifest, ExtensionModule, Permission } from "@skraft-mcp/bac-a-sable";
+import { activateInProcess, type ExtensionHandle, type HostDeps, type ProcessLauncher } from "@skraft-mcp/bac-a-sable";
+import { verifierAccord, type AccordStore } from "../accord/accords.js";
+import type { WorkflowTrouve } from "../chargeur/chargeur.js";
+import type { MetaWorkflow } from "../chargeur/schema.js";
+import type { Json } from "../protocols.js";
+import { createWorkflowTaskDepuis } from "../workflow-task.js";
+import { compilerWorkflow } from "./compiler.js";
+import { createRejoueurIsole } from "./rejoueur.js";
+
+/** Agents qui n'écrivent rien ni ne lancent de tests : appelés ensemble, ils tournent en même temps (ADR 0086). */
+export const agentsEnLectureSeule = (m: Pick<MetaWorkflow, "agents">): string[] =>
+  Object.entries(m.agents)
+    .filter(([, a]) => !a.ecriture?.length && !a.outils?.some((x) => x === "run_tests" || x === "run_lint"))
+    .map(([nom]) => nom);
+
+const GIT: Record<string, Permission> = { branche: "git:branch", commit: "git:commit", revert: "git:revert" };
+
+/** Déclaration interne tirée du meta : permissions, agents, skills, commande, tâche. */
+export function manifesteDuWorkflow(w: WorkflowTrouve): ExtensionManifest {
+  const m = w.meta;
+  const agents = Object.entries(m.agents);
+  const skills = [...new Set(agents.flatMap(([, a]) => [...(a.skills?.obligatoires ?? []), ...(a.skills?.aLaDemande ?? [])].map((s) => s.split("#")[0]!)))];
+  return {
+    id: `workflow.${m.name}`,
+    version: "0.0.0",
+    publisher: "workflow",
+    engines: { appApi: "^0.1" },
+    permissions: [
+      "fs:read",
+      ...m.permissions.ecriture.map((e) => `fs:write:${e}` as Permission),
+      ...(m.permissions.tests ? (["shell:test"] as Permission[]) : []),
+      ...m.permissions.git.map((g) => GIT[g]!),
+      ...(agents.length ? (["copilot:sessions"] as Permission[]) : []),
+    ],
+    contributes: {
+      commands: [{ name: m.commande, title: m.name, description: m.description }],
+      agents: agents.map(([name, a]) => ({
+        name,
+        title: name,
+        prompt: a.prompt,
+        ...(a.consignes ? { role: a.consignes } : {}),
+        output: a.sortie,
+        ...(a.ecriture ? { write: [...a.ecriture] } : {}),
+        ...(a.outils ? { tools: [...a.outils] } : {}),
+        ...(a.skills ? { skills: { ...(a.skills.obligatoires ? { mandatory: [...a.skills.obligatoires] } : {}), ...(a.skills.aLaDemande ? { onDemand: [...a.skills.aLaDemande] } : {}) } } : {}),
+        ...(a.classe ? { modelClass: a.classe } : {}),
+        ...(a.reasoningEffort ? { reasoningEffort: a.reasoningEffort } : {}),
+        ...(a.contextTier ? { contextTier: a.contextTier } : {}),
+        ...(a.memoire ? { memoire: a.memoire } : {}),
+      })),
+      skills: skills.map((name) => ({ name, path: `skills/${name}` })),
+      // Outils apportés par le workflow (ADR 0082), servis par son processus isolé.
+      ...(Object.keys(m.outils).length ? { tools: Object.entries(m.outils).map(([name, o]) => ({ name, description: o.description })) } : {}),
+      // Le titre de la carte est court (80 caractères) : le nom, pas la description.
+      tasks: [{ name: m.name, title: m.name, states: { ...m.phases } }],
+    },
+  };
+}
+
+/** Forme de la commande : `/demo <story> [--auto]`. */
+export function syntaxeCommande(commande: string, entrees: MetaWorkflow["entrees"]): string {
+  const noms = Object.keys(entrees);
+  const args = [
+    ...noms.filter((n) => entrees[n]!.type !== "booleen").map((n) => (entrees[n]!.obligatoire ? `<${n}>` : `[${n}]`)),
+    ...noms.filter((n) => entrees[n]!.type === "booleen").map((n) => `[--${n}]`),
+  ];
+  return [`/${commande}`, ...args].join(" ");
+}
+
+/** Arguments d'une commande d'après `meta.entrees` : positionnels dans l'ordre, booléens en `--nom`, autres aussi en `--nom valeur`. */
+export function lireEntrees(entrees: MetaWorkflow["entrees"], args: string, commande = "workflow"): { ok: true; entree: Record<string, Json> } | { ok: false; usage: string } {
+  const noms = Object.keys(entrees);
+  const positionnels = noms.filter((n) => entrees[n]!.type !== "booleen");
+  const usage = () => `Utilisation : \`${syntaxeCommande(commande, entrees)}\`\n` + noms.map((n) => `- ${n} : ${entrees[n]!.aide}`).join("\n");
+  const entree: Record<string, Json> = {};
+  for (const n of noms) if (entrees[n]!.defaut !== undefined) entree[n] = entrees[n]!.defaut as Json;
+  const restants = [...positionnels];
+  const jetons = args.trim().split(/\s+/).filter(Boolean);
+  for (let k = 0; k < jetons.length; k++) {
+    const jeton = jetons[k]!;
+    if (jeton.startsWith("--")) {
+      const n = jeton.slice(2);
+      if (!entrees[n]) return { ok: false, usage: usage() };
+      if (entrees[n]!.type === "booleen") {
+        entree[n] = true;
+        continue;
+      }
+      // Entrée nommée : `--archi java`. Elle n'est plus attendue comme positionnelle.
+      const valeur = jetons[++k];
+      if (valeur === undefined || valeur.startsWith("--")) return { ok: false, usage: usage() };
+      entree[n] = valeur;
+      // Plus attendue comme positionnelle ; répétée, ou déjà donnée par position : la dernière l'emporte.
+      const i = restants.indexOf(n);
+      if (i >= 0) restants.splice(i, 1);
+      continue;
+    }
+    const n = restants.shift();
+    if (!n) return { ok: false, usage: usage() };
+    entree[n] = jeton;
+  }
+  for (const n of positionnels) if (entrees[n]!.obligatoire && entree[n] === undefined) return { ok: false, usage: usage() };
+  return { ok: true, entree };
+}
+
+export interface OptionsActivation {
+  /** Lanceur du processus enfant et bundle de `enfant-entree.ts`. */
+  isolation: { launcher: ProcessLauncher; runtimeEntry: string };
+  accords: AccordStore;
+  confirmer: { confirm(r: { title: string; detail: string }): Promise<"allow-once" | "allow-always" | "deny"> };
+  /** Délai d'un rejeu (boucle) ; défaut du rejoueur. */
+  delaiMs?: number;
+}
+
+export async function activerWorkflow(w: WorkflowTrouve, deps: HostDeps, o: OptionsActivation): Promise<{ ok: true; handle: ExtensionHandle; manifest: ExtensionManifest } | { ok: false; motifs: string[] }> {
+  const compilation = await compilerWorkflow(w.dossier);
+  if (!compilation.ok) return { ok: false, motifs: compilation.motifs };
+  // Le `meta` est validé par son propre schéma au chargement, sans exécuter le script (ADR 0055 §5,
+  // ADR 0091 §4). La déclaration qu'on en tire est construite par le code, pas écrite à la main : la
+  // revalider ne vérifiait que notre propre fabrication.
+  const manifest = manifesteDuWorkflow(w);
+  const m = w.meta;
+
+  const rejoueur = createRejoueurIsole({
+    code: compilation.code,
+    launcher: o.isolation.launcher,
+    runtimeEntry: o.isolation.runtimeEntry,
+    agents: Object.keys(m.agents),
+    ...(o.delaiMs ? { delaiMs: o.delaiMs } : {}),
+    // Un outil ne lit que ce que le script lui-même pourrait lire : la liste du dépôt (ADR 0082).
+    lire: async (chemin) => ((await deps.workspace.files.list()).includes(chemin) ? deps.workspace.files.read(chemin).catch(() => null) : null),
+  });
+  const tache = createWorkflowTaskDepuis({ nom: m.name, empreinte: w.empreinte, agentsEnLectureSeule: agentsEnLectureSeule(m), rejoueur, refusEnTermesDuMeta: true });
+
+  const module: ExtensionModule = {
+    activate(ctx) {
+      ctx.tasks.register(tache);
+      // Un outil du workflow ne lit que ce que l'hôte lui passe : hors de la vérification d'un tour,
+      // il n'a rien à examiner (ADR 0082).
+      for (const [nom, o] of Object.entries(m.outils))
+        ctx.tools.register({
+          name: nom,
+          description: o.description,
+          parameters: { type: "object", properties: {} },
+          handler: async (args, v) => {
+            if (!v) throw new Error(`L'outil ${nom} n'est pas la vérification de ce tour : il n'a rien à examiner.`);
+            return rejoueur.outil(nom, { args, fichiers: v.fichiers, ...(v.donnees !== undefined ? { donnees: v.donnees as never } : {}) });
+          },
+        });
+      ctx.chat.registerCommand(m.commande, async (args) => {
+        const lu = lireEntrees(m.entrees, args, m.commande);
+        if (!lu.ok) return ctx.chat.post(lu.usage);
+        if (!(await verifierAccord({ workflow: w, accords: o.accords, confirmer: o.confirmer }))) return ctx.chat.post(`Workflow « ${m.name} » non lancé : accord refusé.`);
+        await ctx.tasks.start(m.name, lu.entree);
+        ctx.chat.post(`Workflow « ${m.name} » lancé (${w.origine}).`);
+      });
+    },
+    deactivate() {
+      rejoueur.arreter();
+    },
+  };
+
+  try {
+    const handle = await activateInProcess({ manifest, module, directory: w.dossier }, deps);
+    return { ok: true, handle, manifest };
+  } catch (e) {
+    rejoueur.arreter();
+    return { ok: false, motifs: [e instanceof Error ? e.message : String(e)] };
+  }
+}

@@ -1,5 +1,5 @@
 import type { EtatWorkflow } from "@skraft-mcp/workflow";
-import { relire } from "../../packages/workflow/src/contenus.js";
+import { relire } from "../../moteur/workflow/src/contenus.js";
 
 export function workflowLivre(etat: EtatWorkflow | undefined): boolean {
   if (etat?.fin?.statut !== "fini") return false;

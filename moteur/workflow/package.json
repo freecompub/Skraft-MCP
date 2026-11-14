@@ -1,0 +1,21 @@
+{
+  "name": "@skraft-mcp/workflow",
+  "version": "0.0.0",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@skraft-mcp/agents": "workspace:*",
+    "@skraft-mcp/bac-a-sable": "workspace:*",
+    "@skraft-mcp/pile": "workspace:*",
+    "@skraft-mcp/taches": "workspace:*",
+    "acorn": "^8.18.0",
+    "esbuild": "^0.28.2",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {}
+}

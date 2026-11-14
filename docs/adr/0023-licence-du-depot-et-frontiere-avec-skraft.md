@@ -1,6 +1,7 @@
 # ADR 0023 — Licence du dépôt, et frontière avec l'extension skraft
 
-- Statut : **décidé**, 2026-09-25
+- Statut : **remplacé** par l'ADR 0092 (2026-11-14) — tout le dépôt est sous GPL-3.0-or-later,
+  sans frontière interne. Décidé le 2026-09-25, quand `extensions/skraft/` existait encore.
 - Date : 2026-09-25
 - Contexte amont : ADR 0012 (licence de skraft-plugin), ADR 0021 (distribution de skraft en `.asx`)
 

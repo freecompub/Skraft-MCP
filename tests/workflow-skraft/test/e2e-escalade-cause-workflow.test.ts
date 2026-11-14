@@ -9,8 +9,8 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ScriptedRuntime } from "@skraft-mcp/core/testing";
-import type { StackAdapter } from "@skraft-mcp/stack-adapters";
+import { ScriptedRuntime } from "@skraft-mcp/agents/testing";
+import type { StackAdapter } from "@skraft-mcp/pile";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { answerQuestions, assemble, createProject, fakeStack, git, put, shutdownHosts, simulatedAgents, until } from "./support/harness.js";
 import { fin, lancerWorkflow } from "./support/fin.js";

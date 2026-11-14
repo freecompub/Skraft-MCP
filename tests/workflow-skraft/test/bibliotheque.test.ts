@@ -7,7 +7,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 // Ce que voient les scripts du workflow sous Vitest : l'alias ne vaut que pour les fichiers de workflows/.
-import * as lib from "../../../packages/workflow/src/hote/pour-les-scripts.js";
+import * as lib from "../../../moteur/workflow/src/hote/pour-les-scripts.js";
 import { describe, expect, it } from "vitest";
 import { WORKFLOW_DIR } from "./support/harness.js";
 

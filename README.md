@@ -7,13 +7,13 @@ les portes entre les phases : le LLM propose, le code décide et vérifie. Le tr
 branche `skraft/<slug>` du projet.
 
 Le mode d'emploi complet du serveur (outils MCP, configuration, `admin.json`, déploiement) est dans
-[`apps/mcp-skraft/README.md`](apps/mcp-skraft/README.md).
+[`serveur/README.md`](serveur/README.md).
 
 ## Démarrer
 
 ```bash
 pnpm install
-pnpm build          # apps/mcp-skraft/dist : serveur, processus des workflows, workflow skraft
+pnpm build          # serveur/dist : serveur, processus des workflows, workflow skraft
 pnpm deployer       # construit, inscrit le serveur dans Copilot CLI et Claude Code, pose les commandes /skraft-…
 ```
 
@@ -24,17 +24,19 @@ Prérequis : Node.js 22.13 ou plus, `git`, et le runtime des agents (Copilot ave
 ```bash
 pnpm typecheck
 pnpm test                                   # toute la suite Vitest
-pnpm vitest run --project workflow-skraft   # un projet : core, task-engine, workflow, workspace, …
+pnpm vitest run --project workflow-skraft   # un projet : agents, taches, workflow, depot, pile, …
 pnpm essai <projet> <story> <reponses.json> --runtime=claude --suivi=attendre   # essai réel, hors CI
 ```
 
 | Dossier | Contenu |
 | --- | --- |
-| `apps/mcp-skraft` | le serveur MCP |
-| `workflows/skraft` | le workflow skraft : script, agents, skills, portes |
+| `serveur` | **le livrable** : la surface MCP, son assemblage, ses skills, son déploiement |
+| `moteur/workflow` | ce qui exécute un workflow : journal rejouable, chargeur, accord par empreinte, `w.*` |
+| `moteur/bac-a-sable` | le processus isolé, son RPC, le lancement des tests et le gel des fichiers |
+| `capacites/*` | ce que `w.*` sait faire : `agents`, `pile`, `pile-du-projet`, `depot`, `taches`, `github`, `runtime-claude`, `runtime-copilot` |
+| `workflows/skraft` | **la charge utile** : le workflow skraft — script, agents, skills, portes (GPL, copié dans `dist/` au build) |
 | `tests/workflow-skraft` | les tests du workflow, de bout en bout avec des agents simulés |
-| `packages/*` | la plateforme : cœur, moteur de tâches et de workflows, Workspace, hôte, runtimes Claude et Copilot, adaptateurs de pile, services de projet |
-| `extensions/tdd` | une extension d'exemple, utilisée par les tests de la plateforme |
+| `tests/architecture` | les invariants de structure, tenus par le code (ADR 0091) |
 | `profiles` | des profils de pile d'exemple |
 | `scripts` | l'essai réel du serveur et le banc de comparaison |
 | `docs` | les ADR, les spécifications, les workflows, les runs d'essai |
