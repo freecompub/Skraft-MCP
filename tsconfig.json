@@ -9,8 +9,6 @@
   "include": [
     "packages/*/src",
     "packages/*/test",
-    "extensions/*/src",
-    "extensions/*/test",
     "tests/*/test",
     "apps/mcp-skraft/src",
     "apps/mcp-skraft/test",

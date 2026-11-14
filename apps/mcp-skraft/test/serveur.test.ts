@@ -118,7 +118,6 @@ type Projet = Awaited<ReturnType<typeof projet>>;
  */
 async function serveur(p: Projet, o: { pid: number; vivants: Set<number>; roots?: string[]; nonConnecte?: boolean; detecte?: boolean; repondre?: (question: string) => string | null; depots?: Depots; preparerUs?: (texte: string, root: string) => Promise<{ ok: true; chemin: string; notes: string[] } | { ok: false; motif: string }>; publierPr?: (o: { root: string; ref: { owner: string; repo: string; numero: number }; branche: string; bilan: string }) => Promise<{ ok: true; url: string; nouvelle: boolean } | { ok: false; motif: string }> }) {
   const factory = workspaceServicesFactory({
-    extensions: [],
     stacks: [{ id: "typescript", layout: { acceptanceTests: [], unitTests: ["tests/**"], sources: ["src/**"] }, infrastructureModules: [], detect: async () => o.detecte ?? true, isTestFile: () => false, testFilePattern: "^tests/", runTests: async () => ({ results: [], exitCode: 0, timedOut: false, output: "", durationMs: 0 }) }],
     allowedPrograms: ["pytest"],
     programConsent: true,

@@ -5,10 +5,12 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
+import { createUsageRecorder } from "@skraft-mcp/core";
 import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, MemoryTaskSessionStore, ScriptedRuntime, sequentialIds } from "@skraft-mcp/core/testing";
 import { bundle, createNodeLauncher } from "@skraft-mcp/extension-host";
 import { MemoryTaskStore } from "@skraft-mcp/task-engine";
 import type { TraceEntry, TraceStore } from "@skraft-mcp/core";
+import type { InteractionDto, TaskCardDto } from "../src/assemblage/dto.js";
 import type { Workspace } from "@skraft-mcp/workspace";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { workspaceServicesFactory } from "../src/assemblage/services-du-projet.js";
@@ -40,6 +42,32 @@ export default async function (w, entree) {
 }
 `;
 
+/**
+ * Workflow qui exerce la machinerie d'hôte : une phase avec un agent (donc de l'usage et une
+ * session), puis une étape où le script demande une décision à l'humain (donc une tâche en attente
+ * et une demande à reprendre après un redémarrage).
+ */
+const VALIDE = `export const meta = {
+  name: "valide",
+  description: "Démo avec validation.",
+  commande: "valide",
+  entrees: { story: { type: "fichier", obligatoire: true, aide: "La story." } },
+  phases: { REDACTION: "Rédaction", VALIDATION: "Validation à donner" },
+  permissions: { ecriture: [".skraft/**"] },
+  agents: { redacteur: { prompt: "agents/redacteur.agent.md", ecriture: [".skraft/**"], sortie: "report_phase" } },
+};
+export default async function (w, entree) {
+  await w.phase("REDACTION", async () => {
+    const a = await w.agent("redacteur", "Résume " + entree.story);
+    await w.ecrireFichier(".skraft/resume.md", a.sortie.summary);
+    return true;
+  });
+  await w.etape("VALIDATION");
+  const d = await w.humain("valider", "Publier le résumé ?", [{ id: "oui", label: "Publier" }, { id: "non", label: "Garder" }], { detail: "le résumé" });
+  return { decision: d.decision };
+}
+`;
+
 async function poser(base: string, fichiers: Record<string, string>) {
   for (const [rel, c] of Object.entries(fichiers)) {
     await mkdir(dirname(join(base, rel)), { recursive: true });
@@ -47,7 +75,19 @@ async function poser(base: string, fichiers: Record<string, string>) {
   }
 }
 
-async function ouvrir(opts: { projet?: Record<string, string>; machine?: Record<string, string>; reponse?: "allow-once" | "allow-always" | "deny"; sansConfirmeur?: boolean; trace?: TraceStore }) {
+async function ouvrir(opts: {
+  projet?: Record<string, string>;
+  machine?: Record<string, string>;
+  reponse?: "allow-once" | "allow-always" | "deny";
+  sansConfirmeur?: boolean;
+  trace?: TraceStore;
+  /** Magasins partagés entre deux ouvertures, pour éprouver un redémarrage. */
+  taskStore?: MemoryTaskStore;
+  interactionStore?: MemoryInteractionStore;
+  sessions?: MemoryTaskSessionStore;
+  runtime?: ScriptedRuntime;
+  usage?: boolean;
+}) {
   const projet = await mkdtemp(join(racine, "projet-"));
   const machine = await mkdtemp(join(racine, "machine-"));
   await poser(projet, opts.projet ?? {});
@@ -55,8 +95,20 @@ async function ouvrir(opts: { projet?: Record<string, string>; machine?: Record<
   const ecrits: string[] = [];
   const posts: string[] = [];
   const demandes: string[] = [];
-  const runtime = new ScriptedRuntime();
-  runtime.behave("workflow.demo/redacteur", async (t) => void (await t.callTool("report_phase", { summary: "résumé", files: [] })));
+  const cards: TaskCardDto[] = [];
+  const pending: InteractionDto[][] = [];
+  const notifications: string[] = [];
+  let charges = 0;
+  const runtime = opts.runtime ?? new ScriptedRuntime();
+  for (const nom of ["demo", "valide"])
+    runtime.behave(`workflow.${nom}/redacteur`, async (t) => {
+      t.session.emit({ type: "usage", model: "gpt-5", inputTokens: 1200, outputTokens: 80, multiplier: 1 });
+      await t.callTool("report_phase", { summary: "résumé", files: [] });
+    });
+  const taskStore = opts.taskStore ?? new MemoryTaskStore();
+  const interactionStore = opts.interactionStore ?? new MemoryInteractionStore();
+  const sessions = opts.sessions ?? new MemoryTaskSessionStore();
+  const usageRecorder = opts.usage ? createUsageRecorder(await mkdtemp(join(racine, "usage-"))) : undefined;
   const workspace = {
     root: projet,
     files: { read: async () => "", write: async (p: string) => void ecrits.push(p), ensureDir: async () => {}, list: async () => [] },
@@ -64,26 +116,29 @@ async function ouvrir(opts: { projet?: Record<string, string>; machine?: Record<
     repo: { worktree: async () => { throw new Error("non"); }, head: async () => "h", commit: async () => null, sync: async () => ({ pulled: 0, pushed: 0 }), switchBranch: async () => {} },
   } as unknown as Workspace;
   const services = await workspaceServicesFactory({
-    extensions: [],
     stacks: [{ id: "typescript", layout: { acceptanceTests: [], unitTests: ["tests/**"], sources: ["src/**"] }, infrastructureModules: [], detect: async () => true, isTestFile: () => false, testFilePattern: "^tests/", runTests: async () => ({ results: [], exitCode: 0, timedOut: false, output: "", durationMs: 0 }) }],
     tasksDir: join(projet, ".taches"),
-    taskStore: new MemoryTaskStore(),
+    taskStore,
     evidenceStore: new MemoryEvidenceStore(),
-    interactionStore: new MemoryInteractionStore(),
-    taskSessionStore: new MemoryTaskSessionStore(),
+    interactionStore,
+    taskSessionStore: sessions,
+    ...(usageRecorder ? { usageRecorder } : {}),
     clock: fixedClock(),
     ids: sequentialIds("id-"),
     workflows: { machine, launcher: createNodeLauncher(), runtimeEntry: enfant },
     ...(opts.trace ? { traceStore: opts.trace } : {}),
   })({
     workspace,
-    runtime: async () => runtime,
-    onTask: () => {},
-    onInteractions: () => {},
+    runtime: async () => (charges++, runtime),
+    onTask: (c) => void cards.push(c),
+    onInteractions: (p) => void pending.push(p),
     onPost: (_e, md) => void posts.push(md),
+    notify: (title: string, body: string) => void notifications.push(`${title} | ${body}`),
     ...(opts.sansConfirmeur ? {} : { confirmer: { confirm: async (r: { title: string }) => (demandes.push(r.title), opts.reponse ?? "allow-once") } }),
   });
-  return { services, ecrits, posts, demandes };
+  // Comme le serveur : purge des sessions et reprise des tâches une fois les services construits.
+  await services.demarrer?.();
+  return { services, ecrits, posts, demandes, cards, pending, notifications, runtime, sessions, taskStore, interactionStore, charges: () => charges };
 }
 
 const until = async (check: () => Promise<boolean> | boolean) => {
@@ -249,4 +304,105 @@ describe("Workflows en dossier dans l'application (ADR 0055)", () => {
     expect(o.posts.some((p) => /workflows.*non activés/i.test(p))).toBe(true);
     await o.services.dispose();
   }, 30_000);
+});
+
+/**
+ * Machinerie d'hôte, éprouvée à travers un workflow (ADR 0091 §9). Ces cas venaient de
+ * `workspace-services.test.ts`, où ils s'appuyaient sur l'extension d'exemple `tdd` : ils portent
+ * sur l'hôte, pas sur elle, et le workflow est désormais la seule chose qu'il active.
+ *
+ * Le septième cas d'alors — jalons et alertes — n'est pas repris : `manifesteDuWorkflow` ne déclare
+ * ni `milestones` ni `alerts`, et le `meta` n'a pas ces champs. Rien dans le produit ne peut plus
+ * en produire.
+ */
+const WFV = { ".agent-studio/workflows/valide/workflow.mjs": VALIDE, ".agent-studio/workflows/valide/agents/redacteur.agent.md": "Tu résumes." };
+
+describe("machinerie d'hôte, à travers un workflow", () => {
+  it("la commande est exposée ; le texte libre part vers la session principale, et aucun runtime n'est chargé d'avance", async () => {
+    const o = await ouvrir({ projet: WFV });
+    // `/stack` est là aussi : elle s'enregistre dès qu'il y a quelqu'un à qui demander l'accord d'écrire.
+    expect(o.services.commands().map((c) => c.invocation)).toEqual(["stack", "valide"]);
+    expect(await o.services.route("Bonjour")).toEqual({ kind: "chat" });
+    expect(await o.services.route("/inconnue")).toEqual({ kind: "unknown-command", name: "inconnue" });
+    expect(o.charges()).toBe(0);
+  });
+
+  it("tâche lancée, carte avec les libellés du meta, question du script en demande d'interaction", async () => {
+    const o = await ouvrir({ projet: WFV });
+    expect(await o.services.route("/valide stories/us-2.md")).toEqual({ kind: "handled" });
+
+    await until(() => o.pending.some((p) => p.length === 1));
+    const [demande] = await o.services.pendingInteractions();
+    expect(demande).toMatchObject({ extensionId: "workflow.valide", title: "Publier le résumé ?", detail: "le résumé" });
+    expect(demande?.options.map((x) => x.label)).toEqual(["Publier", "Garder"]);
+    // L'identifiant d'une option porte le numéro de l'appel au journal : c'est par lui que le rejeu retrouve la décision.
+    expect(demande?.options.map((x) => x.id)).toEqual([expect.stringMatching(/^\d+:oui$/), expect.stringMatching(/^\d+:non$/)]);
+
+    await until(() => o.cards.at(-1)?.status === "waiting");
+    expect(o.cards.at(-1)).toMatchObject({ title: "valide", phase: "VALIDATION", phaseLabel: "Validation à donner", status: "waiting", alert: false, milestone: false });
+    expect(await o.services.tasks()).toHaveLength(1);
+  });
+
+  it("usage par état sur la carte : requêtes et tokens de l'agent, avec le libellé de sa phase (D37)", async () => {
+    const o = await ouvrir({ projet: WFV, usage: true });
+    await o.services.route("/valide stories/us-2.md");
+    await until(() => o.pending.some((p) => p.length === 1));
+    await until(() => o.cards.at(-1)?.usage?.rows.some((r) => r.phase === "REDACTION" && r.requests === 1) ?? false);
+    const usage = o.cards.at(-1)!.usage!;
+    expect(usage.unit).toBe("requests");
+    expect(usage.rows.find((r) => r.phase === "REDACTION")).toMatchObject({ label: "Rédaction", requests: 1, inputTokens: 1200, outputTokens: 80 });
+    expect(usage.total.requests).toBe(1);
+  });
+
+  it("la réponse relance le script ; l'annulation clôt la tâche et ses demandes", async () => {
+    const o = await ouvrir({ projet: WFV });
+    await o.services.route("/valide stories/us-2.md");
+    await until(() => o.pending.some((p) => p.length === 1));
+    const [demande] = await o.services.pendingInteractions();
+    await o.services.respond(demande!.id, demande!.options[0]!.id);
+    await until(async () => (await o.services.tasks()).some((t) => t.status === "finished"));
+
+    // Une seconde tâche, annulée en attente : la demande qui l'attendait est retirée.
+    await o.services.route("/valide stories/us-3.md");
+    await until(() => o.pending.at(-1)?.length === 1);
+    const [seconde] = await o.services.pendingInteractions();
+    await o.services.cancelTask(seconde!.taskId);
+    await until(async () => (await o.services.tasks()).some((t) => t.id === seconde!.taskId && t.status === "finished"));
+    await until(() => o.pending.at(-1)?.length === 0);
+  });
+
+  it("redémarrage : la tâche en attente et sa demande de décision sont toujours là (J3)", async () => {
+    const taskStore = new MemoryTaskStore();
+    const interactionStore = new MemoryInteractionStore();
+    const premier = await ouvrir({ projet: WFV, taskStore, interactionStore });
+    await premier.services.route("/valide stories/us-2.md");
+    await until(() => premier.pending.some((p) => p.length === 1));
+    await premier.services.dispose();
+
+    const second = await ouvrir({ projet: WFV, taskStore, interactionStore });
+    const taches = await second.services.tasks();
+    expect(taches).toHaveLength(1);
+    expect(taches[0]).toMatchObject({ phase: "VALIDATION", status: "waiting" });
+    const [demande] = await second.services.pendingInteractions();
+    expect(demande?.taskId).toBe(taches[0]?.id);
+  });
+
+  it("sessions d'agent : celles d'un crash supprimées à l'ouverture, toutes supprimées à la fermeture (ADR 0053)", async () => {
+    // Ouverture après un crash : le registre nomme une session que personne ne libérera plus.
+    const sessions = new MemoryTaskSessionStore([{ key: "t-ancienne/workflow.valide/redacteur", sessionId: "orpheline" }]);
+    const o = await ouvrir({ projet: WFV, sessions });
+    await until(() => o.runtime.deleted.includes("orpheline"));
+
+    // Une tâche en attente d'une décision humaine garde la session de son agent (ADR 0039)…
+    await o.services.route("/valide stories/us-2.md");
+    await until(() => o.pending.some((p) => p.length === 1));
+    const redacteur = o.runtime.history.at(-1)!.id;
+    expect(o.runtime.deleted).not.toContain(redacteur);
+    expect((await sessions.list()).map((e) => e.sessionId)).toEqual([redacteur]);
+
+    // …mais la fermeture normale la supprime comme un crash le ferait.
+    await o.services.dispose();
+    expect(o.runtime.deleted).toContain(redacteur);
+    expect(await sessions.list()).toEqual([]);
+  });
 });

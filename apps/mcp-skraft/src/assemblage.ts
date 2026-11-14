@@ -83,7 +83,6 @@ export async function assemblerServeur(o: OptionsAssemblage): Promise<{ ok: true
   const surSortieDErreur = (c: string) => logger.warn("sortie d'erreur d'un workflow", { output: c.slice(0, 2_000) });
 
   const factory = workspaceServicesFactory({
-    extensions: [],
     stacks: [createTypeScriptAdapter()],
     allowedPrograms: admin.allowedPrograms,
     origineDesProgrammes: admin.origineDesProgrammes,

@@ -29,14 +29,7 @@ import {
   type ToolSpec,
 } from "@skraft-mcp/core";
 import type { ExtensionManifest } from "@skraft-mcp/extension-host";
-import {
-  activateInProcess,
-  activateIsolated,
-  type ExtensionHandle,
-  type IsolatedExtension,
-  type LoadedExtension,
-  type ProcessLauncher,
-} from "@skraft-mcp/extension-host";
+import type { ExtensionHandle, ProcessLauncher } from "@skraft-mcp/extension-host";
 import {
   createNodeProcessRunner,
   createComposedAdapter,
@@ -85,12 +78,8 @@ import {
   type StackCommandDeps,
 } from "@skraft-mcp/pile-projet";
 
-/** Extension à activer : dans le principal (tests, J2) ou dans son propre processus (J4). */
-export type ExtensionSource = ({ kind: "in-process" } & LoadedExtension) | ({ kind: "isolated" } & IsolatedExtension);
-
 export interface WorkspaceServicesConfig {
   /** Extensions à activer, relues à chaque ouverture de projet (installation, révocation). */
-  extensions: ExtensionSource[] | (() => Promise<ExtensionSource[]>);
   /** Adaptateurs de stack, par ordre de préférence : le premier qui reconnaît le projet est retenu. */
   stacks: StackAdapter[];
   /** Programmes qu'un profil de stack peut lancer (D47, O12) ; vide = aucun profil n'est accepté. */
@@ -110,8 +99,6 @@ export interface WorkspaceServicesConfig {
    * (serveur MCP, ADR 0068, point 8).
    */
   sansRepli?: boolean;
-  /** Obligatoire dès qu'une extension est isolée. */
-  isolation?: { launcher: ProcessLauncher; runtimeEntry: string };
   /** Dossier des tâches ; un sous-dossier par projet. */
   tasksDir: string;
   clock: Clock;
@@ -200,7 +187,7 @@ export class AucunePile extends Error {
   override name = "AucunePile";
 }
 
-/** Fabrique des services d'un projet : assemble registre, moteur, interactions et extensions. */
+/** Fabrique des services d'un projet : assemble registre, moteur, interactions et workflows. */
 export function workspaceServicesFactory(cfg: WorkspaceServicesConfig): WorkspaceServicesFactory {
   // La liste et son origine voyagent ensemble : un refus doit pouvoir dire d'où vient la liste (09/11).
   const programmes: ParseOptions = { allowedPrograms: cfg.allowedPrograms ?? [], ...(cfg.origineDesProgrammes ? { origine: cfg.origineDesProgrammes } : {}) };
@@ -249,8 +236,8 @@ export function workspaceServicesFactory(cfg: WorkspaceServicesConfig): Workspac
       );
     const stack = choisie ?? cfg.stacks[0];
     if (!stack) throw new Error("Aucun adaptateur de stack configuré");
-    const sources = typeof cfg.extensions === "function" ? await cfg.extensions() : cfg.extensions;
-    const manifests = sources.map((e) => e.manifest);
+    // Déclarations des tâches, pour les libellés des cartes : seuls les workflows en apportent (ADR 0091 §3).
+    const manifests: ExtensionManifest[] = [];
     if (declare) onPost("agent-studio", `Stack du projet : **${declare.id}**, d'après le profil déclaré par le projet.`);
     if (source === "repli") {
       cfg.logger?.warn("aucun adaptateur ne reconnaît le projet", { root: workspace.root, fallback: stack.id });
@@ -386,7 +373,7 @@ export function workspaceServicesFactory(cfg: WorkspaceServicesConfig): Workspac
         ),
       });
 
-    // Un seul exécuteur d'agents pour toutes les extensions : la clé de continuité porte déjà
+    // Un seul exécuteur d'agents pour tout le projet : la clé de continuité porte déjà
     // l'identifiant de l'extension, et `releaseTask` doit pouvoir libérer les sessions d'une
     // tâche où qu'elles aient été ouvertes (ADR 0039).
     const agents = createTaskAgentRunner({
@@ -421,35 +408,6 @@ export function workspaceServicesFactory(cfg: WorkspaceServicesConfig): Workspac
       chat: { post: onPost },
       ...(cfg.logger ? { logger: cfg.logger } : {}),
     });
-    for (const ext of sources) {
-      const hostDeps = {
-        registry,
-        engine,
-        agents,
-        workspace,
-        stack,
-        interactions,
-        evidence,
-        hooks,
-        trace: traceStore,
-        usage,
-        ...(modelFor ? { modelFor } : {}),
-        clock: cfg.clock,
-        ids: cfg.ids,
-        chat: { post: onPost },
-        ...(cfg.logger ? { logger: cfg.logger } : {}),
-      };
-      try {
-        if (ext.kind === "in-process") handles.push(await activateInProcess({ manifest: ext.manifest, module: ext.module }, hostDeps));
-        else {
-          if (!cfg.isolation) throw new Error("Aucun lanceur d'hôte d'extension configuré");
-          handles.push(await activateIsolated({ manifest: ext.manifest, directory: ext.directory, entry: ext.entry }, hostDeps, cfg.isolation));
-        }
-      } catch (err) {
-        cfg.logger?.error("activation d'extension impossible", { extensionId: ext.manifest.id, error: String(err) });
-        onPost(ext.manifest.id, `L'extension ${ext.manifest.id} n'a pas pu être activée : ${err instanceof Error ? err.message : String(err)}`);
-      }
-    }
     // Workflows en dossier (ADR 0055) : machine puis projet ; avant la reprise des tâches, pour que
     // celles d'un workflow retrouvent leur définition.
     /** Workflows activés, pour l'outil `proposer_workflow` de l'agent principal (`docs/11` §6). */

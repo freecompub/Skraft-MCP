@@ -41,7 +41,6 @@ async function ouvrir(o: { detecte?: boolean; profilProjet?: string; fichierProj
   if (o.fichierProjet) await writeFile(join(root, ".agent-studio", "projet.yaml"), o.fichierProjet);
   const posts: string[] = [];
   const services = await workspaceServicesFactory({
-    extensions: [],
     stacks: [{ id: "typescript", layout: { acceptanceTests: [], unitTests: [], sources: [] }, infrastructureModules: [], detect: async () => o.detecte ?? false, isTestFile: () => false, testFilePattern: "^tests/", runTests: async () => ({ results: [], exitCode: 0, timedOut: false, output: "", durationMs: 0 }) }],
     allowedPrograms: ["pytest"],
     origineDesProgrammes: "Liste de `allowedPrograms` dans /etc/agent-studio/admin.json.",

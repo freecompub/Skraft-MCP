@@ -1,5 +1,4 @@
 import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, MemoryTaskSessionStore, ScriptedRuntime, sequentialIds } from "@skraft-mcp/core/testing";
-import { manifest as tddManifest, tddExtension } from "@skraft-mcp/ext-tdd";
 import { MemoryTaskStore } from "@skraft-mcp/task-engine";
 import type { Workspace } from "@skraft-mcp/workspace";
 import { chmod, cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
@@ -32,17 +31,12 @@ function fakeWorkspace(): Workspace {
 
 async function setup(store = new MemoryTaskStore(), runtime = new ScriptedRuntime(), interactionStore = new MemoryInteractionStore(), taskSessionStore = new MemoryTaskSessionStore()) {
   const usageRecorder = createUsageRecorder(await mkdtemp(join(tmpdir(), "agent-studio-usage-")));
-  runtime.behave("diabeo.tdd/tdd-planner", async (t) => {
-    t.session.emit({ type: "usage", model: "gpt-5", inputTokens: 1200, outputTokens: 80, multiplier: 1 });
-    await t.callTool("submit_plan", { steps: [{ id: "s1", behavior: "plafonne la dose" }] });
-  });
   let runtimeLoads = 0;
   const cards: TaskCardDto[] = [];
   const pending: InteractionDto[][] = [];
   const posts: string[] = [];
   const notifications: string[] = [];
   const services = await workspaceServicesFactory({
-    extensions: [{ kind: "in-process", manifest: tddManifest, module: tddExtension }],
     stacks: [{ id: "typescript", layout: { acceptanceTests: ["tests/acceptance/**"], unitTests: ["tests/**"], sources: ["src/**"] }, infrastructureModules: ["Infrastructure"],  detect: async () => true, isTestFile: (p) => p.startsWith("tests/"), testFilePattern: "^tests/", runTests: async () => ({ results: [], exitCode: 0, timedOut: false, output: "", durationMs: 0 }) }],
     tasksDir: "/inutile",
     taskStore: store,
@@ -84,7 +78,6 @@ describe("Services d'un projet (J2)", () => {
     const posts: string[] = [];
     const ecrits: string[] = [];
     const services = await workspaceServicesFactory({
-      extensions: [],
       stacks: [
         {
           id: "typescript",
@@ -228,7 +221,6 @@ infrastructureModules: [django]
     // l'utilisateur devant des résultats inexplicables.
     const posts: string[] = [];
     await workspaceServicesFactory({
-      extensions: [],
       stacks: [
         {
           id: "typescript",
@@ -256,111 +248,8 @@ infrastructureModules: [django]
     });
     expect(posts.join("\n")).toMatch(/reconnu par aucun adaptateur/i);
   });
-
-  it("expose la commande /tdd de l'extension ; le texte libre part vers la session principale", async () => {
-    const { services, getLoads } = await setup();
-    expect(services.commands().map((c) => c.invocation)).toEqual(["tdd"]);
-    expect(await services.route("Bonjour")).toEqual({ kind: "chat" });
-    expect(await services.route("/inconnue")).toEqual({ kind: "unknown-command", name: "inconnue" });
-    expect(getLoads()).toBe(0); // aucun runtime tant qu'aucun agent n'est lancé
-  });
-
-  it("/tdd : tâche lancée, carte avec libellés du manifeste, plan soumis en demande d'interaction", async () => {
-    const { services, cards, pending, posts } = await setup();
-    expect(await services.route("/tdd Plafonner la dose")).toEqual({ kind: "handled" });
-    expect(posts[0]).toMatch(/^diabeo\.tdd: Cycle TDD lancé/);
-
-    await until(() => pending.some((p) => p.length === 1));
-    const [review] = await services.pendingInteractions();
-    expect(review).toMatchObject({ extensionId: "diabeo.tdd", title: "Valider le plan TDD : Plafonner la dose", detail: "1. plafonne la dose" });
-    expect(review?.options.map((o) => o.id)).toEqual(["approve", "reject"]);
-
-    await until(() => cards.at(-1)?.status === "waiting"); // carte limitée à deux rafraîchissements par seconde
-    const card = cards.at(-1)!;
-    expect(card).toMatchObject({ title: "Cycle TDD : Plafonner la dose", phase: "PLAN_REVIEW", phaseLabel: "Plan à valider", status: "waiting", alert: false });
-    expect(card.step).toEqual({ index: 1, total: 1, behavior: "plafonne la dose" });
-    expect(await services.tasks()).toHaveLength(1);
-  });
-
-  it("usage par état sur la carte : requêtes et tokens du planificateur, libellé du manifeste (D37)", async () => {
-    const { services, cards, pending } = await setup();
-    await services.route("/tdd Plafonner la dose");
-    await until(() => pending.some((p) => p.length === 1));
-    await until(() => cards.at(-1)?.usage?.rows.some((r) => r.phase === "PLANNING" && r.requests === 1) ?? false);
-    const usage = cards.at(-1)!.usage!;
-    expect(usage.unit).toBe("requests");
-    expect(usage.rows.find((r) => r.phase === "PLANNING")).toMatchObject({ label: "Découpage en comportements", requests: 1, inputTokens: 1200, outputTokens: 80 });
-    expect(usage.total.requests).toBe(1);
-  });
-
-  it("la réponse relance la tâche ; l'annulation clôt la tâche et ses demandes", async () => {
-    const { services, pending, cards } = await setup();
-    await services.route("/tdd Plafonner la dose");
-    await until(() => pending.some((p) => p.length === 1));
-    const [review] = await services.pendingInteractions();
-    await services.respond(review!.id, "reject", "trop large");
-    await until(() => pending.filter((p) => p.length === 1).length === 2); // nouveau plan soumis
-    const [second] = await services.pendingInteractions();
-
-    await services.cancelTask(second!.taskId);
-    await until(() => cards.at(-1)?.phase === "ABORTED");
-    expect(cards.at(-1)).toMatchObject({ status: "finished", phaseLabel: "Annulé", alert: true });
-    await until(() => pending.at(-1)?.length === 0);
-  });
-
-  it("redémarrage : la tâche en attente et sa demande de décision sont toujours là (J3)", async () => {
-    const store = new MemoryTaskStore();
-    const interactionStore = new MemoryInteractionStore();
-    const first = await setup(store, new ScriptedRuntime(), interactionStore);
-    await first.services.route("/tdd Plafonner la dose");
-    await until(() => first.pending.some((p) => p.length === 1));
-    await first.services.dispose();
-
-    const second = await setup(store, new ScriptedRuntime(), interactionStore);
-    const tasks = await second.services.tasks();
-    expect(tasks).toHaveLength(1);
-    expect(tasks[0]).toMatchObject({ phase: "PLAN_REVIEW", status: "waiting" });
-    const [review] = await second.services.pendingInteractions();
-    expect(review?.taskId).toBe(tasks[0]?.id);
-  });
-
-  it("sessions d'agent : celles d'un crash supprimées à l'ouverture, toutes supprimées à la fermeture (ADR 0053)", async () => {
-    // Ouverture après un crash : le registre nomme une session que personne ne libérera plus.
-    const sessions = new MemoryTaskSessionStore([{ key: "t-ancienne/diabeo.tdd/tdd-planner", sessionId: "orpheline" }]);
-    const runtime = new ScriptedRuntime();
-    const { services, pending } = await setup(new MemoryTaskStore(), runtime, new MemoryInteractionStore(), sessions);
-    await until(() => runtime.deleted.includes("orpheline"));
-
-    // Une tâche en attente d'une décision humaine garde la session de son planificateur (ADR 0039)…
-    await services.route("/tdd Plafonner la dose");
-    await until(() => pending.some((p) => p.length === 1));
-    const planificateur = runtime.history.at(-1)!.id;
-    expect(runtime.deleted).not.toContain(planificateur);
-    expect((await sessions.list()).map((e) => e.sessionId)).toEqual([planificateur]);
-
-    // …mais la fermeture normale la supprime comme un crash le ferait.
-    await services.dispose();
-    expect(runtime.deleted).toContain(planificateur);
-    expect(await sessions.list()).toEqual([]);
-  });
-
-  it("jalons et alertes : consignés dans la conversation et notifiés", async () => {
-    const { services, pending, posts, notifications } = await setup();
-    await services.route("/tdd Plafonner la dose");
-    await until(() => pending.some((p) => p.length === 1));
-    const [review] = await services.pendingInteractions();
-    await services.cancelTask(review!.taskId);
-    await until(() => posts.some((p) => p.includes("Annulé")));
-    expect(posts.at(-1)).toBe("diabeo.tdd: Cycle TDD : Plafonner la dose : Annulé (étape 1 sur 1 : plafonne la dose)");
-    expect(notifications.at(-1)).toMatch(/^Tâche à surveiller \| Cycle TDD/);
-  });
 });
 
-/**
- * `/stack init` dans les services (ADR 0076) : la pile proposée par un agent scripté, vérifiée pour de
- * vrai — accord sur les programmes, schéma, diagnostic, et de vrais canaris lancés sous `node --test`
- * dans une copie du projet (un dossier temporaire tient lieu de worktree Git). Aucun LLM.
- */
 describe("/stack init : la pile découverte par un agent, vérifiée par le code", () => {
   async function ouvrir(o: { reponses: object[]; programmes?: string[]; confirmer?: "allow-once" | "deny"; confirmerProgrammes?: "allow-once" | "deny"; projet?: string; contenus?: Record<string, string> }) {
     const questionsProgrammes: string[] = [];
@@ -385,7 +274,6 @@ describe("/stack init : la pile découverte par un agent, vérifiée par le code
     const ecrits: string[] = [];
     const copies: string[] = [];
     const services = await workspaceServicesFactory({
-      extensions: [],
       stacks: [{ id: "typescript", layout: { acceptanceTests: [], unitTests: ["tests/**"], sources: ["src/**"] }, infrastructureModules: [], detect: async () => true, isTestFile: () => false, testFilePattern: "^tests/", runTests: async () => ({ results: [], exitCode: 0, timedOut: false, output: "", durationMs: 0 }) }],
       allowedPrograms: o.programmes ?? ["node"],
       programConsent: true,
@@ -506,4 +394,3 @@ describe("/stack init : la pile découverte par un agent, vérifiée par le code
     await h.cleanup();
   }, 60_000);
 });
-
