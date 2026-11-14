@@ -39,7 +39,7 @@ pnpm essai <projet> <story> <reponses.json> --runtime=claude --suivi=attendre   
 | `tests/architecture` | les invariants de structure, tenus par le code (ADR 0091) |
 | `profiles` | des profils de pile d'exemple |
 | `scripts` | l'essai réel du serveur et le banc de comparaison |
-| `docs` | les ADR, les spécifications, les workflows, les runs d'essai |
+| `docs` | les ADR, les spécifications, les études héritées d'agent-studio (ADR 0093), les runs d'essai |
 
 ## Provenance
 
