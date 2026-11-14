@@ -7,8 +7,8 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ScriptedRuntime, type ScriptedBehavior } from "@agent-studio/core/testing";
-import type { StackAdapter } from "@agent-studio/stack-adapters";
+import { ScriptedRuntime, type ScriptedBehavior } from "@skraft-mcp/core/testing";
+import type { StackAdapter } from "@skraft-mcp/stack-adapters";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { answerQuestions, assemble, createProject, fakeStack, git, put, shutdownHosts, simulatedAgents, unitTestWriter, until } from "./support/harness.js";
 import { fin, lancerWorkflow } from "./support/fin.js";

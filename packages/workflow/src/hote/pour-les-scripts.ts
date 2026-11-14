@@ -1,5 +1,5 @@
 /**
- * `@agent-studio/workflow` tel qu'un script de workflow le voit : exactement la bibliothèque que le
+ * `@skraft-mcp/workflow` tel qu'un script de workflow le voit : exactement la bibliothèque que le
  * bac à sable lui fournit (`bibliotheque.ts`), en exports nommés. Sert à tester les modules d'un
  * workflow hors du processus isolé (alias Vitest) ; jamais importé par la plateforme elle-même.
  */

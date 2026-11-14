@@ -2,7 +2,7 @@
  * Demandes de permission de `claude -p`, reçues par notre outil MCP (ADR 0070), normalisées comme
  * celles de Copilot : la garde (`ToolCallGuard`) ne voit que des sortes et des chemins.
  */
-import type { GuardDecision, ToolCallRequest } from "@agent-studio/core";
+import type { GuardDecision, ToolCallRequest } from "@skraft-mcp/core";
 
 const ECRITURE = new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 const LECTURE = new Set(["Read", "Glob", "Grep", "LS"]);

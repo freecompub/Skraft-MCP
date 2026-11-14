@@ -6,8 +6,8 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { EnvFailureError } from "@agent-studio/core";
-import { ScriptedRuntime } from "@agent-studio/core/testing";
+import { EnvFailureError } from "@skraft-mcp/core";
+import { ScriptedRuntime } from "@skraft-mcp/core/testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { answerQuestions, assemble, createProject, fakeStack, put, shutdownHosts, simulatedAgents, unitTestWriter, until } from "./support/harness.js";
 import { fin, lancerWorkflow } from "./support/fin.js";

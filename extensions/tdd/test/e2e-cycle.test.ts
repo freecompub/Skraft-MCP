@@ -8,7 +8,7 @@ import { existsSync } from "node:fs";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { ScriptedRuntime } from "@agent-studio/core/testing";
+import { ScriptedRuntime } from "@skraft-mcp/core/testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { TddState } from "../src/index.js";
 import { assemble, CAP_SRC, CAP_TEST, createProject, devAgent, git, phaseOf, planner, ROLE, testAgent, until, HOST_MODES, shutdownHosts } from "./support/harness.js";

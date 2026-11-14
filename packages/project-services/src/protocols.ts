@@ -3,9 +3,9 @@
  * indépendants de l'application qui les héberge : l'application de bureau et le serveur MCP
  * (ADR 0068).
  */
-import type { AgentRuntime, CommandListing, ModelClass, ResumeEtape, ToolCallGuard, ToolSpec, UserConfirmer } from "@agent-studio/core";
-import type { RapportWorkflow } from "@agent-studio/workflow";
-import type { Workspace } from "@agent-studio/workspace";
+import type { AgentRuntime, CommandListing, ModelClass, ResumeEtape, ToolCallGuard, ToolSpec, UserConfirmer } from "@skraft-mcp/core";
+import type { RapportWorkflow } from "@skraft-mcp/workflow";
+import type { Workspace } from "@skraft-mcp/workspace";
 import type { InteractionDto, TaskCardDto } from "./dto.js";
 
 /** Accord sur un workflow donné d'avance : pour ce lancement, ou retenu pour son empreinte. */

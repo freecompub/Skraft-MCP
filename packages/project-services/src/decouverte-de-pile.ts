@@ -1,4 +1,4 @@
-import { detecterBdd, partiesTrouvees, proposeProfile, type DetectionBdd, type IndicesDuProjet, type StackProfile } from "@agent-studio/stack-adapters";
+import { detecterBdd, partiesTrouvees, proposeProfile, type DetectionBdd, type IndicesDuProjet, type StackProfile } from "@skraft-mcp/stack-adapters";
 
 /**
  * La pile découverte par un agent, vérifiée par le code (ADR 0076). L'agent propose ; ce fichier dit

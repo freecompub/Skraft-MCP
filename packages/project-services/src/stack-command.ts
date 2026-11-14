@@ -1,6 +1,6 @@
-import type { ConfirmAnswer } from "@agent-studio/core";
+import type { ConfirmAnswer } from "@skraft-mcp/core";
 import { ESSAIS_DE_DECOUVERTE, indicesPourLAgent, verifierPiles, type Decouverte, type PileProposee, type PileVerifiee } from "./decouverte-de-pile.js";
-import { blocBdd, completerBdd, detecterBdd, LIBELLE_PARTIE, partiesManquantes, partiesTrouvees, proposeProfile, type Constat, type DetectionBdd, type IndicesDuProjet, type PartieBdd, type StackProfile } from "@agent-studio/stack-adapters";
+import { blocBdd, completerBdd, detecterBdd, LIBELLE_PARTIE, partiesManquantes, partiesTrouvees, proposeProfile, type Constat, type DetectionBdd, type IndicesDuProjet, type PartieBdd, type StackProfile } from "@skraft-mcp/stack-adapters";
 
 /**
  * Commande `/stack` (SPEC §8.6). Elle donne accès, depuis la conversation, à ce qui n'existait

@@ -4,7 +4,7 @@
  * `skraft_etat` rend du JSON.
  */
 import { fileURLToPath } from "node:url";
-import { AucunePile } from "@agent-studio/project-services";
+import { AucunePile } from "@skraft-mcp/project-services";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { confirmerParLeClient } from "./confirmation.js";
@@ -13,7 +13,7 @@ import type { Connexion } from "./connexion.js";
 import type { Depots } from "./depots.js";
 import type { Mode, ProjetOuvert, Projets } from "./projets.js";
 import { resoudreProjet, type ProjetResolu } from "./projet.js";
-import { lireRefIssue, type RefIssue } from "@agent-studio/github-auth";
+import { lireRefIssue, type RefIssue } from "@skraft-mcp/github-auth";
 import { changements, ligneDeProgression, vueDeTache, type Instantane, type VueTache } from "./progression.js";
 import { decrireLecon, ecrireLecons, FICHIER_DES_LECONS, lireLecons, listeDesLecons, type StatutDeLecon } from "./lecons.js";
 

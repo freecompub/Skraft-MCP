@@ -1,5 +1,5 @@
 /** Lancement de `/skraft-workflow` et lecture de sa valeur de fin, pour les jumeaux des tests de skraft. */
-import type { EtatWorkflow } from "@agent-studio/workflow";
+import type { EtatWorkflow } from "@skraft-mcp/workflow";
 import type { assemble } from "./harness.js";
 import { until } from "./harness.js";
 

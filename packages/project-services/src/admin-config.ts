@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import type { TrustedPublisher } from "@agent-studio/extension-packaging";
+import type { TrustedPublisher } from "@skraft-mcp/extension-packaging";
 import { z } from "zod";
 
 /**

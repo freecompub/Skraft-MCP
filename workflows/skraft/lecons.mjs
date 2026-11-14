@@ -8,7 +8,7 @@
 *
 * Les fonctions du haut sont pures ; celles du bas (« Fin de run ») ne touchent le disque que par `w`.
 */
-import { TourInterrompu } from "@agent-studio/workflow";
+import { TourInterrompu } from "@skraft-mcp/workflow";
 import { CATALOGUES } from "./catalogues.mjs";
 
 /** Le fichier des leçons, écrit seulement par le code. */

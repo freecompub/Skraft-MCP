@@ -1,7 +1,7 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { ExtensionManifest } from "@agent-studio/extension-api";
-import { parseVersion, validateManifest } from "@agent-studio/extension-manifest";
+import type { ExtensionManifest } from "@skraft-mcp/extension-api";
+import { parseVersion, validateManifest } from "@skraft-mcp/extension-manifest";
 import {
   extractPackage,
   isRevoked,
@@ -9,7 +9,7 @@ import {
   verifyPackage,
   verifyRevocationList,
   type TrustedPublisher,
-} from "@agent-studio/extension-packaging";
+} from "@skraft-mcp/extension-packaging";
 import { describePermission } from "./permissions-text.js";
 
 export interface ConsentRequest {

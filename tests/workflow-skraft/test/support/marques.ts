@@ -1,7 +1,7 @@
 /** Pile « par marques » : chaque scénario et chaque test unitaire demandent leur propre code. */
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { StackAdapter } from "@agent-studio/stack-adapters";
+import type { StackAdapter } from "@skraft-mcp/stack-adapters";
 import { fakeStack, put } from "./harness.js";
 
 export const UNIT = "tests/unit/bolus-cap.test.ts";

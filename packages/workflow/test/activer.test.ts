@@ -1,10 +1,10 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { createHookRegistry, createInteractionService, createRegistry, createTaskAgentRunner } from "@agent-studio/core";
-import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, ScriptedRuntime, sequentialIds } from "@agent-studio/core/testing";
-import { bundle, createNodeLauncher, type HostDeps } from "@agent-studio/extension-host";
-import { createTaskEngine, MemoryTaskStore } from "@agent-studio/task-engine";
+import { createHookRegistry, createInteractionService, createRegistry, createTaskAgentRunner } from "@skraft-mcp/core";
+import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, ScriptedRuntime, sequentialIds } from "@skraft-mcp/core/testing";
+import { bundle, createNodeLauncher, type HostDeps } from "@skraft-mcp/extension-host";
+import { createTaskEngine, MemoryTaskStore } from "@skraft-mcp/task-engine";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createJsonAccordStore } from "../src/accord/accords.js";
 import { trouverWorkflows } from "../src/chargeur/chargeur.js";

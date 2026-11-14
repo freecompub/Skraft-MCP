@@ -10,7 +10,7 @@
  * fichiers. Sans quoi l'agent lit « aucune violation » et coche C4 sur du vide.
  */
 import { describe, expect, it, vi } from "vitest";
-import type { LintReport } from "@agent-studio/stack-adapters";
+import type { LintReport } from "@skraft-mcp/stack-adapters";
 import { runLintTool, summarizeLint } from "../src/lint-tool.js";
 
 const outil = (lint: (opts: { files?: string[] }) => Promise<LintReport | null>) =>

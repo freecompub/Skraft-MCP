@@ -6,7 +6,7 @@
 * dans les preuves, seuils de mutation par couche, règle de dépendance, Object Calisthenics
 * mesurables. Aucune I/O : les effets leur passent le contenu lu par le code.
 */
-import { coucheDe as layerOf } from "@agent-studio/workflow";
+import { coucheDe as layerOf } from "@skraft-mcp/workflow";
 import { acOf } from "./distill.mjs";
 /**
 * Scénarios de DELIVER : un par test d'acceptance, dans l'ordre de `impl-plan.md` (première mention
@@ -72,7 +72,7 @@ export function checkRedGreenSequence(evidence, unitTests) {
 }
 // ---------- barre de qualité (configurable par projet) ---------------------------------
 // La barre vit dans la section `qualite` de `.agent-studio/projet.yaml`, commune aux extensions
-// (ADR 0049, 0071) : lue par `parseQualityBar` de `@agent-studio/extension-api`. Pendant la
+// (ADR 0049, 0071) : lue par `parseQualityBar` de `@skraft-mcp/extension-api`. Pendant la
 // transition, `.agent-studio/quality.yaml` puis l'ancien `.skraft/quality.json` sont relus.
 /**
 * Règles appliquées quand le projet n'en déclare aucune : le domaine n'importe pas ce que la
@@ -85,7 +85,7 @@ export function defaultDependencyRules(infrastructureModules) {
 }
 // Les seuils de forme ne figurent plus ici : ils appartiennent à la configuration du linter du
 // projet (`.eslintrc`…), seul endroit où ils ne peuvent pas se contredire.
-export { lireBarreDeQualite as parseQualityBar } from "@agent-studio/workflow";
+export { lireBarreDeQualite as parseQualityBar } from "@skraft-mcp/workflow";
 /**
 * Seuils de couverture sur les fichiers de production du scénario. Plancher de la mutation : elle
 * dit si le code est atteint, pas si les tests le jugent — mais elle est presque toujours

@@ -1,4 +1,4 @@
-import type { ExtensionManifest } from "@agent-studio/extension-api";
+import type { ExtensionManifest } from "@skraft-mcp/extension-api";
 import { PHASE_LABELS } from "./model.js";
 import { DEV_ROLE, PAIR_ROLE, PLANNER_ROLE, TEST_ROLE } from "./roles.js";
 

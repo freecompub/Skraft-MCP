@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentEvent, AgentRuntime, AgentSession, AgentSessionConfig, Logger, ToolCallRequest } from "@agent-studio/core";
+import type { AgentEvent, AgentRuntime, AgentSession, AgentSessionConfig, Logger, ToolCallRequest } from "@skraft-mcp/core";
 import { argumentsDuTour, contexteLongPossible, nomMcp } from "./arguments.js";
 import { createTraducteur } from "./evenements.js";
 import type { LanceurClaude, ProcessusClaude } from "./protocols.js";

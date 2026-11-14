@@ -1,4 +1,4 @@
-import { EnvFailureError, WorkDefectError, type Clock, type IdGenerator, type Logger, type TraceBody, type TraceStore, type UsageRecorder } from "@agent-studio/core";
+import { EnvFailureError, WorkDefectError, type Clock, type IdGenerator, type Logger, type TraceBody, type TraceStore, type UsageRecorder } from "@skraft-mcp/core";
 import type { SystemEvent, TaskCheckpoints, TaskDefinition, TaskEvent, TaskRecord, TaskStore } from "./protocols.js";
 
 export interface TaskEngineDeps {

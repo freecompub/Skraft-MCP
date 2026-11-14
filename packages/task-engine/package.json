@@ -1,5 +1,5 @@
 {
-  "name": "@agent-studio/task-engine",
+  "name": "@skraft-mcp/task-engine",
   "version": "0.0.0",
   "private": true,
   "license": "GPL-3.0-or-later",
@@ -8,7 +8,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@agent-studio/core": "workspace:*",
+    "@skraft-mcp/core": "workspace:*",
     "zod": "^4.6.5"
   }
 }

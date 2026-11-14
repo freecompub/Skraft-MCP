@@ -1,6 +1,6 @@
 /**
  * Compilation d'un dossier de workflow en un seul code (`docs/11` §3, §8) : le script n'importe que
- * des fichiers de son dossier et `@agent-studio/workflow`. Tout autre import — module Node, paquet,
+ * des fichiers de son dossier et `@skraft-mcp/workflow`. Tout autre import — module Node, paquet,
  * fichier hors du dossier, y compris par `import()` — est refusé avant toute exécution.
  */
 import { realpathSync } from "node:fs";
@@ -31,12 +31,12 @@ export async function compilerWorkflow(dossier: string): Promise<Compilation> {
           setup(b) {
             b.onResolve({ filter: /.*/ }, (args) => {
               if (args.kind === "entry-point") return undefined;
-              if (args.path === "@agent-studio/workflow") return { path: args.path, external: true };
+              if (args.path === "@skraft-mcp/workflow") return { path: args.path, external: true };
               if (args.path.startsWith("./") || args.path.startsWith("../")) {
                 if (!dedans(resolve(args.resolveDir, args.path))) return { errors: [{ text: `import hors du dossier du workflow : ${args.path}` }] };
                 return undefined;
               }
-              return { errors: [{ text: `import interdit : ${args.path} (seuls les fichiers du dossier et @agent-studio/workflow)` }] };
+              return { errors: [{ text: `import interdit : ${args.path} (seuls les fichiers du dossier et @skraft-mcp/workflow)` }] };
             });
             b.onLoad({ filter: /.*/ }, (args) => {
               let reel: string;

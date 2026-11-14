@@ -1,5 +1,5 @@
 import type { MessageOptions, ModelInfo, ResumeSessionConfig, SessionConfig, SessionEvent } from "@github/copilot-sdk";
-import type { AgentEvent, AgentSessionConfig } from "@agent-studio/core";
+import type { AgentEvent, AgentSessionConfig } from "@skraft-mcp/core";
 import { describe, expect, it } from "vitest";
 import { createCopilotRuntime } from "../src/copilot-runtime.js";
 import type { CopilotClientPort, CopilotSessionPort } from "../src/protocols.js";

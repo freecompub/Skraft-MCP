@@ -1,11 +1,11 @@
 /**
- * Ce qu'un script de workflow importe de `@agent-studio/workflow` (ADR 0055, `docs/11` §8) : les
+ * Ce qu'un script de workflow importe de `@skraft-mcp/workflow` (ADR 0055, `docs/11` §8) : les
  * aides, les erreurs, et des **calculs purs** — mêmes entrées, même résultat, aucune E/S. Les
  * contrôles de skraft en ont besoin (empreinte, motifs de fichiers, barre de qualité) ; les donner
  * ici évite que le dossier embarque des modules, et garde le rejeu exact.
  */
-import { baselineProblems, bddNonDeclare, coverageForChanges, coreFilesMissing, layerOf, MANIFESTE, matchesAny, parseQualityBar } from "@agent-studio/stack-adapters";
-import { disjoncte, memeRefus, normaliserMotifs } from "@agent-studio/core";
+import { baselineProblems, bddNonDeclare, coverageForChanges, coreFilesMissing, layerOf, MANIFESTE, matchesAny, parseQualityBar } from "@skraft-mcp/stack-adapters";
+import { disjoncte, memeRefus, normaliserMotifs } from "@skraft-mcp/core";
 import { parse as parseYaml } from "yaml";
 import { agir, essayer, motifsInterruption } from "../aides.js";
 import { empreinteDe } from "../contenus.js";

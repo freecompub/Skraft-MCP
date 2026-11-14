@@ -4,7 +4,7 @@
  * des lignes `stream-json`. Aucun appel à Claude.
  */
 import { readFileSync } from "node:fs";
-import type { AgentEvent, AgentSessionConfig, GuardDecision, ToolCallRequest } from "@agent-studio/core";
+import type { AgentEvent, AgentSessionConfig, GuardDecision, ToolCallRequest } from "@skraft-mcp/core";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { describe, expect, it } from "vitest";

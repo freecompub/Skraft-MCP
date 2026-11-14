@@ -9,8 +9,8 @@ const git = (cwd: string, ...args: string[]) => execFileSync("git", args, { cwd,
 import { mkdtemp, rm, symlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { ScriptedRuntime, type ScriptedBehavior } from "@agent-studio/core/testing";
-import { createTypeScriptAdapter } from "@agent-studio/stack-adapters";
+import { ScriptedRuntime, type ScriptedBehavior } from "@skraft-mcp/core/testing";
+import { createTypeScriptAdapter } from "@skraft-mcp/stack-adapters";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { answerQuestions, assemble, implPlanDe, put, shutdownHosts, simulatedAgents, testPlanDe, until, US12 } from "./support/harness.js";
 
@@ -126,7 +126,7 @@ describe("skraft en workflow — critères de S4 (DISTILL)", () => {
     expect(deliverPrompt).toContain("Tests d'acceptance requalifiés en non-régression :\n  - tests/acceptance/plafond.test.ts > ac-3 aucun plafond");
     expect(deliverPrompt).toContain("Les tests d'acceptance sont gelés : ne les modifie jamais.");
     expect(git(root, "log", "--format=%s", "-1")).toBe("docs(skraft): distill de us12-f15ade30");
-    const evidence = await import("@agent-studio/core").then(({ createJsonEvidenceStore }) => createJsonEvidenceStore(join(tasksDir, "evidence")).list(id));
+    const evidence = await import("@skraft-mcp/core").then(({ createJsonEvidenceStore }) => createJsonEvidenceStore(join(tasksDir, "evidence")).list(id));
     const redRuns = evidence.filter((e) => e.phase === "DISTILL_RED");
     expect(redRuns.at(-1)?.failing.map((f) => [f.id, f.failureKind])).toEqual([
       ["tests/acceptance/complement.test.ts > ac-2 complément", "assertion"],

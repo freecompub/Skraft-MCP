@@ -7,12 +7,12 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, sequentialIds } from "@agent-studio/core/testing";
-import { bundle, createNodeLauncher } from "@agent-studio/extension-host";
-import { createExtensionInstaller, type ConsentRequest } from "@agent-studio/extension-installer";
-import { generateKeyPair, packExtension } from "@agent-studio/extension-packaging";
-import { MemoryTaskStore } from "@agent-studio/task-engine";
-import type { Workspace } from "@agent-studio/workspace";
+import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, sequentialIds } from "@skraft-mcp/core/testing";
+import { bundle, createNodeLauncher } from "@skraft-mcp/extension-host";
+import { createExtensionInstaller, type ConsentRequest } from "@skraft-mcp/extension-installer";
+import { generateKeyPair, packExtension } from "@skraft-mcp/extension-packaging";
+import { MemoryTaskStore } from "@skraft-mcp/task-engine";
+import type { Workspace } from "@skraft-mcp/workspace";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { workspaceServicesFactory } from "../src/workspace-services.js";
 import type { WorkspaceServices } from "../src/protocols.js";

@@ -5,7 +5,7 @@
  * mêmes décisions que les runs de comparaison). Hors CI : **consomme de vraies requêtes Copilot**.
  * Travaille sur un **clone** du projet, jamais sur le dépôt donné.
  *
- *   pnpm --filter @agent-studio/mcp-skraft build
+ *   pnpm --filter @skraft-mcp/serveur build
  *   pnpm tsx scripts/essai-mcp-skraft.ts <projet ou adresse Git> <story> <reponses.json> [--auto] [--runtime=claude] [--base=<commit>] [--pile=<fichier yaml>] [--suivi=attendre] [--installer]
  *     [--arreter-en=DELIVER:120] [--reprise=continuer|nouvelle]
  *

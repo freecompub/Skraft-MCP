@@ -6,7 +6,7 @@
  */
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { parseMarkdownDoc } from "@agent-studio/extension-host";
+import { parseMarkdownDoc } from "@skraft-mcp/extension-host";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { describe, expect, it } from "vitest";

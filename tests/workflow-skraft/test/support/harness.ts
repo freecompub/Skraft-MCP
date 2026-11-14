@@ -18,13 +18,13 @@ import {
   createTaskAgentRunner,
   createJsonlTraceStore,
   createUsageRecorder,
-} from "@agent-studio/core";
-import { sequentialIds, type ScriptedBehavior, type ScriptedRuntime } from "@agent-studio/core/testing";
-import { bundle, createNodeLauncher, type ExtensionHandle, type HostDeps } from "@agent-studio/extension-host";
-import { activerWorkflow, createJsonAccordStore, trouverWorkflows } from "@agent-studio/workflow";
-import type { StackAdapter } from "@agent-studio/stack-adapters";
-import { createJsonTaskStore, createTaskEngine } from "@agent-studio/task-engine";
-import { openWorkspace, type Workspace } from "@agent-studio/workspace";
+} from "@skraft-mcp/core";
+import { sequentialIds, type ScriptedBehavior, type ScriptedRuntime } from "@skraft-mcp/core/testing";
+import { bundle, createNodeLauncher, type ExtensionHandle, type HostDeps } from "@skraft-mcp/extension-host";
+import { activerWorkflow, createJsonAccordStore, trouverWorkflows } from "@skraft-mcp/workflow";
+import type { StackAdapter } from "@skraft-mcp/stack-adapters";
+import { createJsonTaskStore, createTaskEngine } from "@skraft-mcp/task-engine";
+import { openWorkspace, type Workspace } from "@skraft-mcp/workspace";
 
 export const git = (cwd: string, ...args: string[]) =>
   execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@localhost", ...args], { cwd, encoding: "utf8" }).trim();
@@ -115,7 +115,7 @@ export function researchDoc(over: Partial<Record<string, string>> = {}): string 
 }
 
 /** Répond automatiquement aux questions ouvertes (profil PO), avec la réponse donnée. */
-export function answerQuestions(app: { interactions: import("@agent-studio/core").InteractionService }, answer = "par prise"): () => void {
+export function answerQuestions(app: { interactions: import("@skraft-mcp/core").InteractionService }, answer = "par prise"): () => void {
   const answered = new Set<string>();
   const tick = async () => {
     for (const q of await app.interactions.pending()) {

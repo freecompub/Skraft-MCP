@@ -1,8 +1,8 @@
 import { access, mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { bundle, createNodeLauncher } from "@agent-studio/extension-host";
-import { MemoryTaskStore } from "@agent-studio/task-engine";
+import { bundle, createNodeLauncher } from "@skraft-mcp/extension-host";
+import { MemoryTaskStore } from "@skraft-mcp/task-engine";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { evaluerScript } from "../src/hote/bac-a-sable.js";
 import { compilerWorkflow } from "../src/hote/compiler.js";
@@ -54,10 +54,10 @@ async function isole(script: string, opts: { delaiMs?: number; autres?: Record<s
 
 const fin = async (m: ReturnType<typeof moteurDepuis>, id: string) => ((await m.store.load(id))!.state as EtatWorkflow).fin;
 
-describe("compilation : seuls les fichiers du dossier et @agent-studio/workflow", () => {
-  it("imports relatifs du dossier et @agent-studio/workflow : acceptés, en un seul code", async () => {
+describe("compilation : seuls les fichiers du dossier et @skraft-mcp/workflow", () => {
+  it("imports relatifs du dossier et @skraft-mcp/workflow : acceptés, en un seul code", async () => {
     const d = await poserWorkflow("ok", {
-      "workflow.mjs": `${META}import { essayer } from "@agent-studio/workflow";\nimport { porte } from "./portes/porte.mjs";\nexport default async function (w) { return porte(); }\n`,
+      "workflow.mjs": `${META}import { essayer } from "@skraft-mcp/workflow";\nimport { porte } from "./portes/porte.mjs";\nexport default async function (w) { return porte(); }\n`,
       "portes/porte.mjs": `export const porte = () => "ok";\n`,
     });
     const c = await compilerWorkflow(d);
@@ -115,8 +115,8 @@ describe("bac à sable : ce qui rend le rejeu faux est absent", () => {
       await expect(essayer(`return typeof ${nom};`), nom).resolves.toBe("undefined");
   });
 
-  it("le `require` du code compilé ne connaît que @agent-studio/workflow", async () => {
-    await expect(essayer(`return typeof require("@agent-studio/workflow").essayer;`)).resolves.toBe("function");
+  it("le `require` du code compilé ne connaît que @skraft-mcp/workflow", async () => {
+    await expect(essayer(`return typeof require("@skraft-mcp/workflow").essayer;`)).resolves.toBe("function");
     await expect(essayer(`return require("node:fs");`)).rejects.toThrow(/import interdit dans un workflow : node:fs/);
   });
 
@@ -133,7 +133,7 @@ describe("bac à sable : ce qui rend le rejeu faux est absent", () => {
 describe("exécution isolée", () => {
   it("un workflow complet : fichiers, agent, calculs purs de la bibliothèque", async () => {
     const r = await isole(`
-import { empreinte, correspond } from "@agent-studio/workflow";
+import { empreinte, correspond } from "@skraft-mcp/workflow";
 export default async function (w) {
   const story = await w.lireFichier("story.md");
   const a = await w.agent("redacteur", story);

@@ -5,7 +5,7 @@
 * dans le réducteur, ils survivent à une relance par l'humain.
 */
 import { leconsPour } from "./lecons.mjs";
-import { correspond as matchesAny, Escalade, TourInterrompu } from "@agent-studio/workflow";
+import { correspond as matchesAny, Escalade, TourInterrompu } from "@skraft-mcp/workflow";
 import { buildBrief, ecrirePassation, ligneBdd, lignePile } from "./brief.mjs";
 import { lensBrief, latestArtifacts, refuterBrief } from "./review-brief.mjs";
 import { reviewReport, revueSansDefautCorrigible, synthesize } from "./review.mjs";

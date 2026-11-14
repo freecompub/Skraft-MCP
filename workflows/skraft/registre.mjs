@@ -10,7 +10,7 @@
 * Les fonctions du haut sont pures ; celles du bas (« Collecte et écriture ») ne touchent le disque que
 * par `w`, comme le reste du script.
 */
-import { normaliserMotifs } from "@agent-studio/workflow";
+import { normaliserMotifs } from "@skraft-mcp/workflow";
 import { sha256 } from "./support.mjs";
 
 /** Un fichier par story : deux stories menées en parallèle n'écrivent jamais le même. */

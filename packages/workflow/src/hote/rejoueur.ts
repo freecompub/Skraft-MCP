@@ -3,7 +3,7 @@
  * processus enfant isolé (`docs/11` §8). Le moteur, le journal et les effets ne changent pas.
  */
 import { dirname } from "node:path";
-import { createRpcEndpoint, type ChildHandle, type ProcessLauncher, type RpcEndpoint } from "@agent-studio/extension-host";
+import { createRpcEndpoint, type ChildHandle, type ProcessLauncher, type RpcEndpoint } from "@skraft-mcp/extension-host";
 import type { DeclarationWorkflow, EntreeJournal, EntreeOutil, EtatWorkflow } from "../protocols.js";
 import { rejouer } from "../rejeu.js";
 

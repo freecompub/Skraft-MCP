@@ -1,7 +1,7 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import type { ExtensionManifest, ManifestAgent } from "@agent-studio/extension-api";
+import type { ExtensionManifest, ManifestAgent } from "@skraft-mcp/extension-api";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   composeAgentPrompt,

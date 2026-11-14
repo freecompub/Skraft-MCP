@@ -3,8 +3,8 @@
  * (ADR 0068, point 5) : le serveur qui le tient **pilote** (il reprend les runs interrompus au
  * démarrage, il lance) ; les autres **consultent**.
  */
-import type { UserConfirmer } from "@agent-studio/core";
-import type { WorkspaceServices } from "@agent-studio/project-services";
+import type { UserConfirmer } from "@skraft-mcp/core";
+import type { WorkspaceServices } from "@skraft-mcp/project-services";
 import type { Piles } from "./piles.js";
 import type { Verrou } from "./verrou.js";
 

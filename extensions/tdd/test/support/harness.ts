@@ -16,12 +16,12 @@ import {
   createRegistry,
   createTaskAgentRunner,
   type Evidence,
-} from "@agent-studio/core";
-import { ScriptedRuntime, sequentialIds, type ScriptedBehavior } from "@agent-studio/core/testing";
-import { activateInProcess, activateIsolated, bundle, createNodeLauncher, type ExtensionHandle, type HostDeps } from "@agent-studio/extension-host";
-import { createTypeScriptAdapter, type StackAdapter } from "@agent-studio/stack-adapters";
-import { createJsonTaskStore, createTaskEngine, type TaskRecord } from "@agent-studio/task-engine";
-import { openWorkspace } from "@agent-studio/workspace";
+} from "@skraft-mcp/core";
+import { ScriptedRuntime, sequentialIds, type ScriptedBehavior } from "@skraft-mcp/core/testing";
+import { activateInProcess, activateIsolated, bundle, createNodeLauncher, type ExtensionHandle, type HostDeps } from "@skraft-mcp/extension-host";
+import { createTypeScriptAdapter, type StackAdapter } from "@skraft-mcp/stack-adapters";
+import { createJsonTaskStore, createTaskEngine, type TaskRecord } from "@skraft-mcp/task-engine";
+import { openWorkspace } from "@skraft-mcp/workspace";
 import { manifest, tddExtension, type TddState } from "../../src/index.js";
 
 const NODE_MODULES = resolve(import.meta.dirname, "../../../../node_modules");

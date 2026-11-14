@@ -1,11 +1,11 @@
 /**
  * Connexion à GitHub sans fenêtre (ADR 0068, point 7), par `gh` comme l'application
- * (`@agent-studio/github-auth`). Le flux d'appareil dure le temps que l'utilisateur valide dans son
+ * (`@skraft-mcp/github-auth`). Le flux d'appareil dure le temps que l'utilisateur valide dans son
  * navigateur : `connecter()` le lance et rend aussitôt le code et l'adresse ; l'appel suivant dit où
  * il en est. Le jeton ne va qu'au runtime : il n'apparaît dans aucune réponse.
  */
-import type { AgentRuntime } from "@agent-studio/core";
-import type { AuthStatus, DeviceCode, GitHubAuth } from "@agent-studio/github-auth";
+import type { AgentRuntime } from "@skraft-mcp/core";
+import type { AuthStatus, DeviceCode, GitHubAuth } from "@skraft-mcp/github-auth";
 
 export type FabriqueRuntime = (jeton: string, hostname: string) => AgentRuntime;
 

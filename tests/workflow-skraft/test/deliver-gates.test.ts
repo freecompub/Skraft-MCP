@@ -1,7 +1,7 @@
 // Repris de extensions/skraft-workflow/test/deliver-gates.test.ts (2026-10-10) : teste le workflow en dossier (ADR 0055).
 // @ts-nocheck — le workflow est en JavaScript, sans types (ADR 0055) : ce test vérifie son comportement, pas ses types.
-import type { Evidence } from "@agent-studio/extension-api";
-import { coverageForChanges } from "@agent-studio/extension-api";
+import type { Evidence } from "@skraft-mcp/extension-api";
+import { coverageForChanges } from "@skraft-mcp/extension-api";
 import { describe, expect, it } from "vitest";
 import { causeDEchec, optionsSelonLaCause, sansTestsObsoletes, texteDeLaCause, checkCoverage, checkDependencies, checkFormat, checkLint, checkMutation, lignesSousLeSeuil, mutantsSousLeSeuil, sansLignesExemptees, checkRedGreenSequence, defaultDependencyRules, parseQualityBar, planScenarios, restreindreAuChangement, type QualityBar } from "../../../workflows/skraft/deliver.mjs";
 

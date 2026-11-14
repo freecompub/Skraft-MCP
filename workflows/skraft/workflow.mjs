@@ -169,7 +169,7 @@ export const meta = {
 * celui du réducteur de skraft. Si le script n'est pas nettement plus simple que la partie du
 * réducteur qu'il remplace, on s'arrête là (ADR 0052, conséquences).
 */
-import { essayer, PanneEnvironnement, Escalade, TourInterrompu, problemesTestsExistants, correspond, bddNonDeclare, estUnManifeste } from "@agent-studio/workflow";
+import { essayer, PanneEnvironnement, Escalade, TourInterrompu, problemesTestsExistants, correspond, bddNonDeclare, estUnManifeste } from "@skraft-mcp/workflow";
 import { buildBrief, ecrirePassation } from "./brief.mjs";
 import { computeIndicators, DEFAULT_THRESHOLDS, gradeDifficulty, isDifficulty, levelEffects, shift } from "./difficulty.mjs";
 import { preselectFiles } from "./preselect.mjs";

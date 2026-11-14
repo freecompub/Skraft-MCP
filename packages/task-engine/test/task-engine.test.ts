@@ -1,5 +1,5 @@
-import { EnvFailureError, TurnTimeoutError, WorkDefectError, type TraceEntry } from "@agent-studio/core";
-import { fixedClock, RecordingCheckpoints, sequentialIds } from "@agent-studio/core/testing";
+import { EnvFailureError, TurnTimeoutError, WorkDefectError, type TraceEntry } from "@skraft-mcp/core";
+import { fixedClock, RecordingCheckpoints, sequentialIds } from "@skraft-mcp/core/testing";
 import { describe, expect, it } from "vitest";
 import { createTaskEngine } from "../src/task-engine.js";
 import { MemoryTaskStore } from "../src/testing/memory-task-store.js";

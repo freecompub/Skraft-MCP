@@ -3,9 +3,9 @@
  * que le fichier de la story, reçoit le contexte et, après un refus, les motifs. Le code vérifie ensuite
  * la story (us-github.ts) : l'agent propose, le code juge.
  */
-import { createTaskAgentRunner } from "@agent-studio/core";
-import { ScriptedRuntime } from "@agent-studio/core/testing";
-import type { UsGithub } from "@agent-studio/github-auth";
+import { createTaskAgentRunner } from "@skraft-mcp/core";
+import { ScriptedRuntime } from "@skraft-mcp/core/testing";
+import type { UsGithub } from "@skraft-mcp/github-auth";
 import { describe, expect, it } from "vitest";
 import { createMiseEnFormeParAgent, PROMPT_REDACTEUR_US, ROLE_REDACTEUR_US } from "../src/redacteur-us.js";
 

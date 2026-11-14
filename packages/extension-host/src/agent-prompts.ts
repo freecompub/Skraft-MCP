@@ -6,8 +6,8 @@
  */
 import { readFile, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve } from "node:path";
-import type { ToolSpec } from "@agent-studio/core";
-import type { ExtensionManifest, ManifestAgent } from "@agent-studio/extension-api";
+import type { ToolSpec } from "@skraft-mcp/core";
+import type { ExtensionManifest, ManifestAgent } from "@skraft-mcp/extension-api";
 
 export interface MarkdownDoc {
   /** Clés de premier niveau du frontmatter, à valeur sur une ligne (le reste est ignoré). */

@@ -1,5 +1,5 @@
 {
-  "name": "@agent-studio/ext-tdd",
+  "name": "@skraft-mcp/ext-tdd",
   "version": "0.1.0",
   "private": true,
   "license": "GPL-3.0-or-later",
@@ -8,13 +8,13 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@agent-studio/extension-api": "workspace:*",
-    "@agent-studio/task-engine": "workspace:*"
+    "@skraft-mcp/extension-api": "workspace:*",
+    "@skraft-mcp/task-engine": "workspace:*"
   },
   "devDependencies": {
-    "@agent-studio/extension-host": "workspace:*",
-    "@agent-studio/stack-adapters": "workspace:*",
-    "@agent-studio/workspace": "workspace:*",
+    "@skraft-mcp/extension-host": "workspace:*",
+    "@skraft-mcp/stack-adapters": "workspace:*",
+    "@skraft-mcp/workspace": "workspace:*",
     "esbuild": "^0.28.2"
   },
   "scripts": {

@@ -5,7 +5,7 @@
  * journalisé ; à chaque événement, le script est relancé depuis le début contre son journal :
  * un appel journalisé rend son résultat enregistré, le premier appel absent devient l'effet suivant.
  */
-import type { ArchitectureReport, DependencyRule, Evidence, FormatReport, LintReport, MutationReport, TestRun } from "@agent-studio/extension-api";
+import type { ArchitectureReport, DependencyRule, Evidence, FormatReport, LintReport, MutationReport, TestRun } from "@skraft-mcp/extension-api";
 
 
 /** Valeur JSON : seul ce qui se sérialise entre dans le journal. */

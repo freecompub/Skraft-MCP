@@ -3,8 +3,8 @@
  * sinon `skraft_connexion` lance le flux d'appareil et rend le code et l'adresse, sans attendre la
  * fin. Le jeton ne sort jamais.
  */
-import type { AgentRuntime } from "@agent-studio/core";
-import type { AuthStatus, DeviceCode, GitHubAuth } from "@agent-studio/github-auth";
+import type { AgentRuntime } from "@skraft-mcp/core";
+import type { AuthStatus, DeviceCode, GitHubAuth } from "@skraft-mcp/github-auth";
 import { describe, expect, it } from "vitest";
 import { createConnexion } from "../src/connexion.js";
 

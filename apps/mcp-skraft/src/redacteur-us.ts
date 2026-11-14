@@ -2,7 +2,7 @@
  * L'agent qui met en forme une US GitHub en story skraft (ADR 0078). Il n'écrit que le fichier de la
  * story ; le code la vérifie ensuite (format, identifiant, aucune valeur inventée, `us-github.ts`).
  */
-import type { TaskAgentRunner } from "@agent-studio/core";
+import type { TaskAgentRunner } from "@skraft-mcp/core";
 import type { MiseEnForme } from "./us-github.js";
 
 export const ROLE_REDACTEUR_US = "skraft-redacteur-us";

@@ -1,4 +1,4 @@
-import { TurnTimeoutError, EnvFailureError } from "@agent-studio/extension-api";
+import { TurnTimeoutError, EnvFailureError } from "@skraft-mcp/extension-api";
 import { describe, expect, it } from "vitest";
 import { createWorkflowTask } from "../src/workflow-task.js";
 import { PanneEnvironnement, TourInterrompu } from "../src/erreurs.js";

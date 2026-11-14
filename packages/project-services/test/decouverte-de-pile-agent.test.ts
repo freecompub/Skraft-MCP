@@ -4,8 +4,8 @@
  * langage ; chaque demande porte les indices du code, les programmes autorisés et, à l'essai suivant,
  * la proposition refusée et ses motifs.
  */
-import { createTaskAgentRunner } from "@agent-studio/core";
-import { ScriptedRuntime } from "@agent-studio/core/testing";
+import { createTaskAgentRunner } from "@skraft-mcp/core";
+import { ScriptedRuntime } from "@skraft-mcp/core/testing";
 import { describe, expect, it } from "vitest";
 import { createDecouverteParAgent, PROMPT_DECOUVREUR, ROLE_DECOUVREUR } from "../src/decouverte-de-pile-agent.js";
 

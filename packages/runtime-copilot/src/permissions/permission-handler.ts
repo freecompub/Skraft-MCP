@@ -1,5 +1,5 @@
 import type { PermissionHandler, PermissionRequestResult } from "@github/copilot-sdk";
-import { DELAI_GARDE_MS, decideSafely, type GuardDecision, type ToolCallGuard, type ToolCallRequest } from "@agent-studio/core";
+import { DELAI_GARDE_MS, decideSafely, type GuardDecision, type ToolCallGuard, type ToolCallRequest } from "@skraft-mcp/core";
 import { toToolCallRequest } from "./to-tool-call-request.js";
 
 export interface PermissionHandlerOptions {

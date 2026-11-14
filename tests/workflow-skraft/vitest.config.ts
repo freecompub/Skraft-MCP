@@ -4,7 +4,7 @@ import { defineProject } from "vitest/config";
 const WORKFLOWS = resolve(import.meta.dirname, "../../workflows") + sep;
 const POUR_LES_SCRIPTS = resolve(import.meta.dirname, "../../packages/workflow/src/hote/pour-les-scripts.ts");
 
-// Les modules d'un workflow importent `@agent-studio/workflow` : dans le processus isolé, c'est la
+// Les modules d'un workflow importent `@skraft-mcp/workflow` : dans le processus isolé, c'est la
 // bibliothèque fournie par la plateforme. Ici, pour ces seuls modules, le même objet en exports
 // nommés ; le banc d'essai, lui, garde la vraie API de la plateforme.
 export default defineProject({
@@ -13,7 +13,7 @@ export default defineProject({
       name: "bibliotheque-des-workflows",
       enforce: "pre",
       resolveId(id, importer) {
-        if (id === "@agent-studio/workflow" && importer && resolve(importer).startsWith(WORKFLOWS)) return POUR_LES_SCRIPTS;
+        if (id === "@skraft-mcp/workflow" && importer && resolve(importer).startsWith(WORKFLOWS)) return POUR_LES_SCRIPTS;
         return null;
       },
     },

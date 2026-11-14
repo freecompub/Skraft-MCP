@@ -1,5 +1,5 @@
 {
-  "name": "@agent-studio/extension-host",
+  "name": "@skraft-mcp/extension-host",
   "version": "0.0.0",
   "private": true,
   "license": "GPL-3.0-or-later",
@@ -8,11 +8,11 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@agent-studio/core": "workspace:*",
-    "@agent-studio/extension-api": "workspace:*",
-    "@agent-studio/stack-adapters": "workspace:*",
-    "@agent-studio/task-engine": "workspace:*",
-    "@agent-studio/workspace": "workspace:*"
+    "@skraft-mcp/core": "workspace:*",
+    "@skraft-mcp/extension-api": "workspace:*",
+    "@skraft-mcp/stack-adapters": "workspace:*",
+    "@skraft-mcp/task-engine": "workspace:*",
+    "@skraft-mcp/workspace": "workspace:*"
   },
   "devDependencies": {
     "esbuild": "^0.28.2"

@@ -3,7 +3,7 @@
  * Le flux répète l'usage d'un même message pour chacun de ses blocs : il n'est compté qu'une fois
  * par message. Toute ligne non reconnue réarme le chien de garde, sans erreur.
  */
-import type { AgentEvent } from "@agent-studio/core";
+import type { AgentEvent } from "@skraft-mcp/core";
 
 type Ligne = Record<string, unknown>;
 const objet = (v: unknown): Ligne | null => (v && typeof v === "object" ? (v as Ligne) : null);

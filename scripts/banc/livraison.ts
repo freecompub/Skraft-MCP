@@ -1,4 +1,4 @@
-import type { EtatWorkflow } from "@agent-studio/workflow";
+import type { EtatWorkflow } from "@skraft-mcp/workflow";
 import { relire } from "../../packages/workflow/src/contenus.js";
 
 export function workflowLivre(etat: EtatWorkflow | undefined): boolean {

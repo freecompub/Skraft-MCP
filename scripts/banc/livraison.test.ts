@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { EtatWorkflow } from "@agent-studio/workflow";
+import type { EtatWorkflow } from "@skraft-mcp/workflow";
 import { workflowLivre } from "./livraison.js";
 
 const etat = (fin: EtatWorkflow["fin"], contenus: EtatWorkflow["contenus"] = {}): EtatWorkflow => ({

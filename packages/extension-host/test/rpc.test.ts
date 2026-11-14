@@ -1,4 +1,4 @@
-import { EnvFailureError, TurnTimeoutError, WorkDefectError } from "@agent-studio/core";
+import { EnvFailureError, TurnTimeoutError, WorkDefectError } from "@skraft-mcp/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRpcEndpoint, memoryChannelPair, RpcClosedError } from "../src/rpc/endpoint.js";
 

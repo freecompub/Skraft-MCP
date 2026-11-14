@@ -5,11 +5,11 @@
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, MemoryTaskSessionStore, ScriptedRuntime, sequentialIds } from "@agent-studio/core/testing";
-import { bundle, createNodeLauncher } from "@agent-studio/extension-host";
-import { MemoryTaskStore } from "@agent-studio/task-engine";
-import type { TraceEntry, TraceStore } from "@agent-studio/core";
-import type { Workspace } from "@agent-studio/workspace";
+import { fixedClock, MemoryEvidenceStore, MemoryInteractionStore, MemoryTaskSessionStore, ScriptedRuntime, sequentialIds } from "@skraft-mcp/core/testing";
+import { bundle, createNodeLauncher } from "@skraft-mcp/extension-host";
+import { MemoryTaskStore } from "@skraft-mcp/task-engine";
+import type { TraceEntry, TraceStore } from "@skraft-mcp/core";
+import type { Workspace } from "@skraft-mcp/workspace";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { workspaceServicesFactory } from "../src/workspace-services.js";
 
