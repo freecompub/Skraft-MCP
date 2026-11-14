@@ -1,0 +1,18 @@
+{
+  "name": "@skraft-mcp/pile-projet",
+  "version": "0.0.0",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@skraft-mcp/core": "workspace:*",
+    "@skraft-mcp/stack-adapters": "workspace:*",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@skraft-mcp/workspace": "workspace:*"
+  }
+}

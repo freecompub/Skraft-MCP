@@ -19,8 +19,8 @@ import { createDepotsFichier, type Depots } from "../src/depots.js";
 import { createPilesFichiers } from "../src/piles.js";
 import { createProjets } from "../src/projets.js";
 import { createServeurSkraft } from "../src/serveur.js";
-import { ROLE_DECOUVREUR } from "../../../packages/project-services/src/decouverte-de-pile-agent.js";
-import { FICHIERS_NODE, PILE_NODE } from "../../../packages/project-services/test/support/pile-node.js";
+import { ROLE_DECOUVREUR } from "@skraft-mcp/pile-projet";
+import { FICHIERS_NODE, PILE_NODE } from "../../../packages/pile-projet/test/support/pile-node.js";
 import { ouvrirServicesSansFenetre } from "../src/services.js";
 import { prendreVerrou } from "../src/verrou.js";
 

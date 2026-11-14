@@ -11,6 +11,7 @@
   "dependencies": {
     "@skraft-mcp/core": "workspace:*",
     "@skraft-mcp/extension-host": "workspace:*",
+    "@skraft-mcp/pile-projet": "workspace:*",
     "@skraft-mcp/stack-adapters": "workspace:*",
     "@skraft-mcp/task-engine": "workspace:*",
     "@skraft-mcp/workflow": "workspace:*",

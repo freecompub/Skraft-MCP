@@ -9,8 +9,8 @@ import { createUsageRecorder } from "@skraft-mcp/core";
 import { describe, expect, it } from "vitest";
 import type { InteractionDto, TaskCardDto } from "../src/dto.js";
 import { workspaceServicesFactory } from "../src/workspace-services.js";
-import { ROLE_DECOUVREUR } from "../src/decouverte-de-pile-agent.js";
-import { FICHIERS_NODE as FICHIERS, PILE_NODE } from "./support/pile-node.js";
+import { ROLE_DECOUVREUR } from "@skraft-mcp/pile-projet";
+import { FICHIERS_NODE as FICHIERS, PILE_NODE } from "../../pile-projet/test/support/pile-node.js";
 
 function fakeWorkspace(): Workspace {
   let n = 0;

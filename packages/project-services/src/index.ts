@@ -1,9 +1,8 @@
 /**
- * Services d'un projet ouvert, sans dépendance à l'application qui les héberge : l'application de
- * bureau (Electron) et le serveur MCP (ADR 0068) les assemblent de la même façon.
+ * Assemblage des services d'un projet ouvert. La pile du projet est dans `@skraft-mcp/pile-projet`
+ * (ADR 0091 §2) ; cette racine de composition rejoindra le serveur, son seul consommateur.
  */
 export type * from "./protocols.js";
 export * from "./dto.js";
 export { AucunePile, workspaceServicesFactory, toTaskCard, type ExtensionSource, type WorkspaceServicesConfig } from "./workspace-services.js";
-export { createStackCommand, type ProfilDeclare, type StackCommandDeps } from "./stack-command.js";
 export { DEFAULT_ALLOWED_PROGRAMS, defaultAdminConfigPath, loadAdminConfig, type AdminConfig } from "./admin-config.js";
