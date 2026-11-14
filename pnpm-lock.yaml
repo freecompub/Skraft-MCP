@@ -318,6 +318,8 @@ importers:
 
   packages/workspace: {}
 
+  tests/architecture: {}
+
   tests/workflow-skraft:
     devDependencies:
       '@skraft-mcp/core':
