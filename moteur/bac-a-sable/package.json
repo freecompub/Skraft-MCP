@@ -1,0 +1,19 @@
+{
+  "name": "@skraft-mcp/bac-a-sable",
+  "version": "0.0.0",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@skraft-mcp/agents": "workspace:*",
+    "@skraft-mcp/pile": "workspace:*",
+    "@skraft-mcp/taches": "workspace:*",
+    "@skraft-mcp/depot": "workspace:*"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

@@ -2,7 +2,7 @@ import { resolve, sep } from "node:path";
 import { defineProject } from "vitest/config";
 
 const WORKFLOWS = resolve(import.meta.dirname, "../../workflows") + sep;
-const POUR_LES_SCRIPTS = resolve(import.meta.dirname, "../../packages/workflow/src/hote/pour-les-scripts.ts");
+const POUR_LES_SCRIPTS = resolve(import.meta.dirname, "../../moteur/workflow/src/hote/pour-les-scripts.ts");
 
 // Les modules d'un workflow importent `@skraft-mcp/workflow` : dans le processus isolé, c'est la
 // bibliothèque fournie par la plateforme. Ici, pour ces seuls modules, le même objet en exports

@@ -1,4 +1,4 @@
-import type { ResumeEtape, ResumeRun } from "@skraft-mcp/core";
+import type { ResumeEtape, ResumeRun } from "@skraft-mcp/agents";
 
 /**
  * Étapes communes du banc de comparaison (`docs/10` §3). Pur : aucune I/O.

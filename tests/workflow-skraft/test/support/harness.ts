@@ -18,13 +18,13 @@ import {
   createTaskAgentRunner,
   createJsonlTraceStore,
   createUsageRecorder,
-} from "@skraft-mcp/core";
-import { sequentialIds, type ScriptedBehavior, type ScriptedRuntime } from "@skraft-mcp/core/testing";
-import { bundle, createNodeLauncher, type ExtensionHandle, type HostDeps } from "@skraft-mcp/extension-host";
+} from "@skraft-mcp/agents";
+import { sequentialIds, type ScriptedBehavior, type ScriptedRuntime } from "@skraft-mcp/agents/testing";
+import { bundle, createNodeLauncher, type ExtensionHandle, type HostDeps } from "@skraft-mcp/bac-a-sable";
 import { activerWorkflow, createJsonAccordStore, trouverWorkflows } from "@skraft-mcp/workflow";
-import type { StackAdapter } from "@skraft-mcp/stack-adapters";
-import { createJsonTaskStore, createTaskEngine } from "@skraft-mcp/task-engine";
-import { openWorkspace, type Workspace } from "@skraft-mcp/workspace";
+import type { StackAdapter } from "@skraft-mcp/pile";
+import { createJsonTaskStore, createTaskEngine } from "@skraft-mcp/taches";
+import { openWorkspace, type Workspace } from "@skraft-mcp/depot";
 
 export const git = (cwd: string, ...args: string[]) =>
   execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@localhost", ...args], { cwd, encoding: "utf8" }).trim();
@@ -115,7 +115,7 @@ export function researchDoc(over: Partial<Record<string, string>> = {}): string 
 }
 
 /** Répond automatiquement aux questions ouvertes (profil PO), avec la réponse donnée. */
-export function answerQuestions(app: { interactions: import("@skraft-mcp/core").InteractionService }, answer = "par prise"): () => void {
+export function answerQuestions(app: { interactions: import("@skraft-mcp/agents").InteractionService }, answer = "par prise"): () => void {
   const answered = new Set<string>();
   const tick = async () => {
     for (const q of await app.interactions.pending()) {
@@ -287,7 +287,7 @@ function runtimeEnfant(): Promise<string> {
   runtime ??= (async () => {
     const dir = await mkdtemp(join(tmpdir(), "agent-studio-workflow-runtime-"));
     const entree = join(dir, "workflow-child.mjs");
-    await bundle(resolve(import.meta.dirname, "../../../../packages/workflow/src/hote/enfant-entree.ts"), entree);
+    await bundle(resolve(import.meta.dirname, "../../../../moteur/workflow/src/hote/enfant-entree.ts"), entree);
     return entree;
   })();
   return runtime;

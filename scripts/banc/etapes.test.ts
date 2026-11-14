@@ -1,4 +1,4 @@
-import type { ResumeEtape, ResumeRun } from "@skraft-mcp/core";
+import type { ResumeEtape, ResumeRun } from "@skraft-mcp/agents";
 import { describe, expect, it } from "vitest";
 import { etapeCommune, resumerParEtape } from "./etapes.js";
 

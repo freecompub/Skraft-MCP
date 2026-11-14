@@ -5,11 +5,11 @@
   "license": "GPL-3.0-or-later",
   "type": "module",
   "devDependencies": {
-    "@skraft-mcp/core": "workspace:*",
-    "@skraft-mcp/extension-host": "workspace:*",
-    "@skraft-mcp/stack-adapters": "workspace:*",
-    "@skraft-mcp/task-engine": "workspace:*",
+    "@skraft-mcp/agents": "workspace:*",
+    "@skraft-mcp/bac-a-sable": "workspace:*",
+    "@skraft-mcp/pile": "workspace:*",
+    "@skraft-mcp/taches": "workspace:*",
     "@skraft-mcp/workflow": "workspace:*",
-    "@skraft-mcp/workspace": "workspace:*"
+    "@skraft-mcp/depot": "workspace:*"
   }
 }
