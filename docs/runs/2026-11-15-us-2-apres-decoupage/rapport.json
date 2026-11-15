@@ -1,0 +1,257 @@
+{
+  "statut": "fini",
+  "valeur": {
+    "acceptanceHash": "6813682515b7825f7c61e0ab0ba92a95e40b043318300db21e525548f9d32a5f",
+    "adrs": [
+      {
+        "id": "ADR-003",
+        "path": "docs/adr/adr-003-frontiere-agregat-panier-remise-par-palier.md",
+        "status": "Accepted"
+      }
+    ],
+    "leconsInjectees": [],
+    "livraison": {
+      "granularity": "turn-per-scenario",
+      "notes": [
+        "Qualité de forme non mesurée : le projet n'a pas de linter configuré pour cette stack.",
+        "Règle de dépendance non vérifiée : la stack du projet ne sait pas analyser les imports.",
+        "Scénario ac-3 : déjà vert avant son premier pas ; le code d'un pas précédent l'a fait passer sans test rouge qui le demande.",
+        "Mutation hors du changement : src/Tarification.Domaine/Montant.cs, 5 mutant(s) survivant(s) sur des lignes que la story ne modifie pas (ligne 14 (String mutation), ligne 21 (Conditional (false) mutation), ligne 21 (Equality mutation), ligne 21 (String mutation (non couvert)), ligne 27 (String mutation (non couvert))) ; non jugés."
+      ],
+      "scenarios": [
+        [
+          "ac-2",
+          "driver",
+          "done"
+        ],
+        [
+          "ac-1",
+          "regression",
+          "done"
+        ],
+        [
+          "ac-3",
+          "driver",
+          "done"
+        ],
+        [
+          "ac-4",
+          "regression",
+          "done"
+        ],
+        [
+          "ac-5",
+          "regression",
+          "done"
+        ]
+      ]
+    },
+    "niveau": "medium-hard",
+    "phases": [
+      "RESEARCH",
+      "DESIGN",
+      "DISTILL",
+      "DELIVER"
+    ],
+    "regressions": [
+      "Tarification.UnitTests.Features.RemiseParPalierDeQuantiteFeature.AC_5SansPalierConfigureIlNyAAucuneRemise",
+      "Tarification.UnitTests.Features.RemiseParPalierDeQuantiteFeature.AC_1UneLigneSousLeSeuilDuPalierNaAucuneRemise",
+      "Tarification.UnitTests.Features.RemiseParPalierDeQuantiteFeature.AC_4LaRemiseSeCalculeParLigneJamaisSurLePanierEntier"
+    ],
+    "slug": "us02-bff44417"
+  },
+  "messages": [
+    "Pipeline skraft terminé pour **US-2** (branche skraft/us02-bff44417).\nDifficulté : medium-hard (confirmée).\nPhases exécutées : RESEARCH, DESIGN, DISTILL, DELIVER ; sautées : aucune.\nADR : ADR-003 (Accepted).\nVérifications par les agents (ADR 0082) : RESEARCH skraft-researcher 1 appel(s) ; DISTILL skraft-acceptance 1 appel(s).\nRemarques hors du changement de la story :\n- src/Tarification.Application/CalculDuPanier.cs:6 (cold-reader, major) : Le commentaire de `Facture` dit que les remises restent à zéro tant que la story n'est pas livrée, alors que `Remise` est maintenant calculée par `RemiseSelon(_paliers)`. Un lecteur est induit en erreur sur le comportement réel.\n- src/Tarification.Application/CalculDuPanier.cs:6 (quality-gates, minor) : La doc de `Facture` affirme que « les remises et les frais de port restent à zéro tant que les stories correspondantes ne sont pas livrées ». C'est devenu faux : `Chiffrer` (ligne 30) calcule désormais `Remise` via `panier.RemiseSelon(_paliers)`. Seuls les frais de port restent à zéro. Le commentaire doit être corrigé pour ne décrire que les frais de port."
+  ],
+  "dernierRejet": null,
+  "arbitrages": [],
+  "etapes": [
+    {
+      "phase": "INIT",
+      "essai": 1,
+      "debut": "2026-11-15T07:11:27.638Z",
+      "fin": "2026-11-15T07:11:43.472Z",
+      "dureeMs": 15834,
+      "tours": 0,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0,
+      "modeles": []
+    },
+    {
+      "phase": "CLASSIFY",
+      "essai": 1,
+      "debut": "2026-11-15T07:11:43.472Z",
+      "fin": "2026-11-15T07:11:52.873Z",
+      "dureeMs": 9401,
+      "tours": 1,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0.0016,
+      "modeles": [
+        "claude-haiku-5-5"
+      ]
+    },
+    {
+      "phase": "CONFIRM_DIFFICULTY",
+      "essai": 1,
+      "debut": "2026-11-15T07:11:52.873Z",
+      "fin": "2026-11-15T07:11:53.349Z",
+      "dureeMs": 476,
+      "tours": 0,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0,
+      "modeles": []
+    },
+    {
+      "phase": "ROUTE",
+      "essai": 1,
+      "debut": "2026-11-15T07:11:53.349Z",
+      "fin": "2026-11-15T07:11:53.743Z",
+      "dureeMs": 394,
+      "tours": 0,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0,
+      "modeles": []
+    },
+    {
+      "phase": "RESEARCH",
+      "essai": 1,
+      "debut": "2026-11-15T07:11:53.743Z",
+      "fin": "2026-11-15T07:12:41.730Z",
+      "dureeMs": 47987,
+      "tours": 1,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0.1738,
+      "modeles": [
+        "claude-sonnet-5-5"
+      ]
+    },
+    {
+      "phase": "ROUTE",
+      "essai": 2,
+      "debut": "2026-11-15T07:12:41.730Z",
+      "fin": "2026-11-15T07:12:43.150Z",
+      "dureeMs": 1420,
+      "tours": 0,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0,
+      "modeles": []
+    },
+    {
+      "phase": "DESIGN",
+      "essai": 1,
+      "debut": "2026-11-15T07:12:43.150Z",
+      "fin": "2026-11-15T07:18:27.658Z",
+      "dureeMs": 344508,
+      "tours": 2,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 1.8115,
+      "modeles": [
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "phase": "REVIEW",
+      "essai": 1,
+      "debut": "2026-11-15T07:18:27.658Z",
+      "fin": "2026-11-15T07:18:44.767Z",
+      "dureeMs": 17109,
+      "tours": 3,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0.2537,
+      "modeles": [
+        "claude-sonnet-5-5"
+      ]
+    },
+    {
+      "phase": "RATIFICATION",
+      "essai": 1,
+      "debut": "2026-11-15T07:18:44.767Z",
+      "fin": "2026-11-15T07:18:46.179Z",
+      "dureeMs": 1412,
+      "tours": 0,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0,
+      "modeles": []
+    },
+    {
+      "phase": "DISTILL",
+      "essai": 1,
+      "debut": "2026-11-15T07:18:46.179Z",
+      "fin": "2026-11-15T07:20:05.040Z",
+      "dureeMs": 78861,
+      "tours": 1,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0.3072,
+      "modeles": [
+        "claude-sonnet-5-5"
+      ]
+    },
+    {
+      "phase": "REVIEW",
+      "essai": 2,
+      "debut": "2026-11-15T07:20:05.040Z",
+      "fin": "2026-11-15T07:21:15.630Z",
+      "dureeMs": 70590,
+      "tours": 5,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0.5713,
+      "modeles": [
+        "claude-sonnet-5-5",
+        "claude-haiku-5-5",
+        "claude-opus-5-5"
+      ]
+    },
+    {
+      "phase": "DELIVER",
+      "essai": 1,
+      "debut": "2026-11-15T07:21:15.630Z",
+      "fin": "2026-11-15T07:24:10.731Z",
+      "dureeMs": 175101,
+      "tours": 2,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0.2137,
+      "modeles": [
+        "claude-sonnet-5-5"
+      ]
+    },
+    {
+      "phase": "REVIEW",
+      "essai": 3,
+      "debut": "2026-11-15T07:24:10.731Z",
+      "fin": "2026-11-15T07:24:37.967Z",
+      "dureeMs": 27236,
+      "tours": 4,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0.5099,
+      "modeles": [
+        "claude-sonnet-5-5",
+        "claude-haiku-5-5"
+      ]
+    },
+    {
+      "phase": "DONE",
+      "essai": 1,
+      "debut": "2026-11-15T07:24:37.967Z",
+      "fin": "2026-11-15T07:24:38.056Z",
+      "dureeMs": 89,
+      "tours": 0,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0,
+      "modeles": []
+    }
+  ]
+}
