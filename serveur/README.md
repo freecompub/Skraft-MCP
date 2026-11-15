@@ -143,8 +143,14 @@ Facultatif ; `SKRAFT_MCP_CONFIG` en désigne un autre. Une clé inconnue est ref
 ### Les programmes autorisés : `admin.json`
 
 Les **programmes** qu'une pile a le droit de lancer (`allowedPrograms`), et s'ils peuvent être
-soumis à l'utilisateur (`programConsent`). Rien d'autre : plus de profil depuis l'ADR 0087, donc
-aucune action n'est réservée. Une clé `profile` est encore acceptée et sans effet.
+soumis à l'utilisateur (`programConsent`). **Rien d'autre** (ADR 0095) : plus de profil depuis
+l'ADR 0087, donc aucune action n'est réservée, et plus de politique de permissions ni de mode
+d'affichage — rien ici ne les lisait.
+
+Un `admin.json` d'un poste administré peut encore porter `profile`, `permissionPolicy`,
+`defaultMode`, `trustedPublishers`, `revocation` ou `developerMode` : ces clés sont **ignorées**,
+jamais refusées. Un refus n'autoriserait plus aucun programme, et arrêterait un poste qui marchait
+pour des clés sans effet.
 
 Le fichier est cherché à un emplacement **système**, pas dans le dossier personnel :
 
