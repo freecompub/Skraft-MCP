@@ -1,8 +1,10 @@
 /**
  * Les invariants de structure de l'ADR 0091, tenus par le code et non par la vigilance.
  *
- * Ce test lit les `package.json` du workspace : il ne dépend d'aucun paquet, pour ne pas peser
- * lui-même sur le graphe qu'il mesure.
+ * Ce test lit les `package.json` du workspace : il ne dépend d'aucun paquet **du dépôt**, pour ne pas
+ * peser lui-même sur le graphe qu'il mesure. Son paquet déclare `typescript`, dont la garde voisine
+ * `chemins-du-depot` a besoin pour un parseur (ADR 0094) : extérieur au dépôt, il n'entre pas dans
+ * le graphe.
  */
 import { readdir, readFile } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
