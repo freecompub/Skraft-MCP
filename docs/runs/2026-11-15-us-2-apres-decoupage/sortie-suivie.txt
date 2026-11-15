@@ -1,0 +1,244 @@
+
+> skraft-mcp@ essai /home/diabeo/Projets/Skraft-MCP
+> tsx scripts/essai-mcp-skraft.ts /tmp/claude-1001/-home-diabeo-Projets-Skraft-MCP/6ded126e-5bcc-4027-b131-7ce1b9a6faaf/scratchpad/exemple/exemple-dotnet-tdd stories/US-2.md docs/runs/reponses-us-2.json --runtime=claude --suivi=attendre --pile=docs/runs/2026-11-09-us-2-bdd-claude-suivi/pile.yaml
+
+Clone : /tmp/essai-mcp-skraft-H49gEg/projet
+
+Aucune pile pour ce projet : ni profil `.agent-studio/stack.yaml`, ni adaptateur qui le reconnaisse (typescript). Fournis une pile au format de `.agent-studio/stack.yaml`. Donne-la dans l'argument « pile » de skraft_demarrer (YAML, même format). 
+
+[    1s] skraft_demarrer →
+Accord requis : rien n'a démarré.
+
+Exécuter le workflow « skraft-workflow » (machine) ?
+
+Livre une user story : recherche, conception avec ADR, scénarios d'acceptance, TDD, revues.
+Dossier : /home/diabeo/Projets/Skraft-MCP/serveur/dist/workflows/skraft
+
+Le script peut :
+  - Écrire : .skraft/**, docs/adr/**, docs/adr/adr-???-*.md, docs/adr/supersessions.md, .agent-studio/lecons/**, @stack:acceptanceTests, @stack:unitTests, @stack:sources
+  - Lancer les tests et le linter du projet
+  - Git : branche, commit, revert
+
+Agents :
+  - skraft-lecons : lecture seule
+  - skraft-classifier : lecture seule
+  - skraft-researcher : écrit dans .skraft/** ; outils list_files, verifier_recherche, report_blocker
+  - skraft-architect-model : écrit dans .skraft/** ; outils list_files, report_blocker
+  - skraft-architect-decide : écrit dans .skraft/**, docs/adr/adr-???-*.md, docs/adr/supersessions.md ; outils list_files, report_blocker
+  - skraft-acceptance : écrit dans .skraft/**, @stack:acceptanceTests, @stack:sources ; outils list_files, run_tests, verifier_scenarios, report_blocker
+  - skraft-test : écrit dans @stack:unitTests ; outils list_files, run_tests, run_lint, report_blocker
+  - skraft-dev : écrit dans @stack:sources ; outils list_files, run_tests, run_lint, report_blocker
+  - skraft-mutation-arbiter : lecture seule
+  - skraft-finding-refuter : lecture seule
+  - skraft-lens-cold-reader : lecture seule ; outils report_blocker
+  - skraft-lens-test-integrity : lecture seule ; outils report_blocker
+  - skraft-lens-architecture : lecture seule ; outils report_blocker
+  - skraft-lens-quality-gates : lecture seule ; outils report_blocker
+
+Montre ce résumé à l'utilisateur. S'il accepte, rappelle skraft_demarrer avec les mêmes arguments et accord: "une-fois" (ce lancement seulement) ou accord: "toujours" (retenu tant que le workflow ne change pas).
+
+[    2s] Workflow « skraft-workflow » lancé : tâche 25c73b4b-833e-4cd9-b39b-83de68e6597a. Suis-le avec skraft_etat ; ses questions s'y affichent, réponds-y avec skraft_repondre.
+
+[   18s] Phase : Évaluation de la difficulté (CLASSIFY).
+        ⏵ stories/US-2.md · Évaluation de la difficulté · en cours · 16 s · aucune question en attente
+[   27s] Phase : Difficulté à confirmer (CONFIRM_DIFFICULTY).
+[   27s] Question à poser à l'utilisateur : Difficulté de US-2 : Assez difficile ? — Je confirme medium-hard : 5 critères d'acceptation et 2 modules touchés donnent une logique de calcul par paliers qui dépasse le simple CRUD, sans intégration externe, et la question métier ouverte sur les règles de palier (titre « Remise par palier de quantité ») justifie de ne pas descendre à medium. Limite : le texte co
+        ⏵ stories/US-2.md · Difficulté à confirmer · attend une réponse · 25 s · < 0,01 $ · 1 question en attente
+[   27s] ↳ réponse : Confirmer : Assez difficile
+[   27s] Phase : Questions ouvertes (ROUTE).
+[   27s] Question à poser à l'utilisateur : Question ouverte (US-2) — Les paliers sont-ils les mêmes pour toutes les références, ou définis par référence ?
+[   27s] Réponse reçue : le run reprend.
+        ⏵ stories/US-2.md · Questions ouvertes · en cours · 26 s · < 0,01 $ · 1 question en attente
+[   28s] ↳ réponse : Répondre — « Les mêmes paliers s'appliquent à toutes les références. »
+[   28s] Phase : Enquête sur le code existant (RESEARCH).
+[   28s] Réponse reçue : le run reprend.
+        ⏵ stories/US-2.md · Enquête sur le code existant · en cours · 26 s · < 0,01 $ · aucune question en attente
+[   76s] Phase : Questions ouvertes (ROUTE).
+[   76s] Question à poser à l'utilisateur : Question ouverte (US-2) — `Facture.ATPayer` doit-il désormais soustraire `Remise` ? Aujourd'hui il ne le fait pas (`CalculDuPanier.cs:12`) et les critères US-2 ne le disent pas. Valeurs possibles : oui (total = somme − remise + port) / non (remise affichée seulement).
+[   76s] Question à poser à l'utilisateur : Question ouverte (US-2) — Règle d'arrondi de la remise quand elle n'est pas exacte au centime (aucun critère, aucune règle existante) : à fixer par le métier.
+[   76s] Question à poser à l'utilisateur : Question ouverte (US-2) — Un palier de seuil 1 ou un doublon de seuil est-il valide ? Aucun critère.
+        ⏵ stories/US-2.md · Questions ouvertes, essai 2 · attend une réponse · 1 min 14 s · 0,18 $ · 3 questions en attente
+[   77s] ↳ réponse : Répondre — « Pas de précision supplémentaire : retiens l'option la plus simple qui respecte l »
+[   77s] ↳ réponse : Répondre — « Pas de précision supplémentaire : retiens l'option la plus simple qui respecte l »
+[   77s] ↳ réponse : Répondre — « Pas de précision supplémentaire : retiens l'option la plus simple qui respecte l »
+[   77s] Phase : Conception (DESIGN).
+[   77s] Réponse reçue : le run reprend.
+        ⏵ stories/US-2.md · Conception · en cours · 1 min 16 s · 0,18 $ · aucune question en attente
+[  127s] Rien de nouveau.
+        ⏵ stories/US-2.md · Conception · en cours · 2 min 06 s · 0,18 $ · aucune question en attente
+[  177s] Rien de nouveau.
+        ⏵ stories/US-2.md · Conception · en cours · 2 min 56 s · 0,18 $ · aucune question en attente
+[  227s] Rien de nouveau.
+        ⏵ stories/US-2.md · Conception · en cours · 3 min 46 s · 0,93 $ · aucune question en attente
+[  277s] Rien de nouveau.
+        ⏵ stories/US-2.md · Conception · en cours · 4 min 36 s · 0,93 $ · aucune question en attente
+[  327s] Rien de nouveau.
+        ⏵ stories/US-2.md · Conception · en cours · 5 min 26 s · 0,93 $ · aucune question en attente
+[  377s] Rien de nouveau.
+        ⏵ stories/US-2.md · Conception · en cours · 6 min 16 s · 0,93 $ · aucune question en attente
+[  422s] Phase : Revue (REVIEW).
+        ⏵ stories/US-2.md · Revue · en cours · 7 min 00 s · 1,99 $ · aucune question en attente
+[  439s] Phase : ADR à ratifier (RATIFICATION).
+[  439s] Question à poser à l'utilisateur : Ratifier ADR-003 — Décision d'architecture proposée : docs/adr/adr-003-frontiere-agregat-panier-remise-par-palier.md
+        ⏵ stories/US-2.md · ADR à ratifier · attend une réponse · 7 min 17 s · 2,24 $ · 1 question en attente
+[  440s] ↳ réponse : Accepter
+[  440s] Réponse reçue : le run reprend.
+        ⏵ stories/US-2.md · ADR à ratifier · en cours · 7 min 18 s · 2,24 $ · aucune question en attente
+[  441s] Phase : Scénarios d'acceptance (DISTILL).
+        ⏵ stories/US-2.md · Scénarios d'acceptance · en cours · 7 min 19 s · 2,24 $ · aucune question en attente
+[  491s] Rien de nouveau.
+        ⏵ stories/US-2.md · Scénarios d'acceptance · en cours · 8 min 09 s · 2,24 $ · aucune question en attente
+[  520s] Phase : Revue (REVIEW).
+        ⏵ stories/US-2.md · Revue · en cours · 8 min 38 s · 2,55 $ · aucune question en attente
+[  570s] Rien de nouveau.
+        ⏵ stories/US-2.md · Revue · en cours · 9 min 28 s · 2,93 $ · aucune question en attente
+[  590s] Phase : Implémentation en TDD (DELIVER).
+        ⏵ stories/US-2.md · Implémentation en TDD · en cours · 9 min 48 s · 3,12 $ · aucune question en attente
+[  640s] Rien de nouveau.
+        ⏵ stories/US-2.md · Implémentation en TDD · en cours · 10 min 38 s · 3,21 $ · aucune question en attente
+[  690s] Rien de nouveau.
+        ⏵ stories/US-2.md · Implémentation en TDD · en cours · 11 min 28 s · 3,33 $ · aucune question en attente
+[  740s] Rien de nouveau.
+        ⏵ stories/US-2.md · Implémentation en TDD · en cours · 12 min 18 s · 3,33 $ · aucune question en attente
+[  765s] Phase : Revue (REVIEW).
+        ⏵ stories/US-2.md · Revue · en cours · 12 min 43 s · 3,33 $ · aucune question en attente
+[  792s] Phase : Terminé (DONE).
+[  792s] Run terminé : stories/US-2.md.
+[  792s] Message : Pipeline skraft terminé pour **US-2** (branche skraft/us02-bff44417).
+Difficulté : medium-hard (confirmée).
+Phases exécutées : RESEARCH, DESIGN, DISTILL, DELIVER ; sautées : aucune.
+ADR : ADR-003 (Accepted).
+Vérifications par les agents (ADR 0082) : RESEARCH skraft-researcher 1 appel(s) ; DISTILL skraft-acceptance 1 appel(s).
+Remarques hors du changement de la story :
+- src/Tarification.
+        ⏵ stories/US-2.md · Terminé · terminé · 13 min 10 s · 3,84 $ · aucune question en attente
+
+Runtime : claude
+
+| Étape | Essai | Début | Fin | Durée | Tours | Rejets | Coût | Modèles |
+|---|---|---|---|---|---|---|---|---|
+| INIT | 1 | 07:11:27 | 07:11:43 | 0m16 | 0 | — | 0.0000 $ |  |
+| CLASSIFY | 1 | 07:11:43 | 07:11:52 | 0m09 | 1 | — | 0.0016 $ | claude-haiku-5-5 |
+| CONFIRM_DIFFICULTY | 1 | 07:11:52 | 07:11:53 | 0m00 | 0 | — | 0.0000 $ |  |
+| ROUTE | 1 | 07:11:53 | 07:11:53 | 0m00 | 0 | — | 0.0000 $ |  |
+| RESEARCH | 1 | 07:11:53 | 07:12:41 | 0m48 | 1 | — | 0.1738 $ | claude-sonnet-5-5 |
+| ROUTE | 2 | 07:12:41 | 07:12:43 | 0m01 | 0 | — | 0.0000 $ |  |
+| DESIGN | 1 | 07:12:43 | 07:18:27 | 5m45 | 2 | — | 1.8115 $ | claude-opus-5-5 |
+| REVIEW | 1 | 07:18:27 | 07:18:44 | 0m17 | 3 | — | 0.2537 $ | claude-sonnet-5-5 |
+| RATIFICATION | 1 | 07:18:44 | 07:18:46 | 0m01 | 0 | — | 0.0000 $ |  |
+| DISTILL | 1 | 07:18:46 | 07:20:05 | 1m19 | 1 | — | 0.3072 $ | claude-sonnet-5-5 |
+| REVIEW | 2 | 07:20:05 | 07:21:15 | 1m11 | 5 | — | 0.5713 $ | claude-sonnet-5-5, claude-haiku-5-5, claude-opus-5-5 |
+| DELIVER | 1 | 07:21:15 | 07:24:10 | 2m55 | 2 | — | 0.2137 $ | claude-sonnet-5-5 |
+| REVIEW | 3 | 07:24:10 | 07:24:37 | 0m27 | 4 | — | 0.5099 $ | claude-sonnet-5-5, claude-haiku-5-5 |
+| DONE | 1 | 07:24:37 | 07:24:38 | 0m00 | 0 | — | 0.0000 $ |  |
+
+Total : 13m10, 0 rejet(s), 3.8427 $
+
+[  792s] Rapport :
+{
+  "statut": "fini",
+  "valeur": {
+    "acceptanceHash": "6813682515b7825f7c61e0ab0ba92a95e40b043318300db21e525548f9d32a5f",
+    "adrs": [
+      {
+        "id": "ADR-003",
+        "path": "docs/adr/adr-003-frontiere-agregat-panier-remise-par-palier.md",
+        "status": "Accepted"
+      }
+    ],
+    "leconsInjectees": [],
+    "livraison": {
+      "granularity": "turn-per-scenario",
+      "notes": [
+        "Qualité de forme non mesurée : le projet n'a pas de linter configuré pour cette stack.",
+        "Règle de dépendance non vérifiée : la stack du projet ne sait pas analyser les imports.",
+        "Scénario ac-3 : déjà vert avant son premier pas ; le code d'un pas précédent l'a fait passer sans test rouge qui le demande.",
+        "Mutation hors du changement : src/Tarification.Domaine/Montant.cs, 5 mutant(s) survivant(s) sur des lignes que la story ne modifie pas (ligne 14 (String mutation), ligne 21 (Conditional (false) mutation), ligne 21 (Equality mutation), ligne 21 (String mutation (non couvert)), ligne 27 (String mutation (non couvert))) ; non jugés."
+      ],
+      "scenarios": [
+        [
+          "ac-2",
+          "driver",
+          "done"
+        ],
+        [
+          "ac-1",
+          "regression",
+          "done"
+        ],
+        [
+          "ac-3",
+          "driver",
+          "done"
+        ],
+        [
+          "ac-4",
+          "regression",
+          "done"
+        ],
+        [
+          "ac-5",
+          "regression",
+          "done"
+        ]
+      ]
+    },
+    "niveau": "medium-hard",
+    "phases": [
+      "RESEARCH",
+      "DESIGN",
+      "DISTILL",
+      "DELIVER"
+    ],
+    "regressions": [
+      "Tarification.UnitTests.Features.RemiseParPalierDeQuantiteFeature.AC_5SansPalierConfigureIlNyAAucuneRemise",
+      "Tarification.UnitTests.Features.RemiseParPalierDeQuantiteFeature.AC_1UneLigneSousLeSeuilDuPalierNaAucuneRemise",
+      "Tarification.UnitTests.Features.RemiseParPalierDeQuantiteFeature.AC_4LaRemiseSeCalculeParLigneJamaisSurLePanierEntier"
+    ],
+    "slug": "us02-bff44417"
+  },
+  "messages": [
+    "Pipeline skraft terminé pour **US-2** (branche skraft/us02-bff44417).\nDifficulté : medium-hard (confirmée).\nPhases exécutées : RESEARCH, DESIGN, DISTILL, DELIVER ; sautées : aucune.\nADR : ADR-003 (Accepted).\nVérifications par les agents (ADR 0082) : RESEARCH skraft-researcher 1 appel(s) ; DISTILL skraft-acceptance 1 appel(s).\nRemarques hors du changement de la story :\n- src/Tarification.Application/CalculDuPanier.cs:6 (cold-reader, major) : Le commentaire de `Facture` dit que les remises restent à zéro tant que la story n'est pas livrée, alors que `Remise` est maintenant calculée par `RemiseSelon(_paliers)`. Un lecteur est induit en erreur sur le comportement réel.\n- src/Tarification.Application/CalculDuPanier.cs:6 (quality-gates, minor) : La doc de `Facture` affirme que « les remises et les frais de port restent à zéro tant que les stories correspondantes ne sont pas livrées ». C'est devenu faux : `Chiffrer` (ligne 30) calcule désormais `Remise` via `panier.RemiseSelon(_paliers)`. Seuls les frais de port restent à zéro. Le commentaire doit être corrigé pour ne décrire que les frais de port."
+  ],
+  "dernierRejet": null,
+  "arbitrages": [],
+  "etapes": [
+    {
+      "phase": "INIT",
+      "essai": 1,
+      "debut": "2026-11-15T07:11:27.638Z",
+      "fin": "2026-11-15T07:11:43.472Z",
+      "dureeMs": 15834,
+      "tours": 0,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0,
+      "modeles": []
+    },
+    {
+      "phase": "CLASSIFY",
+      "essai": 1,
+      "debut": "2026-11-15T07:11:43.472Z",
+      "fin": "2026-11-15T07:11:52.873Z",
+      "dureeMs": 9401,
+      "tours": 1,
+      "rejets": [],
+      "aiu": 0,
+      "coutUsd": 0.0016,
+      "modeles": [
+        "claude-haiku-5-5"
+      ]
+    },
+    {
+      "phase": "CONFIRM_DIFFICULTY",
+      "essai": 1,
+      "debut": "2026-11-15T07:11:52.873Z",
+      "fin": "2026-11-15T07:11:53.349Z",
+      "dureeMs": 476,
+      "tours": 0,
+    
+
+Rapport complet : /tmp/essai-mcp-skraft-H49gEg/rapport.json
+Clone : /tmp/essai-mcp-skraft-H49gEg/projet
+
+[exited with code 0]

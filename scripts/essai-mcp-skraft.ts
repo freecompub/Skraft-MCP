@@ -1,6 +1,6 @@
 /**
  * Essai réel du serveur MCP skraft (ADR 0068) : ce script joue l'hôte MCP. Il lance le serveur
- * construit (`apps/mcp-skraft/dist/main.mjs`) en stdio, démarre le workflow sur une story, suit
+ * construit (`serveur/dist/main.mjs`) en stdio, démarre le workflow sur une story, suit
  * `skraft_etat` et répond aux questions avec le répondeur commun du banc (`scripts/banc/repondeur.ts`,
  * mêmes décisions que les runs de comparaison). Hors CI : **consomme de vraies requêtes Copilot**.
  * Travaille sur un **clone** du projet, jamais sur le dépôt donné.
@@ -56,7 +56,7 @@ const h = () => `[${((Date.now() - t0) / 1000).toFixed(0).padStart(5)}s]`;
 
 const transport = new StdioClientTransport({
   command: process.execPath,
-  args: [resolve("apps/mcp-skraft/dist/main.mjs")],
+  args: [resolve("serveur/dist/main.mjs")],
   cwd: projet,
   env: {
     ...(process.env as Record<string, string>),
