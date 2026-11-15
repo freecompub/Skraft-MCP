@@ -1,29 +1,43 @@
 # Workflow skraft
 
 Le pipeline skraft — recherche, conception avec ADR, scénarios d'acceptance, livraison en TDD,
-revues — écrit en **workflow dynamique** (ADR 0055, `docs/11-workflows-dynamiques.md`). C'est le
-modèle fourni avec agent-studio.
+revues — écrit en **workflow dynamique** (ADR 0055, `docs/11-workflows-dynamiques.md`). C'est la
+charge utile du serveur MCP (`serveur/README.md`).
 
-## Installer
+## Lancer
 
-Copier ce dossier, tel quel, à l'un de ces endroits :
+**Rien à installer** : ce dossier est copié dans `serveur/dist/workflows/skraft/` au build, et le
+serveur MCP l'y trouve. Toute modification ici demande de reconstruire (`pnpm build`).
 
-- dans le projet : `.agent-studio/workflows/skraft-workflow/`, **et le commiter** — un fichier non
-  suivi serait effacé par un rembobinage (`git clean`) ;
-- pour tous ses projets : `~/.agent-studio/workflows/skraft-workflow/`.
+Un run part de `skraft_demarrer`, ou de la commande `/skraft-demarrer <story>` chez le client :
 
-À l'ouverture du projet, agent-studio le trouve ; la commande
-`/skraft-workflow <story> [--auto] [--archi <skill>]` est alors disponible, et l'agent principal peut
-proposer de le lancer. `--auto` retient la difficulté proposée sans la faire confirmer ; `--archi`
-désigne la skill d'architecture du projet, par son nom ou son langage (`dotnet`, `java`, `python`,
-`react`). Sans `--archi`, ou si la skill est inconnue (avec un avertissement) : la clean architecture
-par défaut (`architecture-patterns`). À la première exécution, et
-après chaque modification du dossier, l'application montre ce qu'il peut faire et demande l'accord.
+- `auto` retient la difficulté proposée sans la faire confirmer ;
+- `archi` désigne la skill d'architecture du projet, par son nom ou son langage (`dotnet`, `java`,
+  `python`, `react`). Sans elle, ou si la skill est inconnue (avec un avertissement) : la clean
+  architecture par défaut (`architecture-patterns`).
+
+À la première exécution, et après chaque modification du dossier, le serveur rend le résumé de ce
+que le workflow peut faire sans rien démarrer ; le client le fait accepter, puis rappelle avec
+`accord`. L'accord se rattache à l'**empreinte du dossier** : il tombe dès qu'un fichier change.
+
+Un projet peut **remplacer** ce workflow par le sien : un dossier de même `meta.name` dans
+`<projet>/.agent-studio/workflows/`, **commité** — un fichier non suivi serait effacé par un
+rembobinage (`git clean`). À nom égal, celui du projet l'emporte, et le serveur le dit. Ce sont les
+deux seuls emplacements cherchés : il n'y en a pas dans le dossier personnel.
 
 ## Contenu
 
 - `workflow.mjs` : le `meta` (lu sans exécuter le fichier) et le script.
 - `conception.mjs`, `distillation.mjs`, `livraison.mjs`, `revue.mjs` : les phases et la revue.
+- DELIVER tient en six modules (découpée le 2026-11-14) : `livraison.mjs` enchaîne,
+  `livraison-socle.mjs` porte ce dont les autres ont besoin et qui n'appelle rien au-dessus de lui,
+  `livraison-portes.mjs` les portes exécutées par le code, `livraison-scenario.mjs` un scénario et
+  ses pas, `livraison-corrections.mjs` les corrections ciblées de fin (ADR 0062),
+  `livraison-arbitrages.mjs` les mutants et les lignes contestés.
+- `reprise.mjs` : la reprise d'une story arrêtée (ADR 0089).
+- `registre.mjs`, `lecons.mjs`, `catalogues.mjs` : le registre des erreurs du projet (LEC-1) et les
+  leçons qu'on en tire, rattachées aux catalogues d'anti-patrons des skills (LEC-2).
+- `sha256.mjs` : SHA-256 sans dépendance — le processus isolé n'importe que son dossier.
 - les contrôles et leurs données : `story.mjs`, `difficulty.mjs`, `research.mjs`, `design.mjs`,
   `adr.mjs`, `distill.mjs`, `gherkin.mjs`, `deliver.mjs`, `review.mjs`, `review-thread.mjs`,
   `review-brief.mjs`, `brief.mjs`, `preselect.mjs`, `text-analysis.mjs`, `support.mjs`,

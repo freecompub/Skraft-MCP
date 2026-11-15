@@ -5,14 +5,14 @@ l'application n'ait pas besoin d'un adaptateur écrit en TypeScript pour ce lang
 
 ## S'en servir
 
-`/stack init` (ou l'outil `skraft_pile` du serveur MCP) fait découvrir la pile par un agent, qui
+L'outil `skraft_pile` du serveur MCP (`/skraft-pile`) fait découvrir la pile par un agent, qui
 lit le projet ; le code la vérifie — programmes, schéma, diagnostic, canaris lancés dans une copie —
 avant de l'écrire après votre accord (ADR 0076). Sinon, copier l'exemple qui convient dans
 `.agent-studio/projet.yaml`, à la racine du projet, puis l'ajuster (ADR 0071). Le fichier a deux sections, validées chacune selon ses règles :
 
 - `pile` — **comment** lancer les outils : tests, lint, format, mutation, emplacements, canaris.
   Elle est lue à l'ouverture et **l'emporte sur la détection automatique** ; refusée, la raison
-  est expliquée dans la conversation et la détection reprend la main. `/stack init` l'écrit pour
+  est expliquée dans la conversation et la détection reprend la main. `skraft_pile` l'écrit pour
   vous, après confirmation, sans toucher au reste du fichier.
 - `qualite` — **ce qui est exigé** : chemins du cœur, seuils de couverture et de mutation, règles
   de dépendance. Elle ne lance rien. Sans elle, les valeurs par défaut s'appliquent.
@@ -62,7 +62,7 @@ Les chemins sont relatifs à la racine (du composant, s'il y en a). Un composant
 un dossier d'outils partagé à la racine du projet : depuis `apps/web`, le `node_modules/.bin` d'un
 monorepo est `../../node_modules/.bin`. Un chemin qui sort du projet est refusé. Les canaris tournent
 dans une copie Git du projet, qui n'a pas ces outils (ils sont ignorés par Git) : ils prennent ceux
-du projet. `/stack init` les propose quand le projet porte `uv.lock`.
+du projet. `skraft_pile` les propose quand le projet porte `uv.lock`.
 
 ## Les rapports de tests
 

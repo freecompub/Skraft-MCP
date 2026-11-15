@@ -8,7 +8,7 @@ avec un statut, seulement celles-là, dans `statut`. Si l'utilisateur veut ratif
 leçon, passe `action` (`ratifier` ou `retirer`) et `lecon` (son identifiant).
 
 Le client affiche une question avant toute ratification ou tout retrait : laisse l'utilisateur y
-répondre. Montre ensuite la liste, ou le motif si rien n'a changé (profil qui n'est ni architecte ni
-administrateur, client qui ne sait pas poser la question, accord refusé).
+répondre. Montre ensuite la liste, ou le motif si rien n'a changé (client qui ne sait pas poser la
+question, accord refusé).
 
 Les questions de skraft, et celles que le client affiche (ouvrir un dépôt, autoriser un programme, écrire un profil), reviennent à l'utilisateur : tu ne réponds jamais à la place de l'utilisateur.
