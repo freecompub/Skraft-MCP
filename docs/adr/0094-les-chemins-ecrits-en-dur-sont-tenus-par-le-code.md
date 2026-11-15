@@ -53,6 +53,12 @@ Ces trois exclusions ne sont pas des concessions : c'est la mesure qui les a dic
 version de la garde relevait neuf cas ; sept étaient des faux positifs, et chacun disait la même
 chose — un chemin n'est un défaut que s'il désigne **ce dépôt-ci**.
 
+Une quatrième exclusion est venue de la CI, et elle mérite d'être consignée : la garde y a échoué sur
+`serveur/dist/main.mjs`, un chemin juste. La CI teste **sans construire**, donc `dist/` n'y existe
+pas ; ma machine disait la garde verte parce que j'avais lancé `pnpm build`. Le vert venait de mon
+poste, pas du dépôt — le défaut même que cet ADR entend fermer, commis dans la garde qui le ferme. Un
+invariant de structure ne doit rien demander à l'état du disque qu'il ne versionne pas.
+
 ## Conséquences
 
 - Les deux défauts sont corrigés par la garde, dans le même commit, après l'avoir vue rouge sur eux
@@ -60,9 +66,13 @@ chose — un chemin n'est un défaut que s'il désigne **ce dépôt-ci**.
 - Les gardes de structure passent de six à **huit**.
 - Un chemin de fichier déplacé sans mettre à jour ses appelants fait désormais échouer la suite, au
   lieu d'attendre une exécution.
+- Le second invariant écarte les chemins qui traversent un dossier **produit** (`dist/`,
+  `node_modules/`, `coverage/`) : leur existence ne dit pas l'état du dépôt, seulement si l'on a
+  construit. Ces chemins restent tenus par le premier, qui n'a pas besoin du disque — et c'est bien
+  lui qui a relevé `apps/mcp-skraft/dist/main.mjs`.
 - La garde ne couvre pas tout : un chemin **assemblé** (`join(dossier, nom)`), une chaîne construite,
-  un chemin dans un `.md` ou un `.json` lui échappent. Elle tient les chemins littéraux, qui sont le
-  cas courant et les deux cas réels trouvés ici.
+  un chemin dans un `.md` ou un `.json`, ou un chemin sous un dossier produit lui échappent. Elle
+  tient les chemins littéraux versionnés, qui sont le cas courant et les deux cas réels trouvés ici.
 - `tests/architecture` déclare désormais `typescript` : la garde a besoin d'un parseur. C'est la
   première dépendance de ce paquet, et elle ne pèse pas sur le graphe qu'il mesure, `typescript`
   n'étant pas un paquet du dépôt.

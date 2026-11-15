@@ -33,6 +33,9 @@ const RETIRES = ["apps", "packages", "extensions"];
 /** Extensions dont un chemin doit résoudre : ce que le dépôt contient lui-même. */
 const RESOLVABLES = /\.(ts|mjs|js|json|md)$/;
 
+/** Dossiers produits par le build : présents ou non selon qu'on a construit, donc hors du second invariant. */
+const PRODUITS = new Set(["dist", "node_modules", "coverage"]);
+
 interface Chaine {
   readonly valeur: string;
   readonly ou: string;
@@ -71,9 +74,20 @@ function chaines(chemin: string, texte: string): readonly Chaine[] {
   return trouvees;
 }
 
-/** Un chemin du dépôt : relatif, sans joker ni gabarit, et nommant un fichier que nous versionnons. */
+/**
+ * Un chemin du dépôt : relatif, sans joker ni gabarit, nommant un fichier que nous versionnons.
+ *
+ * Un chemin qui traverse un dossier **produit** (`dist/`) est écarté : son existence ne dit rien du
+ * dépôt, seulement si l'on a construit. La CI, qui teste sans construire, a fait échouer la première
+ * version de cette garde sur `serveur/dist/main.mjs` — un chemin juste. Ma machine la disait verte
+ * parce que j'avais lancé `pnpm build` : le vert venait de mon poste, pas du dépôt.
+ *
+ * Ces chemins restent tenus par le premier invariant, qui n'a pas besoin du disque — et c'est bien
+ * lui qui a relevé `apps/mcp-skraft/dist/main.mjs`.
+ */
 function estUnCheminDuDepot(v: string): boolean {
   if (!v.includes("/") || /[*{}:\s\\]/.test(v) || /^[./@~]/.test(v)) return false;
+  if (v.split("/").some((seg) => PRODUITS.has(seg))) return false;
   return RESOLVABLES.test(v);
 }
 
