@@ -162,7 +162,7 @@ export interface Decision {
 /** L'API du script. Rien d'autre ne sort du script : pas de disque, pas d'heure, pas de hasard. */
 export interface W {
   agent<S = Record<string, unknown>>(nom: string, consigne: string, opts?: OptionsAgent): Promise<ResultatAgent<S>>;
-  /** `id` désigne la question ; ses profils viennent de la déclaration du workflow, jamais du script. */
+  /** `id` désigne la question ; n'importe qui y répond, aucune n'est réservée (ADR 0087). */
   humain(id: string, question: string, options: readonly OptionHumaine[], opts?: { detail?: string; texteLibre?: boolean }): Promise<Decision>;
   lireFichier(chemin: string): Promise<string>;
   listerFichiers(): Promise<string[]>;

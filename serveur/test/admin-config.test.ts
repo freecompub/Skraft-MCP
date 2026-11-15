@@ -12,10 +12,12 @@ describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
   });
   afterEach(() => rm(dir, { recursive: true, force: true }));
 
-  it("sans fichier : politique souple, mode avancé", async () => {
+  it("sans fichier : la liste par défaut, et rien d'autre à régler", async () => {
     const c = await loadAdminConfig(join(dir, "absent.json"));
-    expect(c).toMatchObject({ source: "défaut", permissionPolicy: "souple", defaultMode: "advanced" });
-    expect(c).not.toHaveProperty("profile");
+    expect(c).toMatchObject({ source: "défaut", programConsent: true });
+    // Ce fichier ne porte plus que les programmes : plus de profil (ADR 0087), et plus de politique
+    // ni de mode d'affichage, que rien dans ce dépôt ne lisait (ADR 0095).
+    for (const k of ["profile", "permissionPolicy", "defaultMode"]) expect(c).not.toHaveProperty(k);
   });
 
   it("programmes autorisés par défaut : lanceurs de tests, linters, outils de format et de mutation courants (O12)", async () => {
@@ -52,7 +54,7 @@ describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
 
     it("fichier sans `allowedPrograms` : la liste par défaut, et le fichier lu", async () => {
       const file = join(dir, "admin.json");
-      await writeFile(file, JSON.stringify({ permissionPolicy: "souple" }));
+      await writeFile(file, JSON.stringify({ programConsent: true }));
       expect((await loadAdminConfig(file)).origineDesProgrammes).toBe(
         `Liste par défaut : ${file} ne contient pas \`allowedPrograms\`. L'y ajouter remplace la liste par défaut, sans s'y ajouter.`,
       );
@@ -78,7 +80,7 @@ describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
     const file = join(dir, "admin.json");
     await writeFile(file, JSON.stringify({ programConsent: false }));
     expect((await loadAdminConfig(file)).programConsent).toBe(false);
-    await writeFile(file, JSON.stringify({ defaultMode: "simple" }));
+    await writeFile(file, JSON.stringify({}));
     expect((await loadAdminConfig(file)).programConsent).toBe(true);
     // Fichier refusé : rien de plus que ce que l'administrateur a pu relire, donc aucun accord.
     await writeFile(file, "{ pas du json");
@@ -100,54 +102,42 @@ describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
     expect(c.allowedPrograms).toEqual([]); // configuration refusée : on n'autorise rien
   });
 
-  it("politique et mode posés par l'administrateur", async () => {
-    const file = join(dir, "admin.json");
-    await writeFile(file, JSON.stringify({ permissionPolicy: "prudente", defaultMode: "simple" }));
-    const c = await loadAdminConfig(file);
-    expect(c.source).toBe(file);
-    expect(c).toMatchObject({ permissionPolicy: "prudente", defaultMode: "simple" });
-  });
-
   /**
-   * `trustedPublishers`, `revocation` et `developerMode` réglaient l'installation d'une extension
-   * en paquet signé (ADR 0012, 0021), que l'ADR 0091 §3 a retirée. Un poste administré peut encore
-   * les porter : le fichier reste accepté et le reste de sa configuration s'applique.
+   * Un poste administré porte encore les clés que ce dépôt a retirées : l'installation d'extensions
+   * en paquet signé (`trustedPublishers`, `revocation`, `developerMode` — ADR 0012, 0021, retirée par
+   * l'ADR 0091 §3), le profil (`profile` — ADR 0087), et la politique de permissions avec le mode
+   * d'affichage (`permissionPolicy`, `defaultMode` — ADR 0095, que rien ici ne lisait).
+   *
+   * Aucune ne doit faire refuser le fichier : un refus n'autoriserait plus aucun programme, et
+   * arrêterait un poste qui marchait, pour des clés sans effet.
    */
-  it("les clés de la distribution en paquet, retirées : ignorées, jamais refusées", async () => {
+  it("les clés retirées sont ignorées, jamais refusées", async () => {
     const file = join(dir, "admin.json");
     await writeFile(
       file,
       JSON.stringify({
-        permissionPolicy: "prudente",
         allowedPrograms: ["dotnet"],
         trustedPublishers: [{ publisher: "tiers", keyId: "abc", publicKeyPem: "PEM", trustedUpdates: true }],
         developerMode: true,
         revocation: { file: "/etc/agent-studio/revocation.json", rootPublicKeyPem: "ROOT" },
+        profile: { role: "po", permissionPolicy: "prudente", defaultMode: "simple" },
+        permissionPolicy: "prudente",
+        defaultMode: "simple",
       }),
     );
     const c = await loadAdminConfig(file);
     expect(c.error).toBeUndefined();
-    expect(c).toMatchObject({ permissionPolicy: "prudente", allowedPrograms: ["dotnet"] });
-    for (const k of ["trustedPublishers", "developerMode", "revocation"]) expect(c).not.toHaveProperty(k);
+    expect(c).toMatchObject({ allowedPrograms: ["dotnet"], programConsent: true });
+    for (const k of ["trustedPublishers", "developerMode", "revocation", "profile", "permissionPolicy", "defaultMode"])
+      expect(c).not.toHaveProperty(k);
   });
 
-  it("ancienne forme (`profile`) : la politique et le mode qu'elle donnait sont gardés, le rôle ne sert plus à rien d'autre", async () => {
-    // Un poste administré en « prudente » ne doit pas passer en « souple » parce que le format a changé.
+  it("une valeur invalide sur une clé qui compte fait refuser le fichier, avec l'erreur", async () => {
     const file = join(dir, "admin.json");
-    await writeFile(file, JSON.stringify({ profile: { role: "po" } }));
-    expect(await loadAdminConfig(file)).toMatchObject({ permissionPolicy: "prudente", defaultMode: "simple" });
-    await writeFile(file, JSON.stringify({ profile: { role: "architecte", permissionPolicy: "prudente" } }));
-    expect(await loadAdminConfig(file)).toMatchObject({ permissionPolicy: "prudente", defaultMode: "advanced" });
-    await writeFile(file, JSON.stringify({ profile: { role: "po" }, permissionPolicy: "souple" }));
-    expect((await loadAdminConfig(file)).permissionPolicy).toBe("souple");
-  });
-
-  it("fichier invalide : politique prudente, mode simple, avec l'erreur", async () => {
-    const file = join(dir, "admin.json");
-    await writeFile(file, JSON.stringify({ permissionPolicy: "laxiste" }));
+    await writeFile(file, JSON.stringify({ programConsent: "oui" }));
     const c = await loadAdminConfig(file);
-    expect(c).toMatchObject({ permissionPolicy: "prudente", defaultMode: "simple" });
-    expect(c.error).toMatch(/permissionPolicy/);
+    expect(c.error).toMatch(/programConsent/);
+    expect(c).toMatchObject({ allowedPrograms: [], programConsent: false });
   });
 
   it("emplacement système par défaut selon la plateforme", () => {

@@ -2,8 +2,8 @@
 
 Ce dépôt contient le serveur MCP skraft et la plateforme qu'il utilise (voir `README.md`). Il est issu
 d'agent-studio : les ADR de `docs/adr/` et les spécifications de `docs/specs/` en viennent, et leurs
-décisions s'appliquent ici. Les mentions de l'application de bureau (Electron) et des extensions autres
-que `tdd` ne concernent plus ce dépôt.
+décisions s'appliquent ici. Les mentions de l'application de bureau (Electron) et des extensions —
+`tdd` comprise, retirée avec le sous-système par l'ADR 0091 — ne concernent plus ce dépôt.
 
 Toute la documentation est en français ; écrire les ADR, messages et libellés en français.
 

@@ -65,8 +65,8 @@ projets ne sont jamais touchés.
 Le paquet npm contient `dist/`, `skills/` et le script des commandes. Il n'a que deux dépendances,
 `@github/copilot-sdk` (qui apporte le CLI Copilot) et `esbuild`, et il est sous **GPL-3.0-or-later**
 parce qu'il embarque le workflow skraft. Une fois installé (`npm install -g`), `skraft-mcp` lance le
-serveur, et `skraft-mcp-commandes` pose les commandes. Avant toute publication, donner au paquet une
-vraie version : il est encore en `0.0.0`.
+serveur, et `skraft-mcp-commandes` pose les commandes. Il est en **0.1.0** ; rien n'est publié sans
+`--publier`.
 
 ## Inscrire le serveur dans un client
 
@@ -140,11 +140,17 @@ Facultatif ; `SKRAFT_MCP_CONFIG` en désigne un autre. Une clé inconnue est ref
 | `runtime` | `copilot` | `copilot` ou `claude` : qui fait travailler les agents. |
 | `modeles` | défaut du runtime | Les deux architectes demandent un effort élevé et un contexte long (ADR 0077) : ils l'obtiennent si le modèle `strong` le déclare (Copilot), ou s'il s'agit de `sonnet` ou `opus` (Claude, variante `[1m]`) ; sinon l'option est abandonnée et le journal le dit. Modèle par classe de rôle : `strong` (les deux architectes, le réfutateur), `standard` (chercheur, acceptance, testeur, développeur, arbitre de mutation, lentilles cold-reader, test-integrity, architecture), `light` (classifieur, lentille quality-gates). Avec Claude : `opus`, `sonnet`, `haiku` par défaut. |
 
-### L'utilisateur et les programmes : `admin.json`
+### Les programmes autorisés : `admin.json`
 
-Comme pour l'application de bureau : le **profil** de l'utilisateur (qui décide de quelles
-questions, voir « Les questions » ; `developpeur` sans fichier) et les **programmes** qu'une pile a
-le droit de lancer (`allowedPrograms`).
+Les **programmes** qu'une pile a le droit de lancer (`allowedPrograms`), et s'ils peuvent être
+soumis à l'utilisateur (`programConsent`). **Rien d'autre** (ADR 0095) : plus de profil depuis
+l'ADR 0087, donc aucune action n'est réservée, et plus de politique de permissions ni de mode
+d'affichage — rien ici ne les lisait.
+
+Un `admin.json` d'un poste administré peut encore porter `profile`, `permissionPolicy`,
+`defaultMode`, `trustedPublishers`, `revocation` ou `developerMode` : ces clés sont **ignorées**,
+jamais refusées. Un refus n'autoriserait plus aucun programme, et arrêterait un poste qui marchait
+pour des clés sans effet.
 
 Le fichier est cherché à un emplacement **système**, pas dans le dossier personnel :
 
@@ -164,7 +170,7 @@ défaut s'applique : `pytest`, `go`, `cargo`, `gradle`, `mvn`, `dotnet`, `vitest
 `pitest`). Un fichier illisible n'autorise aucun programme.
 
 ```json
-{ "profile": { "role": "architecte" }, "allowedPrograms": ["dotnet", "pytest"] }
+{ "allowedPrograms": ["dotnet", "pytest"] }
 ```
 
 Un programme que la pile nomme hors de la liste n'est pas refusé d'emblée, si le client sait poser
@@ -209,8 +215,7 @@ compilation. Il prend, dans cet ordre :
 
 Sans aucune des trois, le serveur refuse de démarrer, et dit de fournir `pile`.
 
-Le plus simple est de laisser **`skraft_pile`** l'écrire (ADR 0076). C'est `/stack init` dans
-l'application de bureau.
+Le plus simple est de laisser **`skraft_pile`** l'écrire (ADR 0076).
 1. Un agent lit le projet et propose sa pile, BDD compris, à partir de ce que le code a détecté.
 2. Le code la vérifie : programmes (un programme hors de la liste est demandé à l'utilisateur
    avant d'être lancé), schéma, BDD, diagnostic, puis canaris lancés dans une copie du projet.
@@ -219,7 +224,7 @@ l'application de bureau.
 
 Si l'agent pose une question, la réponse revient par l'argument `reponse`, en une phrase complète.
 `sansBdd`, `lanceur`, `features`, `etapes` précisent le BDD. `skraft_pile` avec action
-`diagnostiquer` (`/stack doctor`) vérifie à nouveau une pile déclarée.
+`diagnostiquer` vérifie à nouveau une pile déclarée.
 
 Un projet qui installe ses outils chez lui les déclare dans `outils` (par exemple
 `[.venv/bin, .venv/Scripts]` pour uv) : `pytest` se lance alors sans `uv` à autoriser. Exemple de pile .NET, en BDD avec Reqnroll,
@@ -274,11 +279,11 @@ buildErrors:
 | `skraft_connexion` | — | Connexion du runtime. Copilot : rend un code et une adresse à valider dans le navigateur. Claude : vérifie `claude auth status`, sinon dit de lancer `claude auth login`. Rappeler pour vérifier. |
 | `skraft_demarrer` | `story` (chemin relatif au projet), `auto`, `archi`, `pile`, `accord`, `projet` | Démarre un run, en arrière-plan. Au premier lancement, rend le **résumé à faire accepter** (agents, droits d'écriture, questions) sans rien démarrer ; rappeler avec les mêmes arguments et `accord: "une-fois"` ou `"toujours"` (retenu tant que le workflow ne change pas). `auto` : retient la difficulté proposée sans la faire confirmer. `archi` : skill d'architecture par son nom ou son langage (`java`) ; par défaut la clean architecture. |
 | `skraft_pile` | `action` (`proposer` par défaut, ou `diagnostiquer`), `lanceur`, `features`, `etapes`, `sansBdd`, `reponse`, `projet` | **La pile du projet** (ADR 0075, 0076). `proposer` : un agent découvre la pile en lisant le projet (BDD compris), le code la vérifie en l'exécutant (canaris) et l'écrit dans `.agent-studio/projet.yaml` après l'accord de l'utilisateur, que le client lui demande ; sans question possible, la proposition est rendue et rien n'est écrit. `lanceur`, `features`, `etapes` : la moitié du BDD qui n'a pas été trouvée ; `sansBdd` : le projet n'en fait pas. `reponse` : la réponse à une question de l'agent de découverte, en une phrase complète. `diagnostiquer` : programmes trouvés, emplacements, et canaris qui lancent vraiment les tests, dans une copie du projet. Le projet est relu au prochain appel. |
-| `skraft_etat` | `projet` | JSON : mode du serveur (pilote ou consultation), workflow et accord, pile retenue, runs (phase, étape, dernier rejet, usage, et **`progression`**, la ligne à montrer telle quelle), **questions en attente** (identifiant, options, profils, réponse libre), derniers messages. |
+| `skraft_etat` | `projet` | JSON : mode du serveur (pilote ou consultation), workflow et accord, pile retenue, runs (phase, étape, dernier rejet, usage, et **`progression`**, la ligne à montrer telle quelle), **questions en attente** (identifiant, options, réponse libre), derniers messages. |
 | `skraft_attendre` | `tache`, `delai` (secondes, 30 par défaut, 50 au plus : un client MCP abandonne souvent un appel au-delà de 60 s), `projet` | **Attend un changement**, puis rend ce qui a changé **depuis le dernier appel** (phase, étape, rejet avec sa porte et son motif, lus dans la trace du run, question à poser, réponse reçue, message, fin), la ligne de progression de chaque run, les questions en attente et `termine`. Rien ne se perd entre deux appels. Run déjà fini : réponse immédiate. |
 | `skraft_repondre` | `question`, `option`, `texte`, `projet` | Répond à une question en attente, par l'identifiant et l'option lus dans `skraft_etat` ; `texte` : réponse libre ou commentaire. L'hôte pose la question à l'utilisateur, il ne répond jamais à sa place. |
 | `skraft_pr` | `tache`, `issue`, `projet` | Publie un run fini dont la story vient d'une issue : pousse `skraft/<slug>` et ouvre une PR liée à l'issue (« Closes #n »), après l'accord de l'utilisateur. `issue` : l'issue à lier, si la story n'en était pas une. |
-| `skraft_lecons` | `statut`, `action` (`ratifier` ou `retirer`), `lecon`, `projet` | **Les leçons du projet** (LEC-2) : celles que skraft a tirées des erreurs répétées, par statut (`candidate`, `validee`, `retiree`), avec leurs sources et leur entrée de catalogue. Avec `action` et `lecon`, propose à l'utilisateur de ratifier une leçon qui ajoute une entrée de catalogue, ou de retirer une leçon ; c'est lui qui décide, par la question que le client lui pose. Réservé aux profils architecte et administrateur (`admin.json`) ; sans question possible, la liste seule. |
+| `skraft_lecons` | `statut`, `action` (`ratifier` ou `retirer`), `lecon`, `projet` | **Les leçons du projet** (LEC-2) : celles que skraft a tirées des erreurs répétées, par statut (`candidate`, `validee`, `retiree`), avec leurs sources et leur entrée de catalogue. Avec `action` et `lecon`, propose à l'utilisateur de ratifier une leçon qui ajoute une entrée de catalogue, ou de retirer une leçon ; c'est lui qui décide, par la question que le client lui pose ; sans question possible, la liste seule. |
 | `skraft_rapport` | `tache`, `projet` | JSON : statut (`en-cours`, `fini`, `echec`, `annule`), valeur ou motif, messages (dont le bilan final), dernier rejet, arbitrages, et **étapes** (une par phase et par rejeu : début, fin, durée, tours, rejets, unités Copilot `aiu`, coût Claude `coutUsd`, modèles). |
 | `skraft_reprendre` | `projet` | Prend la main si aucun autre serveur ne pilote le projet, et reprend les runs interrompus (rejeu du journal). |
 | `skraft_arreter` | `tache`, `projet` | Abandonne un run ; ses questions en attente sont annulées. |
@@ -305,17 +310,18 @@ serveur.
 
 ## Les questions
 
-Chaque question est réservée à des profils (`admin.json`) ; un autre profil ne peut pas y répondre.
+**N'importe qui y répond** : aucune question n'est réservée (ADR 0087). Un `meta.humains` dans un
+workflow est refusé au chargement.
 
-| Type | Quand | Profils |
-|---|---|---|
-| `confirmer-difficulte` | après la classification, sauf `auto` | tous |
-| `question-ouverte` | questions de la story **avant RESEARCH**, celles de la recherche avant DESIGN ; réponse libre ou report | PO, développeur, architecte, administrateur |
-| `blocage` | un agent a besoin d'une information pour continuer | PO, développeur, architecte, administrateur |
-| `question-de-revue` | une lentille pose une question métier | PO, développeur, architecte, administrateur |
-| `escalade` | une phase échoue (budget épuisé, même refus deux fois) : relancer, sauter, abandonner | développeur, architecte, administrateur |
-| `arbitrer`, `arbitrer-mutation`, `arbitrer-couverture` | un agent conteste un défaut, un mutant, une ligne non couverte | développeur, architecte, administrateur |
-| `ratifier-adr` | un ADR proposé en DESIGN | architecte |
+| Type | Quand |
+|---|---|
+| `confirmer-difficulte` | après la classification, sauf `auto` |
+| `question-ouverte` | questions de la story **avant RESEARCH**, celles de la recherche avant DESIGN ; réponse libre ou report |
+| `blocage` | un agent a besoin d'une information pour continuer |
+| `question-de-revue` | une lentille pose une question métier |
+| `escalade` | une phase échoue (budget épuisé, même refus deux fois) : relancer, sauter, abandonner |
+| `arbitrer`, `arbitrer-mutation`, `arbitrer-couverture` | un agent conteste un défaut, un mutant, une ligne non couverte |
+| `ratifier-adr` | un ADR proposé en DESIGN |
 
 ## Pendant un run
 
@@ -337,7 +343,8 @@ Il consomme de vraies requêtes.
 pnpm --filter @skraft-mcp/serveur build
 PATH=$HOME/.dotnet:$PATH DOTNET_ROOT=$HOME/.dotnet pnpm tsx scripts/essai-mcp-skraft.ts \
   https://github.com/freecompub/exemple-dotnet-tdd.git stories/US-2.md docs/runs/reponses-us-2.json \
-  --runtime=claude --pile=pile.yaml [--base=<commit>] [--auto]
+  --runtime=claude --suivi=attendre \
+  --pile=docs/runs/2026-11-09-us-2-bdd-claude-suivi/pile.yaml [--base=<commit>] [--auto]
 ```
 
 Comptes rendus : `docs/runs/`.
