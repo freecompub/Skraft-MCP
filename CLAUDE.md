@@ -18,6 +18,8 @@ Toute la documentation est en français ; écrire les ADR, messages et libellés
 - Le dépôt s'organise autour du serveur MCP (ADR 0091) : `serveur/` est le livrable, `moteur/` ce qui
   exécute un workflow, `capacites/` ce que `w.*` sait faire, `workflows/skraft/` la charge utile.
   `tests/architecture` tient ces invariants ; ne pas les contourner, les faire évoluer par un ADR.
+  Un chemin de fichier écrit en dur doit exister et ne jamais nommer l'ancienne arborescence
+  (ADR 0094) : ni compilateur ni test ne le vérifie autrement.
 - Un fichier repris de skraft-plugin porte sa provenance en commentaire. Une reprise ne déplace jamais
   vers le LLM une décision que le code prend.
 - Commits conventionnels (`feat:`, `fix:`, `test:`, `refactor:`, `docs:`).

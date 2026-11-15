@@ -137,7 +137,9 @@ async function preparerPaquet(o, deps, lignes) {
     files: ["dist", "skills", "scripts", "LICENSE", "README.md"],
     dependencies: Object.fromEntries(garder.map((d) => [d, pkg.dependencies[d]])),
     engines: pkg.engines,
-    repository: { type: "git", url: "https://github.com/freecompub/AgentStudio.git", directory: "apps/mcp-skraft" },
+    // Le dépôt a été séparé d'agent-studio (ADR 0091) : le paquet pointe vers celui dont il sort, et
+    // le serveur en est la racine — plus de `directory`, il n'est plus un sous-dossier de rien.
+    repository: { type: "git", url: "https://github.com/freecompub/Skraft-MCP.git", directory: "serveur" },
   };
   await writeFile(join(dossier, "package.json"), `${JSON.stringify(paquet, null, 2)}\n`);
   const pack = await deps.executer("npm", ["pack"], { cwd: dossier });
