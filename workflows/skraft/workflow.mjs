@@ -186,7 +186,8 @@ export const outils = {
   verifier_recherche: verifierRecherche,
   verifier_scenarios: ({ fichiers, donnees }) => texteDeVerification(motifsDesScenarios({ fichiers, ...donnees })),
 };
-import { livrer, barreDeQualite } from "./livraison.mjs";
+import { livrer } from "./livraison.mjs";
+import { barreDeQualite } from "./livraison-socle.mjs";
 import { checkCoverage } from "./deliver.mjs";
 import { commitMessage, creerDossiers, GELÉS, LEVEL_LABELS, repositoryShape } from "./support.mjs";
 import { ecrireLeRegistre, ligneDuRegistre, nouveauRegistre, ouvrirLeRegistre, suivreLesRefus } from "./registre.mjs";
