@@ -120,6 +120,11 @@ Ce qui a été vérifié :
 
 ## Configuration
 
+> **`agent-studio` dans les chemins.** Le produit s'appelle skraft, mais les chemins, variables
+> d'environnement et références Git gardent le nom dont ce dépôt est issu (ADR 0096) : les renommer
+> rendrait muets les projets déjà configurés et les postes administrés. Ce sont des identifiants, pas
+> le nom du produit ; les renommer demandera un ADR qui porte sa migration.
+
 ### Le serveur : `~/.agent-studio/mcp-skraft.json`
 
 Facultatif ; `SKRAFT_MCP_CONFIG` en désigne un autre. Une clé inconnue est refusée.

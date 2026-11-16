@@ -48,7 +48,7 @@ export async function createRelais(o: OptionsRelais): Promise<Relais> {
     s.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
         ...o.outils.map((t) => ({ name: t.name, description: t.description, inputSchema: t.parameters as { type: "object" } })),
-        { name: OUTIL_PERMISSION, description: "Décision de permission d'agent-studio, appelée par le CLI.", inputSchema: SCHEMA_PERMISSION },
+        { name: OUTIL_PERMISSION, description: "Décision de permission de skraft, appelée par le CLI.", inputSchema: SCHEMA_PERMISSION },
       ],
     }));
     s.setRequestHandler(CallToolRequestSchema, async (req) => {

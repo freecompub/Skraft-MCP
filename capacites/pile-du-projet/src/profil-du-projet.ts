@@ -83,7 +83,7 @@ export async function accepterLesProgrammes(o: {
     if (reponse === "allow-always") await o.acceptes.ajouter(o.root, programme);
     o.acceptesCetteFois.add(programme);
     ajoutes.push(programme);
-    o.onPost("agent-studio", `« ${programme} » accepté par l'utilisateur pour ce projet (${reponse === "allow-always" ? "toujours" : "cette fois"}).`);
+    o.onPost("skraft", `« ${programme} » accepté par l'utilisateur pour ce projet (${reponse === "allow-always" ? "toujours" : "cette fois"}).`);
   }
   return ajoutes.length ? { ...o.programmes, allowedPrograms: [...o.programmes.allowedPrograms, ...ajoutes] } : o.programmes;
 }
@@ -159,12 +159,12 @@ export async function lireProfilDuProjet(
   logger?: Logger,
 ): Promise<PileDuProjet | null> {
   const src = await lireSourceDuProfil(root);
-  for (const a of src?.avertissements ?? []) onPost("agent-studio", a);
+  for (const a of src?.avertissements ?? []) onPost("skraft", a);
   const lu = await lireProfilDeclare(root, programmes);
   if (lu === null) return null;
   if ("error" in lu) {
     logger?.warn("profil de stack refusé", { root, error: lu.error });
-    onPost("agent-studio", `**Le profil de stack du projet est refusé.** ${lu.error}\n\nL'application se rabat sur la détection automatique ; corrigez ${src?.libelle ?? `\`${FICHIER_PROJET}\``} puis rouvrez le projet.`);
+    onPost("skraft", `**Le profil de stack du projet est refusé.** ${lu.error}\n\nL'application se rabat sur la détection automatique ; corrigez ${src?.libelle ?? `\`${FICHIER_PROJET}\``} puis rouvrez le projet.`);
     return null;
   }
   if ("composants" in lu) return pileComposee(lu.composants);

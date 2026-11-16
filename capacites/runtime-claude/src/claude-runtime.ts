@@ -84,7 +84,7 @@ export function createClaudeRuntime(deps: ClaudeRuntimeDeps): AgentRuntime {
     const fichierPrompt = join(dossier, "prompt.md");
     const fichierMcp = join(dossier, "mcp.json");
     const noms = cfg.tools.map((t) => `\`${t.name}\` s'appelle \`${nomMcp(SERVEUR, t.name)}\``).join(", ");
-    await writeFile(fichierPrompt, `${cfg.systemPrompt}${noms ? `\n\nNoms des outils d'agent-studio dans cette session : ${noms}.` : ""}`, { mode: 0o600 });
+    await writeFile(fichierPrompt, `${cfg.systemPrompt}${noms ? `\n\nNoms des outils de skraft dans cette session : ${noms}.` : ""}`, { mode: 0o600 });
     await writeFile(fichierMcp, JSON.stringify(relais.configuration(SERVEUR)), { mode: 0o600 });
     // Contexte long demandé pour un modèle sans variante 1M connue : le tour part sans (ADR 0077).
     if (cfg.contextTier === "long_context" && !contexteLongPossible(cfg.model))

@@ -20,6 +20,10 @@ Toute la documentation est en français ; écrire les ADR, messages et libellés
   `tests/architecture` tient ces invariants ; ne pas les contourner, les faire évoluer par un ADR.
   Un chemin de fichier écrit en dur doit exister et ne jamais nommer l'ancienne arborescence
   (ADR 0094) : ni compilateur ni test ne le vérifie autrement.
+- Le produit s'appelle **skraft** dans tout texte lu par un agent ou par l'utilisateur (ADR 0096).
+  « agent-studio » ne subsiste qu'en identifiant — chemin, variable d'environnement, nom de protocole,
+  déclaré avec sa raison dans la garde — et en provenance ; renommer un identifiant demande un ADR qui
+  porte sa migration.
 - Un fichier repris de skraft-plugin porte sa provenance en commentaire. Une reprise ne déplace jamais
   vers le LLM une décision que le code prend.
 - Commits conventionnels (`feat:`, `fix:`, `test:`, `refactor:`, `docs:`).

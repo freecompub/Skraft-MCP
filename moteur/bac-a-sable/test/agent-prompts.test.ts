@@ -76,7 +76,7 @@ describe("Documents Markdown (frontmatter, sections)", () => {
   });
 });
 
-describe("Composition du prompt : contenu partagé + contrat agent-studio", () => {
+describe("Composition du prompt : contenu partagé + contrat skraft", () => {
   const agent: ManifestAgent = {
     name: "dev",
     title: "Dév",
@@ -96,7 +96,7 @@ describe("Composition du prompt : contenu partagé + contrat agent-studio", () =
     expect(at("Écrire un test rouge.")).toBeGreaterThan(at("### Skill outside-in-tdd#RED"));
     expect(systemPrompt).not.toContain("Passer au vert.");
     expect(at("Le scénario en cours")).toBeGreaterThan(at("Détail du rouge."));
-    expect(at("## Fonctionnement dans agent-studio")).toBeGreaterThan(at("Le scénario en cours"));
+    expect(at("## Fonctionnement dans skraft")).toBeGreaterThan(at("Le scénario en cours"));
     expect(systemPrompt).toContain("`outside-in-tdd` : Use when an approved scenario has to become working software.");
     expect([...onDemand.keys()]).toEqual(["outside-in-tdd"]);
   });
@@ -184,7 +184,7 @@ describe("Composition du prompt : contenu partagé + contrat agent-studio", () =
 
   it("agent sans fichier (consignes seules) : consignes puis contrat", () => {
     const p = composeAgentPrompt({ name: "a", title: "A", role: "Tu testes.", output: "report_phase" }, null, new Map()).systemPrompt;
-    expect(p.startsWith("Tu testes.\n\n## Fonctionnement dans agent-studio")).toBe(true);
+    expect(p.startsWith("Tu testes.\n\n## Fonctionnement dans skraft")).toBe(true);
   });
 });
 
