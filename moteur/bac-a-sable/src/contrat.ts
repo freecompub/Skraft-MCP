@@ -38,7 +38,7 @@ export interface ManifestAgent {
    */
   prompt?: string;
   /**
-   * Consignes propres à agent-studio (orchestration), ajoutées au contenu. Au moins l'un de
+   * Consignes propres à skraft (orchestration), ajoutées au contenu. Au moins l'un de
    * `prompt` ou `role` est requis.
    */
   role?: string;

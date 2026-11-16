@@ -21,7 +21,7 @@ const motifDEcriture = texte(200).refine((m) => !/\s/.test(m), "motif d'écritur
 const agent = z
   .object({
     prompt: texte(200),
-    /** Consignes propres à agent-studio, ajoutées au contenu du fichier d'agent (ADR 0024). */
+    /** Consignes propres à skraft, ajoutées au contenu du fichier d'agent (ADR 0024). */
     consignes: texte(20_000).optional(),
     classe: z.enum(["strong", "standard", "light"]).optional(),
     reasoningEffort: z.enum(["low", "medium", "high"]).optional(),

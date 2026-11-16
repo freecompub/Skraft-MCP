@@ -208,7 +208,7 @@ export function workspaceServicesFactory(cfg: WorkspaceServicesConfig): Workspac
     let composantsDeLaPile = pileDuProjet?.composants;
     if (pileFournie !== undefined) {
       if (choisie)
-        onPost("agent-studio", `La pile fournie par l'appelant est ignorée : le projet a la sienne, **${choisie.id}** (${declare ? `profil \`${PROFIL_PROJET}\`` : "détection automatique"}).`);
+        onPost("skraft", `La pile fournie par l'appelant est ignorée : le projet a la sienne, **${choisie.id}** (${declare ? `profil \`${PROFIL_PROJET}\`` : "détection automatique"}).`);
       else {
         // Même contrôle qu'un profil du projet : schéma, et programmes de la liste de l'administrateur.
         // Au format composants (ADR 0074), chaque pile l'est à son tour.
@@ -227,7 +227,7 @@ export function workspaceServicesFactory(cfg: WorkspaceServicesConfig): Workspac
           choisie = createProfileAdapter(lu.profile);
         }
         source = "client";
-        onPost("agent-studio", `Stack du projet : **${choisie.id}**, fournie par l'appelant.`);
+        onPost("skraft", `Stack du projet : **${choisie.id}**, fournie par l'appelant.`);
       }
     }
     if (!choisie && cfg.sansRepli && !repliPermis)
@@ -238,13 +238,13 @@ export function workspaceServicesFactory(cfg: WorkspaceServicesConfig): Workspac
     if (!stack) throw new Error("Aucun adaptateur de stack configuré");
     // Déclarations des tâches, pour les libellés des cartes : seuls les workflows en apportent (ADR 0091 §3).
     const manifests: ExtensionManifest[] = [];
-    if (declare) onPost("agent-studio", `Stack du projet : **${declare.id}**, d'après le profil déclaré par le projet.`);
+    if (declare) onPost("skraft", `Stack du projet : **${declare.id}**, d'après le profil déclaré par le projet.`);
     if (source === "repli") {
       cfg.logger?.warn("aucun adaptateur ne reconnaît le projet", { root: workspace.root, fallback: stack.id });
       // Dit dans la conversation, pas seulement dans le journal : le repli change ce que font
       // les portes et les commandes, et l'utilisateur doit savoir pourquoi.
       onPost(
-        "agent-studio",
+        "skraft",
         `**Ce projet n'est reconnu par aucun adaptateur.** L'application se rabat sur \`${stack.id}\`, dont les commandes de test et les emplacements de fichiers ne correspondent probablement pas. Les commandes qui exécutent des tests risquent d'échouer.`,
       );
     } else cfg.logger?.info("adaptateur de stack retenu", { root: workspace.root, stack: stack.id, source });
@@ -345,7 +345,7 @@ export function workspaceServicesFactory(cfg: WorkspaceServicesConfig): Workspac
     const confirmerPile = confirmerProgrammes ?? confirmer;
     if (confirmerPile)
       registry.addCommand({
-        extensionId: "agent-studio",
+        extensionId: "skraft",
         name: "stack",
         title: "Stack du projet",
         description: "Affiche la stack employée ; `init` propose un profil à déclarer, `doctor` dit ce qu'il vaut.",
@@ -428,10 +428,10 @@ export function workspaceServicesFactory(cfg: WorkspaceServicesConfig): Workspac
         ...(cfg.workflows.machine ? { machine: cfg.workflows.machine } : {}),
         projet: join(workspace.root, ".agent-studio", "workflows"),
       });
-      for (const e of recherche.erreurs) onPost("agent-studio", `**Workflow écarté** (\`${e.dossier}\`) : ${e.motifs.join(" ; ")}`);
-      for (const r of recherche.remplacements) onPost("agent-studio", `Le workflow « ${r.nom} » du projet remplace celui de la machine (\`${r.dossierMachine}\`).`);
+      for (const e of recherche.erreurs) onPost("skraft", `**Workflow écarté** (\`${e.dossier}\`) : ${e.motifs.join(" ; ")}`);
+      for (const r of recherche.remplacements) onPost("skraft", `Le workflow « ${r.nom} » du projet remplace celui de la machine (\`${r.dossierMachine}\`).`);
       if (recherche.workflows.length && !confirmer)
-        onPost("agent-studio", "Workflows du projet non activés : l'application n'a aucun moyen de demander ton accord avant de les exécuter.");
+        onPost("skraft", "Workflows du projet non activés : l'application n'a aucun moyen de demander ton accord avant de les exécuter.");
       else if (confirmer) {
         const accords = createJsonAccordStore(cfg.workflows.accordsFile ?? join(cfg.tasksDir, "accords-workflows.json"));
         accordsWorkflows = accords;
@@ -441,7 +441,7 @@ export function workspaceServicesFactory(cfg: WorkspaceServicesConfig): Workspac
             handles.push(r.handle);
             manifests.push(r.manifest);
             actifs.push({ nom: w.nom, commande: w.meta.commande, description: w.meta.description, syntaxe: syntaxeCommande(w.meta.commande, w.meta.entrees), workflow: w });
-          } else onPost("agent-studio", `**Workflow écarté** (\`${w.dossier}\`) : ${r.motifs.join(" ; ")}`);
+          } else onPost("skraft", `**Workflow écarté** (\`${w.dossier}\`) : ${r.motifs.join(" ; ")}`);
         }
       }
     }
@@ -595,7 +595,7 @@ function stackCommandDeps(args: {
     chemin: FICHIER_PROJET,
     profilDeclare: () => lireProfilDeclare(workspace.root, programmes),
     stackActive: () => ({ id: stack.id, declaree }),
-    post: (markdown) => onPost("agent-studio", markdown),
+    post: (markdown) => onPost("skraft", markdown),
     confirmer: (req) => confirmer.confirm(req),
     ...(args.decouverte ? { decouverte: args.decouverte } : {}),
     async ecrireProfil(yaml) {

@@ -1,7 +1,7 @@
 /**
  * Prompts des agents d'extension (D12, D26, ADR 0024) : le **contenu** vient de fichiers Markdown
  * de l'extension (rôle, skills), partageables avec d'autres harnais ; le **contrat** propre à
- * agent-studio (outil de fin, `run_tests`, pas de Git…) est ajouté ici par le cœur. Fonctions pures,
+ * skraft (outil de fin, `run_tests`, pas de Git…) est ajouté ici par le cœur. Fonctions pures,
  * sauf `loadAgentPrompts`, qui lit par la fonction qu'on lui donne.
  */
 import { readFile, realpath } from "node:fs/promises";
@@ -86,7 +86,7 @@ export function resolveSkillRef(ref: string, skills: ReadonlyMap<string, SkillSo
 const shorten = (s: string, max: number) => (s.length > max ? `${s.slice(0, max - 1).trimEnd()}…` : s);
 
 /**
- * Contrat d'exécution dans agent-studio, ajouté en dernier au prompt : il prime sur les consignes du
+ * Contrat d'exécution dans skraft, ajouté en dernier au prompt : il prime sur les consignes du
  * contenu partagé, écrites pour des harnais où l'agent lance lui-même les tests et commite.
  */
 export function contractBlock(a: {
@@ -101,7 +101,7 @@ export function contractBlock(a: {
   onDemand: readonly { ref: string; description: string }[];
 }): string {
   const lines = [
-    "## Fonctionnement dans agent-studio",
+    "## Fonctionnement dans skraft",
     "Ces règles priment sur toute consigne contraire du rôle ou des skills ci-dessus.",
     `- Termine ta phase en appelant l'outil \`${a.output}\` : c'est la seule sortie prise en compte.`,
   ];

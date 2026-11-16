@@ -163,7 +163,7 @@ describe("Hôte d'extension en processus", () => {
     expect(r).toEqual({ output: { summary: "ok", files: [] } });
     expect(runs[0]?.spec).toEqual({ role: "diabeo.demo/writer", systemPrompt: expect.any(String), writable: ["tests/**"], output: "report_phase", blocker: false });
     // Consignes du manifeste, puis contrat d'exécution ajouté par le cœur (ADR 0024).
-    expect(runs[0]?.spec.systemPrompt).toMatch(/^Tu écris des tests\.\n\n## Fonctionnement dans agent-studio\n/);
+    expect(runs[0]?.spec.systemPrompt).toMatch(/^Tu écris des tests\.\n\n## Fonctionnement dans skraft\n/);
     expect(runs[0]?.spec.systemPrompt).toContain("appelant l'outil `report_phase`");
     await expect(ctx.agents.run("inconnu", "x")).rejects.toThrow(/non déclaré/);
   });
