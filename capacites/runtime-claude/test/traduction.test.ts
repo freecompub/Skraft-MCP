@@ -18,7 +18,7 @@ const flux = (nom: string) =>
     .map((l) => JSON.parse(l) as unknown);
 
 describe("arguments d'un tour", () => {
-  const base = { fichierPrompt: "/tmp/t/prompt.md", fichierMcp: "/tmp/t/mcp.json", serveur: "agent-studio", outils: ["report_phase", "run_tests"], sessionId: "s-1" };
+  const base = { fichierPrompt: "/tmp/t/prompt.md", fichierMcp: "/tmp/t/mcp.json", serveur: "skraft", outils: ["report_phase", "run_tests"], sessionId: "s-1" };
 
   it("isolé : ni réglages, ni CLAUDE.md, ni skills, ni autres serveurs MCP ; flux JSON ; prompt système et MCP par fichier", () => {
     const a = argumentsDuTour({ ...base, reprise: false });
@@ -37,9 +37,9 @@ describe("arguments d'un tour", () => {
   it("outils intégrés sans Bash ; nos outils autorisés ; outil de permission caché au modèle et chargé des demandes", () => {
     const a = argumentsDuTour({ ...base, reprise: false });
     expect(a[a.indexOf("--tools") + 1]).toBe("Read,Write,Edit,Glob,Grep");
-    expect(a.slice(a.indexOf("--allowedTools") + 1, a.indexOf("--allowedTools") + 3)).toEqual(["mcp__agent-studio__report_phase", "mcp__agent-studio__run_tests"]);
-    expect(a[a.indexOf("--disallowedTools") + 1]).toBe("mcp__agent-studio__permission");
-    expect(a[a.indexOf("--permission-prompt-tool") + 1]).toBe("mcp__agent-studio__permission");
+    expect(a.slice(a.indexOf("--allowedTools") + 1, a.indexOf("--allowedTools") + 3)).toEqual(["mcp__skraft__report_phase", "mcp__skraft__run_tests"]);
+    expect(a[a.indexOf("--disallowedTools") + 1]).toBe("mcp__skraft__permission");
+    expect(a[a.indexOf("--permission-prompt-tool") + 1]).toBe("mcp__skraft__permission");
     expect(a[a.indexOf("--permission-prompts") + 1]).toBe("host");
   });
 

@@ -70,9 +70,9 @@ describe("Lecture d'un profil de stack", () => {
   it("le refus dit quels programmes sont autorisés, et d'où vient la liste (09/11)", () => {
     // Sur un autre poste, `uv` refusé sans autre explication : l'utilisateur a corrigé un
     // `admin.json` que le serveur ne lisait pas, et ne pouvait pas le savoir.
-    const r = parseStackProfile(MINIMAL.replace("pytest", "uv"), { allowedPrograms: ["pytest", "ruff"], origine: "Liste par défaut : aucun fichier à /etc/agent-studio/admin.json." });
+    const r = parseStackProfile(MINIMAL.replace("pytest", "uv"), { allowedPrograms: ["pytest", "ruff"], origine: "Liste par défaut : aucun fichier à /etc/skraft/admin.json." });
     expect("error" in r && r.error).toBe(
-      "Profil de stack refusé : « uv » (tests) n'est pas un programme autorisé. Programmes autorisés : pytest, ruff. Liste par défaut : aucun fichier à /etc/agent-studio/admin.json.",
+      "Profil de stack refusé : « uv » (tests) n'est pas un programme autorisé. Programmes autorisés : pytest, ruff. Liste par défaut : aucun fichier à /etc/skraft/admin.json.",
     );
   });
 

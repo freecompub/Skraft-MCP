@@ -27,7 +27,7 @@ export function createGitRepository(git: GitRunner): Repository {
       });
       // Hors du projet : une copie posée dedans se retrouverait dans les listages de fichiers,
       // dans les motifs de `layout`, et dans le prochain `git add -A`.
-      const chemin = join(await realpath(tmpdir()), `agent-studio-bac-${randomBytes(8).toString("hex")}`);
+      const chemin = join(await realpath(tmpdir()), `skraft-bac-${randomBytes(8).toString("hex")}`);
       // `--detach` : pas de branche créée, donc rien à nettoyer côté références.
       await git.run(["worktree", "add", "--detach", "--quiet", chemin, sha]);
 

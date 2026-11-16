@@ -68,7 +68,7 @@ export interface WorkspaceServices {
 export interface WorkspaceServicesArgs {
   workspace: Workspace;
   /**
-   * Profil de pile fourni par l'appelant, au format de `.agent-studio/stack.yaml` (ADR 0068, point
+   * Profil de pile fourni par l'appelant, au format de `.skraft/projet.yaml`, section pile (ADR 0068, point
    * 8) : retenu seulement si le projet n'a ni profil ni adaptateur qui le reconnaisse, et soumis à
    * la même liste de programmes. Jamais écrit dans le dépôt.
    */

@@ -20,7 +20,7 @@ const rec = (id: string, over: Partial<TaskRecord> = {}): TaskRecord => ({
 describe("JsonTaskStore", () => {
   let dir: string;
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-studio-tasks-"));
+    dir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(() => rm(dir, { recursive: true, force: true }));
 

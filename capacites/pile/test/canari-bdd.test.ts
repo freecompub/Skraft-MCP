@@ -59,7 +59,7 @@ describe("L'oracle du canari BDD : une étape sans définition", () => {
 describe("Exécution du canari BDD", () => {
   let bac: string;
   beforeEach(async () => {
-    bac = await mkdtemp(join(tmpdir(), "agent-studio-bac-bdd-"));
+    bac = await mkdtemp(join(tmpdir(), "skraft-bac-bdd-"));
   });
   afterEach(() => rm(bac, { recursive: true, force: true }));
 

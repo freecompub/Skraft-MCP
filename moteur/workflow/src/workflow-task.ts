@@ -209,7 +209,7 @@ interface Args {
 /** Le dossier d'un workflow est gelé, pour le script comme pour les agents (ADR 0055). */
 function gele(chemin: string): void {
   const s = chemin.replace(/\\/g, "/").replace(/^\.\//, "").split("/").map((x) => x.toLowerCase());
-  if (s[0] === ".agent-studio" && s[1] === "workflows") throw new Error(`Écriture refusée : ${chemin} est dans le dossier d'un workflow, gelé pendant la tâche.`);
+  if (s[0] === ".skraft" && s[1] === "workflows") throw new Error(`Écriture refusée : ${chemin} est dans le dossier d'un workflow, gelé pendant la tâche.`);
 }
 
 interface Execution {

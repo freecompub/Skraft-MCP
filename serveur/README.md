@@ -36,13 +36,13 @@ et pose les commandes `/skraft-…` :
 ```bash
 pnpm install
 pnpm --filter @skraft-mcp/serveur deployer
-pnpm --filter @skraft-mcp/serveur deployer -- --env AGENT_STUDIO_ADMIN_CONFIG=/chemin/admin.json
+pnpm --filter @skraft-mcp/serveur deployer -- --env SKRAFT_ADMIN_CONFIG=/chemin/admin.json
 ```
 
 | Option | Effet |
 |---|---|
 | `--client copilot` ou `--client claude` | Un seul client. Sans elle, chaque client trouvé dans le PATH (`copilot`, `claude`). Le serveur et les commandes ne sont posés que pour ces clients-là. |
-| `--env CLE=valeur` | Variable donnée au serveur (répétable) : `SKRAFT_MCP_CONFIG`, `AGENT_STUDIO_ADMIN_CONFIG`… |
+| `--env CLE=valeur` | Variable donnée au serveur (répétable) : `SKRAFT_MCP_CONFIG`, `SKRAFT_ADMIN_CONFIG`… |
 | `--remplacer` | Remplace une inscription `skraft` différente. Sans elle, une inscription existante n'est jamais touchée : la retirer efface ses variables. |
 | `--sans-build`, `--sans-commandes` | Saute une étape. |
 | `--projet <dossier>` | Les commandes dans `<dossier>/.claude/skills` plutôt que pour l'utilisateur. |
@@ -51,7 +51,7 @@ pnpm --filter @skraft-mcp/serveur deployer -- --env AGENT_STUDIO_ADMIN_CONFIG=/c
 | `--nom <nom>` | Nom du paquet npm, si `@skraft-mcp/serveur` n'est pas disponible. |
 | `--desinstaller` | Retire l'inscription du serveur dans chaque client, et nos commandes `/skraft-…`. |
 | `--desinstaller --forcer` | Retire aussi une inscription `skraft` qui pointe ailleurs (un autre dépôt, le paquet npm). |
-| `--desinstaller --donnees` | Efface aussi `~/.agent-studio/mcp-skraft` (runs, journaux, dépôts et programmes acceptés), et lui seul. |
+| `--desinstaller --donnees` | Efface aussi `~/.skraft` (runs, journaux, dépôts et programmes acceptés), et lui seul. |
 
 Claude Code est inscrit pour l'utilisateur (`-s user`), donc dans tous ses projets. Le script
 respecte `COPILOT_HOME` et `CLAUDE_CONFIG_DIR`. Redémarrer le client ensuite. Un échec d'inscription
@@ -83,7 +83,7 @@ copilot mcp add skraft -- node /chemin/vers/serveur/dist/main.mjs
 ```
 
 La commande écrit `~/.copilot/mcp-config.json`, où un bloc `env` peut donner au serveur ses
-variables (`SKRAFT_MCP_CONFIG`, `AGENT_STUDIO_ADMIN_CONFIG`). Le serveur est lancé dans le dossier où
+variables (`SKRAFT_MCP_CONFIG`, `SKRAFT_ADMIN_CONFIG`). Le serveur est lancé dans le dossier où
 l'on a démarré `copilot`. Ce que Copilot CLI fait du serveur, vu à l'essai :
 - il ne déclare **aucun root** : un dépôt hors de `autorises` fait l'objet d'une question ;
 - il sait **poser les questions** du serveur (*elicitation*), en session interactive seulement :
@@ -120,12 +120,23 @@ Ce qui a été vérifié :
 
 ## Configuration
 
-> **`agent-studio` dans les chemins.** Le produit s'appelle skraft, mais les chemins, variables
-> d'environnement et références Git gardent le nom dont ce dépôt est issu (ADR 0096) : les renommer
-> rendrait muets les projets déjà configurés et les postes administrés. Ce sont des identifiants, pas
-> le nom du produit ; les renommer demandera un ADR qui porte sa migration.
+> **Si vous venez d'avant le 16 novembre 2026.** Tout s'appelait `agent-studio` ; tout s'appelle
+> skraft (ADR 0097). Les anciens emplacements sont **encore lus** quand les nouveaux n'existent pas,
+> et le serveur dit lequel il a pris :
+>
+> | Avant | Maintenant |
+> |---|---|
+> | `~/.agent-studio/mcp-skraft.json` | `~/.skraft.json` |
+> | `~/.agent-studio/mcp-skraft/` | `~/.skraft/` |
+> | `.agent-studio/projet.yaml` | `.skraft/projet.yaml` |
+> | `AGENT_STUDIO_ADMIN_CONFIG` | `SKRAFT_ADMIN_CONFIG` |
+> | `/etc/agent-studio/admin.json` | `/etc/skraft/admin.json` |
+>
+> Pour le dossier de données, le déplacement est à faire une fois : `mv ~/.agent-studio/mcp-skraft
+> ~/.skraft`. Rien n'est déplacé automatiquement — 45 Mo de runs ne se déplacent pas au démarrage
+> d'un serveur.
 
-### Le serveur : `~/.agent-studio/mcp-skraft.json`
+### Le serveur : `~/.skraft.json`
 
 Facultatif ; `SKRAFT_MCP_CONFIG` en désigne un autre. Une clé inconnue est refusée.
 
@@ -140,7 +151,7 @@ Facultatif ; `SKRAFT_MCP_CONFIG` en désigne un autre. Une clé inconnue est ref
 
 | Clé | Défaut | Rôle |
 |---|---|---|
-| `autorises` | `[]` | Dossiers (absolus, `~` accepté) où un projet est accepté, en plus des roots déclarés par le client. Un projet doit être un dépôt Git situé dans l'un ou l'autre. Ailleurs, si le client sait poser une question (*elicitation*), le serveur demande à l'utilisateur d'accepter le dépôt : une fois, ou toujours (retenu dans `~/.agent-studio/mcp-skraft/depots-acceptes.json`) ; sinon il refuse (ADR 0075). |
+| `autorises` | `[]` | Dossiers (absolus, `~` accepté) où un projet est accepté, en plus des roots déclarés par le client. Un projet doit être un dépôt Git situé dans l'un ou l'autre. Ailleurs, si le client sait poser une question (*elicitation*), le serveur demande à l'utilisateur d'accepter le dépôt : une fois, ou toujours (retenu dans `~/.skraft/depots-acceptes.json`) ; sinon il refuse (ADR 0075). |
 | `hostname` | `github.com` | Hôte GitHub (ou GitHub Enterprise) pour la connexion Copilot. |
 | `runtime` | `copilot` | `copilot` ou `claude` : qui fait travailler les agents. |
 | `modeles` | défaut du runtime | Les deux architectes demandent un effort élevé et un contexte long (ADR 0077) : ils l'obtiennent si le modèle `strong` le déclare (Copilot), ou s'il s'agit de `sonnet` ou `opus` (Claude, variante `[1m]`) ; sinon l'option est abandonnée et le journal le dit. Modèle par classe de rôle : `strong` (les deux architectes, le réfutateur), `standard` (chercheur, acceptance, testeur, développeur, arbitre de mutation, lentilles cold-reader, test-integrity, architecture), `light` (classifieur, lentille quality-gates). Avec Claude : `opus`, `sonnet`, `haiku` par défaut. |
@@ -161,11 +172,11 @@ Le fichier est cherché à un emplacement **système**, pas dans le dossier pers
 
 | Système | Emplacement |
 |---|---|
-| macOS | `/Library/Application Support/agent-studio/admin.json` |
-| Linux | `/etc/agent-studio/admin.json` |
-| Windows | `%ProgramData%\agent-studio\admin.json` |
+| macOS | `/Library/Application Support/skraft/admin.json` |
+| Linux | `/etc/skraft/admin.json` |
+| Windows | `%ProgramData%\skraft\admin.json` |
 
-La variable `AGENT_STUDIO_ADMIN_CONFIG` en désigne un autre ; pour le serveur, la poser dans le
+La variable `SKRAFT_ADMIN_CONFIG` en désigne un autre ; pour le serveur, la poser dans le
 bloc `env` de sa déclaration chez le client. Le fichier est lu au démarrage du serveur : redémarrer
 le client après l'avoir changé.
 
@@ -211,11 +222,11 @@ liste en vigueur et son origine : le fichier lu, ou celui qui était attendu et 
 Skraft doit savoir comment lancer les tests, où vivent les fichiers, comment lire une erreur de
 compilation. Il prend, dans cet ordre :
 
-1. le **profil du projet** : `.agent-studio/projet.yaml`, section `pile`, ou section `composants`
+1. le **profil du projet** : `.skraft/projet.yaml`, section `pile`, ou section `composants`
    pour un dépôt qui mélange les technologies (ADR 0071, 0074) ;
 2. sinon, l'**adaptateur** intégré, s'il reconnaît le projet (TypeScript avec Vitest) ;
 3. sinon, la pile donnée par l'appelant dans l'argument **`pile`** de `skraft_demarrer`, au même
-   format. Elle est gardée hors du dépôt (`~/.agent-studio/mcp-skraft/piles/`), pour qu'une reprise
+   format. Elle est gardée hors du dépôt (`~/.skraft/piles/`), pour qu'une reprise
    la retrouve. Une pile donnée alors que le projet a la sienne est ignorée, et le message le dit.
 
 Sans aucune des trois, le serveur refuse de démarrer, et dit de fournir `pile`.
@@ -225,7 +236,7 @@ Le plus simple est de laisser **`skraft_pile`** l'écrire (ADR 0076).
 2. Le code la vérifie : programmes (un programme hors de la liste est demandé à l'utilisateur
    avant d'être lancé), schéma, BDD, diagnostic, puis canaris lancés dans une copie du projet.
 3. Une pile refusée repart à l'agent avec les motifs, trois essais au plus.
-4. Vérifiée, elle est écrite dans `.agent-studio/projet.yaml` après l'accord de l'utilisateur.
+4. Vérifiée, elle est écrite dans `.skraft/projet.yaml` après l'accord de l'utilisateur.
 
 Si l'agent pose une question, la réponse revient par l'argument `reponse`, en une phrase complète.
 `sansBdd`, `lanceur`, `features`, `etapes` précisent le BDD. `skraft_pile` avec action
@@ -283,7 +294,7 @@ buildErrors:
 |---|---|---|
 | `skraft_connexion` | — | Connexion du runtime. Copilot : rend un code et une adresse à valider dans le navigateur. Claude : vérifie `claude auth status`, sinon dit de lancer `claude auth login`. Rappeler pour vérifier. |
 | `skraft_demarrer` | `story` (chemin relatif au projet), `auto`, `archi`, `pile`, `accord`, `projet` | Démarre un run, en arrière-plan. Au premier lancement, rend le **résumé à faire accepter** (agents, droits d'écriture, questions) sans rien démarrer ; rappeler avec les mêmes arguments et `accord: "une-fois"` ou `"toujours"` (retenu tant que le workflow ne change pas). `auto` : retient la difficulté proposée sans la faire confirmer. `archi` : skill d'architecture par son nom ou son langage (`java`) ; par défaut la clean architecture. |
-| `skraft_pile` | `action` (`proposer` par défaut, ou `diagnostiquer`), `lanceur`, `features`, `etapes`, `sansBdd`, `reponse`, `projet` | **La pile du projet** (ADR 0075, 0076). `proposer` : un agent découvre la pile en lisant le projet (BDD compris), le code la vérifie en l'exécutant (canaris) et l'écrit dans `.agent-studio/projet.yaml` après l'accord de l'utilisateur, que le client lui demande ; sans question possible, la proposition est rendue et rien n'est écrit. `lanceur`, `features`, `etapes` : la moitié du BDD qui n'a pas été trouvée ; `sansBdd` : le projet n'en fait pas. `reponse` : la réponse à une question de l'agent de découverte, en une phrase complète. `diagnostiquer` : programmes trouvés, emplacements, et canaris qui lancent vraiment les tests, dans une copie du projet. Le projet est relu au prochain appel. |
+| `skraft_pile` | `action` (`proposer` par défaut, ou `diagnostiquer`), `lanceur`, `features`, `etapes`, `sansBdd`, `reponse`, `projet` | **La pile du projet** (ADR 0075, 0076). `proposer` : un agent découvre la pile en lisant le projet (BDD compris), le code la vérifie en l'exécutant (canaris) et l'écrit dans `.skraft/projet.yaml` après l'accord de l'utilisateur, que le client lui demande ; sans question possible, la proposition est rendue et rien n'est écrit. `lanceur`, `features`, `etapes` : la moitié du BDD qui n'a pas été trouvée ; `sansBdd` : le projet n'en fait pas. `reponse` : la réponse à une question de l'agent de découverte, en une phrase complète. `diagnostiquer` : programmes trouvés, emplacements, et canaris qui lancent vraiment les tests, dans une copie du projet. Le projet est relu au prochain appel. |
 | `skraft_etat` | `projet` | JSON : mode du serveur (pilote ou consultation), workflow et accord, pile retenue, runs (phase, étape, dernier rejet, usage, et **`progression`**, la ligne à montrer telle quelle), **questions en attente** (identifiant, options, réponse libre), derniers messages. |
 | `skraft_attendre` | `tache`, `delai` (secondes, 30 par défaut, 50 au plus : un client MCP abandonne souvent un appel au-delà de 60 s), `projet` | **Attend un changement**, puis rend ce qui a changé **depuis le dernier appel** (phase, étape, rejet avec sa porte et son motif, lus dans la trace du run, question à poser, réponse reçue, message, fin), la ligne de progression de chaque run, les questions en attente et `termine`. Rien ne se perd entre deux appels. Run déjà fini : réponse immédiate. |
 | `skraft_repondre` | `question`, `option`, `texte`, `projet` | Répond à une question en attente, par l'identifiant et l'option lus dans `skraft_etat` ; `texte` : réponse libre ou commentaire. L'hôte pose la question à l'utilisateur, il ne répond jamais à sa place. |
@@ -356,7 +367,7 @@ Comptes rendus : `docs/runs/`.
 
 ## Données
 
-Tout ce que le serveur garde est dans `~/.agent-studio/mcp-skraft/` : tâches, journaux de rejeu et
+Tout ce que le serveur garde est dans `~/.skraft/` : tâches, journaux de rejeu et
 traces (`tasks/`), piles fournies (`piles/`), dépôts acceptés « toujours » (`depots-acceptes.json`),
 verrous (`verrous/`), état du CLI Copilot (`copilot/`),
 journal (`logs/mcp-skraft.log`). Rien n'est écrit dans le dépôt en dehors du travail de skraft.

@@ -8,7 +8,7 @@ import { createJsonConversationStore } from "../src/conversation/json-conversati
 describe("JsonConversationStore", () => {
   let dir: string;
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-studio-conv-"));
+    dir = await mkdtemp(join(tmpdir(), "skraft-conv-"));
   });
   afterEach(() => rm(dir, { recursive: true, force: true }));
 

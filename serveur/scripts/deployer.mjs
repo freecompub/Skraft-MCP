@@ -11,7 +11,7 @@
  *   node scripts/deployer.mjs --npm <dossier>          prépare le paquet npm et le compresse
  *   node scripts/deployer.mjs --npm <dossier> --publier  … et le publie (npm publish)
  *   node scripts/deployer.mjs --desinstaller           retire l'inscription et les commandes
- *   node scripts/deployer.mjs --desinstaller --donnees … et efface ~/.agent-studio/mcp-skraft
+ *   node scripts/deployer.mjs --desinstaller --donnees … et efface ~/.skraft
  *
  * Une inscription existante n'est jamais remplacée sans `--remplacer` : la retirer efface les
  * variables d'environnement qu'on y avait mises. Rien n'est publié sans `--publier`.
@@ -102,12 +102,12 @@ async function desinstaller(o, deps) {
     lignes.push(`Commandes /skraft-… : ${r.retires.length} lien${r.retires.length > 1 ? "s" : ""} retiré${r.retires.length > 1 ? "s" : ""}.`, ...r.refuses);
   }
   // Le dossier des données du serveur (assemblage.ts) : runs, journaux, piles fournies, accords.
-  const donnees = join(o.home ?? homedir(), ".agent-studio", "mcp-skraft");
+  const donnees = join(o.home ?? homedir(), ".skraft");
   if (o.donnees) {
     await rm(donnees, { recursive: true, force: true });
     lignes.push(`Données du serveur effacées (${donnees}).`);
   } else lignes.push(`Données du serveur gardées (${donnees}) : runs, journaux, dépôts et programmes acceptés. --donnees les efface.`);
-  lignes.push("Le profil de pile des projets (.agent-studio/projet.yaml) n'est pas touché : il appartient au projet.");
+  lignes.push("Le profil de pile des projets (.skraft/projet.yaml) n'est pas touché : il appartient au projet.");
   return { lignes, ok: true };
 }
 

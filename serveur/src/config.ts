@@ -1,9 +1,10 @@
 /**
- * Configuration du serveur MCP (`~/.agent-studio/mcp-skraft.json`, ou `SKRAFT_MCP_CONFIG`) : les
+ * Configuration du serveur MCP (`~/.skraft.json`, ou `SKRAFT_MCP_CONFIG`) : les
  * dossiers où il accepte un projet en plus des roots du client (ADR 0068, point 6), et l'hôte
  * GitHub (point 7). Les programmes autorisés et la politique de permissions viennent d'`admin.json`, comme pour
  * l'application.
  */
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { isAbsolute, join } from "node:path";
@@ -30,8 +31,20 @@ const schema = z
   })
   .strict();
 
+/** L'emplacement abandonné par l'ADR 0097, encore lu quand le nouveau n'existe pas. */
+export const ANCIENNE_CONFIGURATION = join(".agent-studio", "mcp-skraft.json");
+
+/**
+ * `~/.skraft.json`, ou ce que `SKRAFT_MCP_CONFIG` désigne. À défaut du nouveau nom, l'ancien
+ * `~/.agent-studio/mcp-skraft.json` est rendu s'il existe : une configuration posée à la main ne
+ * devient pas muette sans le dire (ADR 0097).
+ */
 export function cheminConfiguration(env: NodeJS.ProcessEnv = process.env, home = homedir()): string {
-  return env["SKRAFT_MCP_CONFIG"] || join(home, ".agent-studio", "mcp-skraft.json");
+  if (env["SKRAFT_MCP_CONFIG"]) return env["SKRAFT_MCP_CONFIG"];
+  const nouveau = join(home, ".skraft.json");
+  if (existsSync(nouveau)) return nouveau;
+  const ancien = join(home, ANCIENNE_CONFIGURATION);
+  return existsSync(ancien) ? ancien : nouveau;
 }
 
 export async function lireConfiguration(fichier: string, o: { home?: string } = {}): Promise<{ ok: true; config: ConfigurationServeur } | { ok: false; motif: string }> {

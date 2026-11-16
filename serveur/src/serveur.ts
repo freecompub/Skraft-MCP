@@ -139,7 +139,7 @@ export function createServeurSkraft(o: OptionsServeur): McpServer {
           .string()
           .max(20_000)
           .optional()
-          .describe("Profil de pile en YAML, au format de la section pile de .agent-studio/projet.yaml (ADR 0071), ou une section `composants:` pour un dépôt qui mélange les technologies (ADR 0074), si le projet n'en a pas et qu'aucun adaptateur ne le reconnaît. Ses programmes doivent être autorisés par l'administrateur."),
+          .describe("Profil de pile en YAML, au format de la section pile de .skraft/projet.yaml (ADR 0071), ou une section `composants:` pour un dépôt qui mélange les technologies (ADR 0074), si le projet n'en a pas et qu'aucun adaptateur ne le reconnaît. Ses programmes doivent être autorisés par l'administrateur."),
         accord: z.enum(["une-fois", "toujours"]).optional().describe("Accord de l'utilisateur sur le workflow, après lui avoir montré le résumé rendu par un premier appel."),
         projet,
       },
@@ -481,7 +481,7 @@ export function createServeurSkraft(o: OptionsServeur): McpServer {
     "skraft_pile",
     {
       description:
-        "Fait découvrir la pile du projet par un agent (comment lancer ses tests, où vivent ses fichiers, son BDD), la vérifie en l'exécutant, et l'écrit dans .agent-studio/projet.yaml après l'accord de l'utilisateur, que le client lui demande ; ou, avec action « diagnostiquer », vérifie la pile déclarée (programmes trouvés, emplacements, canaris qui lancent vraiment les tests). À appeler quand skraft n'a pas de pile. Montre la réponse à l'utilisateur telle quelle.",
+        "Fait découvrir la pile du projet par un agent (comment lancer ses tests, où vivent ses fichiers, son BDD), la vérifie en l'exécutant, et l'écrit dans .skraft/projet.yaml après l'accord de l'utilisateur, que le client lui demande ; ou, avec action « diagnostiquer », vérifie la pile déclarée (programmes trouvés, emplacements, canaris qui lancent vraiment les tests). À appeler quand skraft n'a pas de pile. Montre la réponse à l'utilisateur telle quelle.",
       inputSchema: {
         action: z.enum(["proposer", "diagnostiquer"]).optional().describe("proposer (par défaut) ou diagnostiquer."),
         lanceur: sansEspace("Le lanceur BDD").optional().describe("Lanceur BDD, s'il n'a pas été trouvé (reqnroll, cucumber-js, pytest-bdd…)."),

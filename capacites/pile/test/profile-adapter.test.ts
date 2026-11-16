@@ -48,7 +48,7 @@ function runner(reponse: ProcessResult | ((cmd: string, args: readonly string[])
 
 let racine: string;
 beforeEach(async () => {
-  racine = await mkdtemp(join(tmpdir(), "agent-studio-profil-"));
+  racine = await mkdtemp(join(tmpdir(), "skraft-profil-"));
 });
 afterEach(() => rm(racine, { recursive: true, force: true }));
 

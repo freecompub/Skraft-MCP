@@ -52,12 +52,12 @@ export default async function (w, entree) {
 
 async function projet(corps = "") {
   const p = await mkdtemp(join(racine, "projet-"));
-  const d = join(p, ".agent-studio/workflows/demo");
+  const d = join(p, ".skraft/workflows/demo");
   for (const [rel, c] of Object.entries({ "workflow.mjs": META(corps), "agents/redacteur.agent.md": "Tu résumes des stories." })) {
     await mkdir(dirname(join(d, rel)), { recursive: true });
     await writeFile(join(d, rel), c);
   }
-  const r = await trouverWorkflows({ projet: join(p, ".agent-studio/workflows") });
+  const r = await trouverWorkflows({ projet: join(p, ".skraft/workflows") });
   if (r.erreurs.length) throw new Error(JSON.stringify(r.erreurs));
   return { p, w: r.workflows[0]! };
 }
@@ -223,12 +223,12 @@ export default async function (w, entree) {
 
   it("l'agent appelle l'outil : la fonction du script reçoit les fichiers lus par l'hôte et les données ; l'appel est compté", async () => {
     const p = await mkdtemp(join(racine, "projet-"));
-    const d = join(p, ".agent-studio/workflows/demo");
+    const d = join(p, ".skraft/workflows/demo");
     for (const [rel, c] of Object.entries({ "workflow.mjs": AVEC_OUTIL, "agents/redacteur.agent.md": "Tu résumes des stories." })) {
       await mkdir(dirname(join(d, rel)), { recursive: true });
       await writeFile(join(d, rel), c);
     }
-    const trouves = await trouverWorkflows({ projet: join(p, ".agent-studio/workflows") });
+    const trouves = await trouverWorkflows({ projet: join(p, ".skraft/workflows") });
     expect(trouves.erreurs).toEqual([]);
     const reponses: unknown[] = [];
     const runtime = new ScriptedRuntime();
@@ -249,13 +249,13 @@ export default async function (w, entree) {
 
   it("un outil lit à la demande ce que la porte verrait : un fichier de la liste du dépôt, et rien d'autre", async () => {
     const p = await mkdtemp(join(racine, "projet-"));
-    const d = join(p, ".agent-studio/workflows/demo");
+    const d = join(p, ".skraft/workflows/demo");
     const script = AVEC_OUTIL.replace('verification: { outil: "verifier_resume"', 'verification: { outil: "lire_source"');
     for (const [rel, c] of Object.entries({ "workflow.mjs": script, "agents/redacteur.agent.md": "Tu résumes des stories." })) {
       await mkdir(dirname(join(d, rel)), { recursive: true });
       await writeFile(join(d, rel), c);
     }
-    const trouves = await trouverWorkflows({ projet: join(p, ".agent-studio/workflows") });
+    const trouves = await trouverWorkflows({ projet: join(p, ".skraft/workflows") });
     const reponses: unknown[] = [];
     const runtime = new ScriptedRuntime();
     runtime.behave("workflow.demo/redacteur", async (t) => {
@@ -302,12 +302,12 @@ export default async function (w, entree) {
 
   it("les agents du meta qui n'écrivent rien ni ne lancent de tests, appelés ensemble, tournent en même temps", async () => {
     const p = await mkdtemp(join(racine, "projet-"));
-    const d = join(p, ".agent-studio/workflows/demo");
+    const d = join(p, ".skraft/workflows/demo");
     for (const [rel, c] of Object.entries({ "workflow.mjs": REVUE, "agents/juge.agent.md": "Tu juges." })) {
       await mkdir(dirname(join(d, rel)), { recursive: true });
       await writeFile(join(d, rel), c);
     }
-    const trouves = await trouverWorkflows({ projet: join(p, ".agent-studio/workflows") });
+    const trouves = await trouverWorkflows({ projet: join(p, ".skraft/workflows") });
     expect(trouves.erreurs).toEqual([]);
     const debuts = new Set<string>();
     const runtime = new ScriptedRuntime();

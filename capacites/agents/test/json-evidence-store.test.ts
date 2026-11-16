@@ -25,7 +25,7 @@ const ev = (id: string, taskId = "t1"): Evidence => ({
 describe("JsonEvidenceStore", () => {
   let dir: string;
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-studio-ev-"));
+    dir = await mkdtemp(join(tmpdir(), "skraft-ev-"));
   });
   afterEach(() => rm(dir, { recursive: true, force: true }));
 

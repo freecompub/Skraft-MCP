@@ -34,7 +34,7 @@ export interface ExecuterTestsOptions {
   onOutput?: (chunk: string) => void;
 }
 
-const temporaire = (profile: StackProfile, ext: string) => join(tmpdir(), `agent-studio-${profile.id}-${randomBytes(6).toString("hex")}.${ext}`);
+const temporaire = (profile: StackProfile, ext: string) => join(tmpdir(), `skraft-${profile.id}-${randomBytes(6).toString("hex")}.${ext}`);
 
 /** Fichiers du dossier, récursivement. Vide si le dossier n'existe pas : rien n'a été écrit. */
 async function fichiersSous(dossier: string, ext?: string): Promise<string[]> {

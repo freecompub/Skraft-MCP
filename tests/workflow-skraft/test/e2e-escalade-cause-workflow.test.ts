@@ -56,7 +56,7 @@ describe("skraft en workflow — escalade d'un scénario selon sa cause (ADR 006
   let tasksDir: string;
   beforeEach(async () => {
     root = await createProject();
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();
@@ -85,7 +85,7 @@ describe("skraft en workflow — escalade d'un scénario selon sa cause (ADR 006
   }, 120_000);
 
   it("lignes non couvertes du scénario : l'escalade propose d'exempter ces lignes ; dérogation tracée et commitée, le scénario repart et passe", async () => {
-    await put(root, ".agent-studio/projet.yaml", "qualite:\n  couverture:\n    domaine: 100\n");
+    await put(root, ".skraft/projet.yaml", "qualite:\n  couverture:\n    domaine: 100\n");
     git(root, "add", "-A");
     git(root, "commit", "-qm", "barre de qualité");
     const app = await assemble(root, simulatedAgents(new ScriptedRuntime(), root), tasksDir, { stack: pileLigneNonCouverte() });

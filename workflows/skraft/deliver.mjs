@@ -71,7 +71,7 @@ export function checkRedGreenSequence(evidence, unitTests) {
   return reasons;
 }
 // ---------- barre de qualité (configurable par projet) ---------------------------------
-// La barre vit dans la section `qualite` de `.agent-studio/projet.yaml`, commune aux extensions
+// La barre vit dans la section `qualite` de `.skraft/projet.yaml`, commune aux extensions
 // (ADR 0049, 0071) : lue par `parseQualityBar` de `@skraft-mcp/extension-api`. Pendant la
 // transition, `.agent-studio/quality.yaml` puis l'ancien `.skraft/quality.json` sont relus.
 /**

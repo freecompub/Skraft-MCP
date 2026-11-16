@@ -45,7 +45,7 @@ async function rapportDansDossier(dossier: string): Promise<string | null> {
 
 export function createProfileAdapter(profile: StackProfile, deps: ProfileAdapterDeps = {}): StackAdapter {
   const runner = deps.runner ?? createNodeProcessRunner();
-  const fichierTemporaire = (ext: string) => join(tmpdir(), `agent-studio-${profile.id}-${randomBytes(6).toString("hex")}.${ext}`);
+  const fichierTemporaire = (ext: string) => join(tmpdir(), `skraft-${profile.id}-${randomBytes(6).toString("hex")}.${ext}`);
   const motifs = (globs: readonly string[]) => globs.map((g) => globToRegExp(g));
   /** Pour le GEL des tests : insensible à la casse (ADR 0035), sinon une majuscule le contourne. */
   const motifsSansCasse = (globs: readonly string[]) => globs.map((g) => globToRegExp(g, "i"));

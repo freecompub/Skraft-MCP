@@ -7,7 +7,7 @@ import { createUsageRecorder, sumUsage } from "../src/usage/usage-recorder.js";
 describe("Enregistreur d'usage (D37)", () => {
   let dir: string;
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-studio-usage-"));
+    dir = await mkdtemp(join(tmpdir(), "skraft-usage-"));
   });
   afterEach(() => rm(dir, { recursive: true, force: true }));
 

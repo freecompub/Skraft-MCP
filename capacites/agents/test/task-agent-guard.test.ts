@@ -101,9 +101,9 @@ describe("Les refus ne se contournent pas par une majuscule", () => {
 
   it("un dossier de workflow est gelé pour tout agent, même à périmètre total, quelle que soit la casse (ADR 0055)", async () => {
     const g = createTaskAgentGuard({ root: "/projets/demo", writable: ["**"] });
-    for (const p of [".agent-studio/workflows/skraft/workflow.mjs", ".Agent-Studio/WORKFLOWS/skraft/portes/a.mjs"])
+    for (const p of [".skraft/workflows/skraft/workflow.mjs", ".Skraft/WORKFLOWS/skraft/portes/a.mjs"])
       expect(await g.check({ kind: "write", toolName: "edit", path: p }), p).toMatchObject({ decision: "deny", reason: expect.stringMatching(/workflow/) });
-    expect(await g.check({ kind: "write", toolName: "edit", path: ".agent-studio/stack.yaml" })).toEqual({ decision: "allow" });
+    expect(await g.check({ kind: "write", toolName: "edit", path: ".skraft/projet.yaml" })).toEqual({ decision: "allow" });
   });
 
   it("`.git` reste interdit quelle que soit la casse", async () => {

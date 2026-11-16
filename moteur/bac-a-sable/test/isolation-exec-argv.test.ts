@@ -14,7 +14,7 @@ const run = promisify(execFile);
 let dir: string;
 
 beforeAll(async () => {
-  dir = await mkdtemp(join(tmpdir(), "agent-studio-argv-"));
+  dir = await mkdtemp(join(tmpdir(), "skraft-argv-"));
 });
 afterAll(() => rm(dir, { recursive: true, force: true }));
 

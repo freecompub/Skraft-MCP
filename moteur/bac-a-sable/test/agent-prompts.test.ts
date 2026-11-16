@@ -196,8 +196,8 @@ describe("Lecture des fichiers de l'extension", () => {
     await writeFile(join(dir, rel), content);
   };
   beforeAll(async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-studio-ext-"));
-    outside = await mkdtemp(join(tmpdir(), "agent-studio-dehors-"));
+    dir = await mkdtemp(join(tmpdir(), "skraft-ext-"));
+    outside = await mkdtemp(join(tmpdir(), "skraft-dehors-"));
     await writeFile(join(outside, "secret.md"), "secret");
     await put("agents/dev.agent.md", "---\nname: dev\ndescription: Livre\n---\n\nTu livres le code.\n");
     await put("skills/outside-in-tdd/SKILL.md", TDD);

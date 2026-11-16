@@ -9,8 +9,8 @@ import { cheminDuRegistre, contenuDuRegistre, defautsRetenus, ecrireLeRegistre, 
 const fil = (over = {}) => ({ id: "cold-reader#1.1", lens: "cold-reader", severity: "major", description: "Nom flou.", file: "src/a.ts", line: 3, target: "code", status: "open", round: 1, ...over });
 
 describe("Registre des erreurs (LEC-1)", () => {
-  it("un fichier propre à la story, sous .agent-studio/lecons/brut", () => {
-    expect(cheminDuRegistre("lec-1")).toBe(".agent-studio/lecons/brut/lec-1.jsonl");
+  it("un fichier propre à la story, sous .skraft/lecons/brut", () => {
+    expect(cheminDuRegistre("lec-1")).toBe(".skraft/lecons/brut/lec-1.jsonl");
   });
 
   it("un défaut grave ou bloquant retenu est enregistré avec sa phase, sa lentille, sa cible, sa description, son fichier, sa ligne, la story et son identifiant", () => {

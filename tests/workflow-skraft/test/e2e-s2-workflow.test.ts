@@ -22,7 +22,7 @@ describe("skraft en workflow — critères de S2 (RESEARCH), script isolé", () 
     root = await createProject();
     await put(root, "src/domain/bolus-calculator.ts", ["export class BolusCalculator {}", ...Array.from({ length: 54 }, (_, i) => `// ligne ${i + 2}`)].join("\n") + "\n");
     git(root, "commit", "-qam", "calculateur");
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();

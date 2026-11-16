@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { APP_IDENTITY } from "../git/cli-git-runner.js";
 import type { Checkpoint, CheckpointStore, FileChange, FileChangeStatus, GitRunner } from "../protocols.js";
 
-const CHECKPOINT_REFS = "refs/agent-studio/checkpoints";
+const CHECKPOINT_REFS = "refs/skraft/checkpoints";
 
 /**
  * Fichiers que le système d'exploitation sème tout seul (ADR 0051).
@@ -51,13 +51,13 @@ export class UnknownCheckpointError extends Error {
 }
 
 /**
- * Checkpoints par commits instantanés rangés sous `refs/agent-studio/checkpoints/`.
+ * Checkpoints par commits instantanés rangés sous `refs/skraft/checkpoints/`.
  * Créer un checkpoint ne déplace ni HEAD ni l'index (ADR 0003).
  */
 export function createGitCheckpointStore(git: GitRunner, gitDir: string): CheckpointStore {
   /** Écrit l'arbre de travail courant comme objet tree, via un index temporaire. */
   async function snapshotTree(): Promise<string> {
-    const env = { GIT_INDEX_FILE: join(gitDir, `agent-studio-index-${randomBytes(4).toString("hex")}`) };
+    const env = { GIT_INDEX_FILE: join(gitDir, `skraft-index-${randomBytes(4).toString("hex")}`) };
     try {
       await git.run(["read-tree", "HEAD"], { env });
       await git.run(["add", "-A"], { env });

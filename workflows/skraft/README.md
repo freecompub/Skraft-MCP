@@ -21,7 +21,7 @@ que le workflow peut faire sans rien démarrer ; le client le fait accepter, pui
 `accord`. L'accord se rattache à l'**empreinte du dossier** : il tombe dès qu'un fichier change.
 
 Un projet peut **remplacer** ce workflow par le sien : un dossier de même `meta.name` dans
-`<projet>/.agent-studio/workflows/`, **commité** — un fichier non suivi serait effacé par un
+`<projet>/.skraft/workflows/`, **commité** — un fichier non suivi serait effacé par un
 rembobinage (`git clean`). À nom égal, celui du projet l'emporte, et le serveur le dit. Ce sont les
 deux seuls emplacements cherchés : il n'y en a pas dans le dossier personnel.
 

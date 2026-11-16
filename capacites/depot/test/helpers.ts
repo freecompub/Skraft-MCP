@@ -21,7 +21,7 @@ export async function git(cwd: string, ...args: string[]): Promise<string> {
 }
 
 export async function tempDir(): Promise<{ path: string; cleanup: () => Promise<void> }> {
-  const path = await mkdtemp(join(tmpdir(), "agent-studio-ws-"));
+  const path = await mkdtemp(join(tmpdir(), "skraft-ws-"));
   return { path, cleanup: () => rm(path, { recursive: true, force: true }) };
 }
 

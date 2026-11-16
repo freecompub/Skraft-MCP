@@ -14,7 +14,7 @@ import { normaliserMotifs } from "@skraft-mcp/workflow";
 import { sha256 } from "./support.mjs";
 
 /** Un fichier par story : deux stories menées en parallèle n'écrivent jamais le même. */
-export const cheminDuRegistre = (slug) => `.agent-studio/lecons/brut/${slug}.jsonl`;
+export const cheminDuRegistre = (slug) => `.skraft/lecons/brut/${slug}.jsonl`;
 
 /** Même phase, même source (lentille ou porte), même motif normalisé : même signature. */
 function signature(phase, source, motifs) {

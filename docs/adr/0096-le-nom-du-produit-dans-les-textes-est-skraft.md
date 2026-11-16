@@ -91,4 +91,8 @@ dire lequel a été lu, et donner une échéance. Ce n'est pas décidé ici, et 
 
 ## Statut
 
-Accepté — 2026-11-16.
+Accepté — 2026-11-16. **Point 2 remplacé** le 2026-11-16 par l'ADR 0097 : les identifiants ont été
+renommés eux aussi. La raison donnée ici pour les garder — « casser l'existant » — n'avait pas été
+vérifiée : rien n'était publié, et il existait deux dossiers `.agent-studio` en tout, aucun poste
+administré, aucune ref de checkpoint. Les points 1, 3 et 4 restent en vigueur, et la garde du point 4
+a été resserrée : elle n'autorise plus que les replis de lecture.

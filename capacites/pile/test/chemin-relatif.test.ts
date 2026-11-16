@@ -18,7 +18,7 @@ import { relatifDepuis } from "../src/chemin-relatif.js";
 
 let racine: string;
 beforeEach(async () => {
-  racine = await mkdtemp(join(tmpdir(), "agent-studio-chemin-"));
+  racine = await mkdtemp(join(tmpdir(), "skraft-chemin-"));
 });
 afterEach(() => rm(racine, { recursive: true, force: true }));
 

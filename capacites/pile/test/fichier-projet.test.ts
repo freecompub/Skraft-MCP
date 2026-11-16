@@ -1,5 +1,5 @@
 /**
- * Un seul fichier de projet (ADR 0071) : `.agent-studio/projet.yaml`, section `pile` (comment lancer
+ * Un seul fichier de projet (ADR 0071) : `.skraft/projet.yaml`, section `pile` (comment lancer
  * les outils) et section `qualite` (ce qui est exigé), chacune validée selon ses règles. Les anciens
  * fichiers restent lus pendant la transition, avec un avertissement.
  */
@@ -28,9 +28,9 @@ describe("lireFichierProjet", () => {
   });
 
   it("une clé de premier niveau inconnue, ou un YAML invalide, est refusé avec le fichier et la clé", () => {
-    expect(lireFichierProjet("pile: {}\nqualité: {}\n")).toEqual({ error: expect.stringMatching(/\.agent-studio\/projet\.yaml.*« qualité ».*pile, qualite/s) });
-    expect(lireFichierProjet("pile: [\n")).toEqual({ error: expect.stringMatching(/\.agent-studio\/projet\.yaml.*YAML/) });
-    expect(lireFichierProjet("- a\n")).toEqual({ error: expect.stringMatching(/\.agent-studio\/projet\.yaml/) });
+    expect(lireFichierProjet("pile: {}\nqualité: {}\n")).toEqual({ error: expect.stringMatching(/\.skraft\/projet\.yaml.*« qualité ».*pile, qualite/s) });
+    expect(lireFichierProjet("pile: [\n")).toEqual({ error: expect.stringMatching(/\.skraft\/projet\.yaml.*YAML/) });
+    expect(lireFichierProjet("- a\n")).toEqual({ error: expect.stringMatching(/\.skraft\/projet\.yaml/) });
   });
 });
 
@@ -38,10 +38,10 @@ describe("parseQualityBar et projet.yaml (ADR 0071)", () => {
   it("la barre vient de la section qualite de projet.yaml ; une erreur nomme le fichier et la section", () => {
     const r = parseQualityBar({ projet: PROJET });
     if ("error" in r) throw new Error(r.error);
-    expect(r.source).toBe(".agent-studio/projet.yaml");
+    expect(r.source).toBe(".skraft/projet.yaml");
     expect(r.bar.coverage).toEqual({ rest: 70 });
     expect(r.warnings).toEqual([]);
-    expect(parseQualityBar({ projet: "qualite:\n  couverture:\n    reste: 120\n" })).toEqual({ error: expect.stringMatching(/\.agent-studio\/projet\.yaml.*section qualite/) });
+    expect(parseQualityBar({ projet: "qualite:\n  couverture:\n    reste: 120\n" })).toEqual({ error: expect.stringMatching(/\.skraft\/projet\.yaml.*section qualite/) });
   });
 
   it("projet.yaml fait foi : les anciens fichiers sont ignorés, et c'est dit s'ils sont encore là", () => {
@@ -54,7 +54,7 @@ describe("parseQualityBar et projet.yaml (ADR 0071)", () => {
   it("projet.yaml sans section qualite : valeurs par défaut", () => {
     const r = parseQualityBar({ projet: "pile:\n  id: x\n" });
     if ("error" in r) throw new Error(r.error);
-    expect(r.source).toBe(".agent-studio/projet.yaml");
+    expect(r.source).toBe(".skraft/projet.yaml");
     expect(r.bar.coverage).toEqual({});
   });
 

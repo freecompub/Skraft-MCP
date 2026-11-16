@@ -36,7 +36,7 @@ export function repositoryShape(files) {
 * le travail est jugé (ADR 0049), et le registre des erreurs commises (LEC-1). Un agent ne doit pas
 * pouvoir abaisser son propre critère, ni effacer la trace de ses erreurs.
 */
-export const GELÉS = [".skraft/quality.json", ".agent-studio/quality.yaml", ".agent-studio/projet.yaml", ".agent-studio/lecons/**"];
+export const GELÉS = [".skraft/quality.json", ".agent-studio/quality.yaml", ".agent-studio/projet.yaml", ".skraft/projet.yaml", ".skraft/lecons/**"];
 /** Dossiers où les agents et le code déposent les livrables d'une story (ADR 0037). */
 export const dossiersDeLaStory = (slug) => [
   `.skraft/${slug}/research`,

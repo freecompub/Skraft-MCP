@@ -78,7 +78,7 @@ describe("skraft en workflow — couverture du diff contestée, arbitrée par l'
     await put(root, ".skraft/quality.json", '{"coverage":{"core":90},"mutation":{"active":false}}\n');
     git(root, "add", "-A");
     git(root, "commit", "-qm", "barre de qualité");
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();

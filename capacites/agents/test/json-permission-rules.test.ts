@@ -12,7 +12,7 @@ import { createJsonPermissionRules } from "../src/guards/permission-arbiter.js";
 let dir: string;
 let file: string;
 beforeEach(async () => {
-  dir = await mkdtemp(join(tmpdir(), "agent-studio-rules-"));
+  dir = await mkdtemp(join(tmpdir(), "skraft-rules-"));
   file = join(dir, "sous-dossier", "rules.json");
 });
 afterEach(() => rm(dir, { recursive: true, force: true }));

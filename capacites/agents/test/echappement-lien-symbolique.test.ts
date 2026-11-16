@@ -16,7 +16,7 @@ let projet: string;
 let dehors: string;
 
 beforeAll(async () => {
-  base = await mkdtemp(join(tmpdir(), "agent-studio-lien-"));
+  base = await mkdtemp(join(tmpdir(), "skraft-lien-"));
   projet = join(base, "projet");
   dehors = join(base, "dehors");
   await mkdir(projet, { recursive: true });

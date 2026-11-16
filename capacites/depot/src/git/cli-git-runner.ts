@@ -14,10 +14,10 @@ export class GitError extends Error {
 
 /** Identité utilisée pour les objets créés par l'application (checkpoints, commits). */
 export const APP_IDENTITY: Readonly<Record<string, string>> = {
-  GIT_AUTHOR_NAME: "agent-studio",
-  GIT_AUTHOR_EMAIL: "agent-studio@localhost",
-  GIT_COMMITTER_NAME: "agent-studio",
-  GIT_COMMITTER_EMAIL: "agent-studio@localhost",
+  GIT_AUTHOR_NAME: "skraft",
+  GIT_AUTHOR_EMAIL: "skraft@localhost",
+  GIT_COMMITTER_NAME: "skraft",
+  GIT_COMMITTER_EMAIL: "skraft@localhost",
 };
 
 export interface CliGitOptions {

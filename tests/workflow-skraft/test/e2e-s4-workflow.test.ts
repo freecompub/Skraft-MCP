@@ -17,7 +17,7 @@ import { answerQuestions, assemble, implPlanDe, put, shutdownHosts, simulatedAge
 const NODE_MODULES = resolve(import.meta.dirname, "../../../node_modules");
 
 async function createTsProject(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "agent-studio-skraft-ts-"));
+  const root = await mkdtemp(join(tmpdir(), "skraft-ts-"));
   await symlink(NODE_MODULES, join(root, "node_modules"));
   await put(root, ".gitignore", "node_modules\n");
   await put(root, "package.json", '{"name":"bolus","type":"module","devDependencies":{"vitest":"*"}}\n');
@@ -59,7 +59,7 @@ describe("skraft en workflow — critères de S4 (DISTILL)", () => {
   let tasksDir: string;
   beforeEach(async () => {
     root = await createTsProject();
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();

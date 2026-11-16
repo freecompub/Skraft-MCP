@@ -91,6 +91,12 @@ export async function accepterLesProgrammes(o: {
 /** Ancien emplacement du profil (avant l'ADR 0071), relu le temps de la transition. */
 export const PROFIL_PROJET = ".agent-studio/stack.yaml";
 
+/**
+ * Le fichier de projet à son emplacement d'avant l'ADR 0097, encore lu avec un avertissement. Il a
+ * le **format** de `projet.yaml` (sections), contrairement à `PROFIL_PROJET` qui porte un profil nu.
+ */
+export const ANCIEN_FICHIER_PROJET = ".agent-studio/projet.yaml";
+
 /** Où est le profil de pile du projet, et ce qu'il faut en dire (ADR 0071). */
 interface SourceDuProfil {
   /** Nom à donner dans les messages : `projet.yaml` (section pile) ou l'ancien `stack.yaml`. */
@@ -111,20 +117,35 @@ export async function lireOuNul(chemin: string): Promise<string | null> {
   }
 }
 
-/** `projet.yaml` fait foi (ADR 0071) ; sinon l'ancien `stack.yaml`, avec un avertissement. */
+/**
+ * `.skraft/projet.yaml` fait foi (ADR 0071, 0097) ; sinon les emplacements abandonnés, dans l'ordre,
+ * chacun avec un avertissement qui dit où aller. Ceux qui sont présents mais pas retenus sont
+ * signalés : c'est la seule façon de savoir qu'un fichier qu'on croit lu ne l'est pas.
+ */
 export async function lireSourceDuProfil(root: string): Promise<SourceDuProfil | null> {
-  const projet = await lireOuNul(join(root, FICHIER_PROJET));
-  const ancien = await lireOuNul(join(root, PROFIL_PROJET));
-  if (projet !== null) {
-    const avertissements = ancien !== null ? [`\`${PROFIL_PROJET}\` est ignoré : \`${FICHIER_PROJET}\` fait foi, supprime-le (ADR 0071).`] : [];
-    const p = lireFichierProjet(projet);
-    if ("error" in p) return { libelle: `\`${FICHIER_PROJET}\``, brut: null, erreur: p.error, avertissements };
-    if (p.composants) return { libelle: `\`${FICHIER_PROJET}\` (section composants)`, brut: null, composants: p.composants, avertissements };
-    return { libelle: `\`${FICHIER_PROJET}\` (section pile)`, brut: p.pile ?? null, avertissements };
-  }
-  if (ancien !== null)
-    return { libelle: `\`${PROFIL_PROJET}\``, brut: ancien, avertissements: [`Profil de pile lu dans \`${PROFIL_PROJET}\` : regroupe-le dans \`${FICHIER_PROJET}\`, section pile (ADR 0071).`] };
-  return null;
+  const lus = await Promise.all(
+    [FICHIER_PROJET, ANCIEN_FICHIER_PROJET, PROFIL_PROJET].map(async (c) => ({ chemin: c, contenu: await lireOuNul(join(root, c)) })),
+  );
+  const presents = lus.filter((l) => l.contenu !== null);
+  const retenu = presents[0];
+  if (!retenu) return null;
+  const ignores = presents.slice(1).map((l) => `\`${l.chemin}\` est ignoré : \`${retenu.chemin}\` fait foi, supprime-le (ADR 0071).`);
+  // Deux gestes différents : `stack.yaml` porte un profil nu qu'il faut **regrouper** sous une
+  // section (ADR 0071) ; `.agent-studio/projet.yaml` a déjà le bon format et n'a qu'à **changer de
+  // place** (ADR 0097). Dire « regroupe » du second enverrait l'utilisateur refaire un travail fait.
+  const deplacer =
+    retenu.chemin === FICHIER_PROJET
+      ? []
+      : retenu.chemin === PROFIL_PROJET
+        ? [`Profil de pile lu dans \`${PROFIL_PROJET}\` : regroupe-le dans \`${FICHIER_PROJET}\`, section pile (ADR 0071).`]
+        : [`Fichier de projet lu dans \`${retenu.chemin}\` : déplace-le vers \`${FICHIER_PROJET}\` (ADR 0097).`];
+  const avertissements = [...deplacer, ...ignores];
+  // `stack.yaml` porte un profil nu ; les deux autres ont les sections de `projet.yaml`.
+  if (retenu.chemin === PROFIL_PROJET) return { libelle: `\`${PROFIL_PROJET}\``, brut: retenu.contenu, avertissements };
+  const p = lireFichierProjet(retenu.contenu!);
+  if ("error" in p) return { libelle: `\`${retenu.chemin}\``, brut: null, erreur: p.error, avertissements };
+  if (p.composants) return { libelle: `\`${retenu.chemin}\` (section composants)`, brut: null, composants: p.composants, avertissements };
+  return { libelle: `\`${retenu.chemin}\` (section pile)`, brut: p.pile ?? null, avertissements };
 }
 
 /**

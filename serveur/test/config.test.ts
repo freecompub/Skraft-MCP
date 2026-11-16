@@ -3,7 +3,7 @@
  * valeurs prudentes : aucun dossier autorisé en plus des roots du client, github.com. Invalide :
  * refus explicite, jamais une configuration à moitié lue.
  */
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -44,8 +44,30 @@ describe("Configuration du serveur MCP", () => {
     }
   });
 
-  it("emplacement : variable d'environnement, sinon ~/.agent-studio/mcp-skraft.json", () => {
+  it("emplacement : variable d'environnement, sinon ~/.skraft.json", () => {
     expect(cheminConfiguration({ SKRAFT_MCP_CONFIG: "/etc/skraft.json" }, "/home/moi")).toBe("/etc/skraft.json");
-    expect(cheminConfiguration({}, "/home/moi")).toBe(join("/home/moi", ".agent-studio", "mcp-skraft.json"));
+    expect(cheminConfiguration({}, "/home/moi")).toBe(join("/home/moi", ".skraft.json"));
+  });
+
+  // ADR 0097 : le nom a changé, et personne n'a publié ce serveur ; le repli existe pour que la
+  // configuration déjà posée à la main ne devienne pas muette sans le dire.
+  it("l'ancien ~/.skraft.json est lu en repli, et le dit", async () => {
+    const home = await mkdtemp(join(tmpdir(), "mcp-home-"));
+    const ancien = join(home, ".skraft.json");
+    await mkdir(join(home, ".agent-studio"), { recursive: true });
+    await writeFile(ancien, JSON.stringify({ hostname: "exemple.test" }));
+    expect(cheminConfiguration({}, home)).toBe(ancien);
+    const lue = await lireConfiguration(ancien, { home });
+    expect(lue.ok && lue.config.hostname).toBe("exemple.test");
+    await rm(home, { recursive: true, force: true });
+  });
+
+  it("le nouveau nom l'emporte quand les deux existent", async () => {
+    const home = await mkdtemp(join(tmpdir(), "mcp-home-"));
+    await mkdir(join(home, ".agent-studio"), { recursive: true });
+    await writeFile(join(home, ".skraft.json"), JSON.stringify({ hostname: "ancien.test" }));
+    await writeFile(join(home, ".skraft.json"), JSON.stringify({ hostname: "nouveau.test" }));
+    expect(cheminConfiguration({}, home)).toBe(join(home, ".skraft.json"));
+    await rm(home, { recursive: true, force: true });
   });
 });

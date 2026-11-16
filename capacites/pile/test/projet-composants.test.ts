@@ -1,5 +1,5 @@
 /**
- * Section `composants` de `.agent-studio/projet.yaml` (ADR 0074) : un projet qui mélange les
+ * Section `composants` de `.skraft/projet.yaml` (ADR 0074) : un projet qui mélange les
  * technologies déclare un composant par partie, chacun avec sa racine et sa pile. `pile` seule reste
  * valable (un composant, racine `.`) ; les deux ensemble sont refusés.
  */

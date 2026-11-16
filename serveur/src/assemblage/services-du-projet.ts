@@ -124,7 +124,7 @@ export interface WorkspaceServicesConfig {
   agentMaxContextFraction?: number;
   /**
    * Workflows en dossier (ADR 0055) : ceux de la machine (`machine`) et ceux du projet
-   * (`.agent-studio/workflows/`), exécutés isolés par `launcher` sur `runtimeEntry`.
+   * (`.skraft/workflows/`), exécutés isolés par `launcher` sur `runtimeEntry`.
    */
   workflows?: { machine?: string; launcher: ProcessLauncher; runtimeEntry: string; accordsFile?: string };
 }
@@ -426,7 +426,7 @@ export function workspaceServicesFactory(cfg: WorkspaceServicesConfig): Workspac
     if (cfg.workflows) {
       const recherche = await trouverWorkflows({
         ...(cfg.workflows.machine ? { machine: cfg.workflows.machine } : {}),
-        projet: join(workspace.root, ".agent-studio", "workflows"),
+        projet: join(workspace.root, ".skraft", "workflows"),
       });
       for (const e of recherche.erreurs) onPost("skraft", `**Workflow écarté** (\`${e.dossier}\`) : ${e.motifs.join(" ; ")}`);
       for (const r of recherche.remplacements) onPost("skraft", `Le workflow « ${r.nom} » du projet remplace celui de la machine (\`${r.dossierMachine}\`).`);

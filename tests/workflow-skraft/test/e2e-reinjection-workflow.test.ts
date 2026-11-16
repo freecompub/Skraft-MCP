@@ -23,14 +23,14 @@ describe("skraft en workflow — leçons réinjectées (LEC-3)", () => {
     root = await createProject();
     const a = erreurDeDefaut(fil("us-4"), "DESIGN", "us-4");
     const b = erreurDeDefaut(fil("us-7"), "DESIGN", "us-7");
-    await put(root, ".agent-studio/lecons/brut/us-4.jsonl", contenuDuRegistre("", [a]));
-    await put(root, ".agent-studio/lecons/brut/us-7.jsonl", contenuDuRegistre("", [b]));
-    await put(root, ".agent-studio/lecons/stories.jsonl", `${JSON.stringify({ story: "us-4" })}\n${JSON.stringify({ story: "us-7" })}\n`);
+    await put(root, ".skraft/lecons/brut/us-4.jsonl", contenuDuRegistre("", [a]));
+    await put(root, ".skraft/lecons/brut/us-7.jsonl", contenuDuRegistre("", [b]));
+    await put(root, ".skraft/lecons/stories.jsonl", `${JSON.stringify({ story: "us-4" })}\n${JSON.stringify({ story: "us-7" })}\n`);
     const lecon = { id: "L-07", groupe: a.signature, regle: "Un contrat nomme l'agrégat qu'il expose.", quand: "On écrit contracts.md.", aFaire: "Citer l'agrégat du modèle.", exemple: "us-7#1", sources: ["us-4#1", "us-7#1"], catalogue: { skill: CLEAN, section: "V-CA-06: Infrastructure Details Leaking into Application Contracts" }, role: "skraft-architect-decide", phase: "DESIGN", statut: "validee", recidivesMalgreLecon: 1 };
-    await put(root, ".agent-studio/lecons/lecons.jsonl", `${JSON.stringify(lecon)}\n`);
+    await put(root, ".skraft/lecons/lecons.jsonl", `${JSON.stringify(lecon)}\n`);
     git(root, "add", "-A");
     git(root, "commit", "-qm", "leçons du projet");
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();
@@ -76,7 +76,7 @@ describe("skraft en workflow — leçons réinjectées (LEC-3)", () => {
     expect(prompts.decide[0]).toContain(`Déjà vu : us-7, ${DEFAUT}`);
     expect(prompts.model[0]).not.toContain("Erreurs déjà commises");
     expect(prompts.lentille[0]).toMatch(/Points de vigilance connus :\n {2}- \[L-07\][\s\S]*Cette liste ne remplace pas ton examen général/);
-    const lecons = git(root, "show", "HEAD:.agent-studio/lecons/lecons.jsonl").trim().split("\n").map((l) => JSON.parse(l));
+    const lecons = git(root, "show", "HEAD:.skraft/lecons/lecons.jsonl").trim().split("\n").map((l) => JSON.parse(l));
     expect(lecons[0]).toMatchObject({ id: "L-07", recidivesMalgreLecon: 2 });
     expect(app.posted.at(-1)).toContain("Leçons qui n'ont pas suffi (au moins 2 récidives) : L-07, candidate à devenir une porte de code.");
     // La valeur rendue par le script, rangée par référence (contenus volumineux, ADR 0052).

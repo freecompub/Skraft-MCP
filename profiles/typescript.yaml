@@ -1,6 +1,6 @@
 # Exemple de fichier de projet — TypeScript avec Vitest (ADR 0071).
 #
-# À copier dans `.agent-studio/projet.yaml` à la racine d'un projet, puis à ajuster. Deux
+# À copier dans `.skraft/projet.yaml` à la racine d'un projet, puis à ajuster. Deux
 # sections : `pile` dit comment lancer les outils, `qualite` ce qui est exigé. Les programmes
 # nommés doivent figurer dans la liste autorisée par l'administrateur (D47, O12).
 pile:
