@@ -61,7 +61,7 @@ export function createGhAuth(deps: GhAuthDeps): GitHubAuth {
   async function copilotQuota(): Promise<CopilotQuota | null> {
     let brut: string;
     try {
-      const r = await gh("api", "--hostname", host, "-H", "Editor-Version: agent-studio", "/copilot_internal/user");
+      const r = await gh("api", "--hostname", host, "-H", "Editor-Version: skraft", "/copilot_internal/user");
       if (r.code !== 0) return null;
       brut = r.stdout;
     } catch {

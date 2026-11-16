@@ -54,7 +54,7 @@ describe("Copie isolée du projet", () => {
     expect(await existe(chemin)).toBe(false);
     // Sans `worktree remove`, Git garderait une référence morte que `git worktree list` affiche
     // et qui empêcherait de réutiliser le chemin.
-    expect(await git(root, "worktree", "list")).not.toMatch(/canari|agent-studio-bac/);
+    expect(await git(root, "worktree", "list")).not.toMatch(/canari|skraft-bac/);
   });
 
   it("libérer deux fois ne casse rien : le nettoyage doit pouvoir se retenter", async () => {

@@ -35,7 +35,7 @@ describe("skraft en workflow — critères de S3 (DESIGN), script isolé", () =>
   let tasksDir: string;
   beforeEach(async () => {
     root = await createProject();
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();

@@ -1,7 +1,7 @@
 /**
  * Assemblage réel du serveur MCP (ADR 0068) : mêmes briques que l'application de bureau
  * (`apps/desktop/src/main/index.ts`), sans Electron. Tout ce que le serveur garde est dans son
- * dossier de données (`~/.agent-studio/mcp-skraft/`) : tâches, piles fournies, verrous, état du
+ * dossier de données (`~/.skraft/`) : tâches, piles fournies, verrous, état du
  * CLI Copilot, journal. Le journal va dans un fichier : stdout est le canal du protocole MCP.
  */
 import { createHash, randomUUID } from "node:crypto";
@@ -11,6 +11,7 @@ import { createJsonLogger, createLazyRuntime, createTaskAgentRunner } from "@skr
 import { createNodeLauncher } from "@skraft-mcp/bac-a-sable";
 import { createGhAuth, createGhIssues, createNodeCommandRunner, createNodeProcessSpawner } from "@skraft-mcp/github";
 import { defaultAdminConfigPath, loadAdminConfig } from "./admin-config.js";
+import { dossierDesDonnees } from "./emplacements.js";
 import { workspaceServicesFactory } from "./assemblage/services-du-projet.js";
 import { createClaudeRuntime, createLanceurClaude, MODELES_CLAUDE } from "@skraft-mcp/runtime-claude";
 import { createCopilotClient, createCopilotRuntime } from "@skraft-mcp/runtime-copilot";
@@ -44,10 +45,19 @@ export interface OptionsAssemblage {
 }
 
 export async function assemblerServeur(o: OptionsAssemblage): Promise<{ ok: true; mcp: McpServer; projets: Projets } | { ok: false; motif: string }> {
-  const donnees = join(o.home, ".agent-studio", "mcp-skraft");
+  // ADR 0097 : le dossier a changé de nom. Si seul l'ancien existe, on s'en sert — des runs et des
+  // verrous vivants ne doivent pas devenir invisibles parce qu'un nom a bougé. Rien n'est déplacé
+  // ici : un assemblage n'est pas le lieu d'une migration, et le journal dit lequel a servi.
+  const { dossier: donnees, repli } = dossierDesDonnees(o.home);
   mkdirSync(join(donnees, "logs"), { recursive: true });
   const fichierJournal = join(donnees, "logs", "mcp-skraft.log");
   const logger = createJsonLogger({ write: (ligne) => appendFileSync(fichierJournal, `${ligne}\n`), level: "info" }, { pid: process.pid });
+  if (repli)
+    logger.warn("données lues à leur ancien emplacement", {
+      dossier: repli,
+      aFaire: `mv ${repli} ${join(o.home, ".skraft")}`,
+      adr: "0097",
+    });
 
   const lue = await lireConfiguration(cheminConfiguration(o.env, o.home), { home: o.home });
   if (!lue.ok) return lue;

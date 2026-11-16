@@ -213,7 +213,7 @@ describe("GhAuth", () => {
  * champs lus. Le point d'accès n'est pas documenté publiquement : tout y est traité comme
  * facultatif, et une surprise rend `null` plutôt que d'empêcher de travailler.
  */
-const QUOTA_CMD = "gh api --hostname github.com -H Editor-Version: agent-studio /copilot_internal/user";
+const QUOTA_CMD = "gh api --hostname github.com -H Editor-Version: skraft /copilot_internal/user";
 const REPONSE_REELLE = JSON.stringify({
   login: "octo",
   copilot_plan: "individual",

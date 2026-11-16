@@ -14,7 +14,7 @@ import { join } from "node:path";
 
 export default function dossierTemporaireDuLancement(): () => void {
   const avant = process.env.TMPDIR;
-  const racine = mkdtempSync(join(tmpdir(), "agent-studio-tests-"));
+  const racine = mkdtempSync(join(tmpdir(), "skraft-tests-"));
   process.env.TMPDIR = racine;
   return () => {
     rmSync(racine, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 });

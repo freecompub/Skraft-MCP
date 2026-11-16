@@ -22,7 +22,7 @@ describe("skraft en workflow — ADR rattachés à leur story", () => {
     await put(root, "docs/adr/adr-001-arrondi-des-doses.md", AUTRE);
     git(root, "add", "-A");
     git(root, "commit", "-qm", "ADR d'une autre story");
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();

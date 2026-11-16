@@ -19,7 +19,7 @@ describe("skraft en workflow — tests unitaires existants (D10)", () => {
   let tasksDir: string;
   beforeEach(async () => {
     root = await createProject();
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();

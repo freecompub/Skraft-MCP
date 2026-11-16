@@ -7,7 +7,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
 /** Le fichier des leçons du projet, écrit par le code seulement (le workflow, ou ce serveur). */
-export const FICHIER_DES_LECONS = ".agent-studio/lecons/lecons.jsonl";
+export const FICHIER_DES_LECONS = ".skraft/lecons/lecons.jsonl";
 
 export type StatutDeLecon = "candidate" | "validee" | "retiree";
 

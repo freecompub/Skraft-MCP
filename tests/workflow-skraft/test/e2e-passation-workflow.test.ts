@@ -16,7 +16,7 @@ describe("skraft en workflow — réponses de l'utilisateur écrites dans passat
   let tasksDir: string;
   beforeEach(async () => {
     root = await createProject();
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();

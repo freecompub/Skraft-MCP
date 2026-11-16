@@ -27,7 +27,7 @@ export function createTypeScriptAdapter(deps: TypeScriptAdapterDeps = {}): Stack
     // l'interface : ce qu'un domaine ne devrait pas importer.
     infrastructureModules: ["Infrastructure", "Interface", "UI", "API", "react", "express", "next"],
     // Adaptateur intégré, sans profil : rien n'y décide le BDD (08/11). Un projet qui en montre les
-    // signes doit le déclarer dans `.agent-studio/projet.yaml`.
+    // signes doit le déclarer dans `.skraft/projet.yaml`.
     bddNonDecide: ["."],
 
     async detect(root) {
@@ -74,7 +74,7 @@ export function createTypeScriptAdapter(deps: TypeScriptAdapterDeps = {}): Stack
       } catch {
         throw new Error("Vitest n'est pas installé dans le projet (node_modules/vitest introuvable) : lancez l'installation des dépendances.");
       }
-      const reportFile = join(tmpdir(), `agent-studio-vitest-${randomBytes(6).toString("hex")}.json`);
+      const reportFile = join(tmpdir(), `skraft-vitest-${randomBytes(6).toString("hex")}.json`);
       try {
         const r = await runner.run(
           process.execPath,

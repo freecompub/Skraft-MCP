@@ -90,6 +90,6 @@ describe("Relais MCP d'une session (ADR 0070)", () => {
 
   it("configuration MCP pour le CLI : notre serveur en HTTP, avec le jeton", async () => {
     const o = await ouvrir();
-    expect(o.r.configuration("agent-studio")).toEqual({ mcpServers: { "agent-studio": { type: "http", url: o.r.url, headers: { Authorization: `Bearer ${o.r.jeton}` } } } });
+    expect(o.r.configuration("skraft")).toEqual({ mcpServers: { "skraft": { type: "http", url: o.r.url, headers: { Authorization: `Bearer ${o.r.jeton}` } } } });
   });
 });

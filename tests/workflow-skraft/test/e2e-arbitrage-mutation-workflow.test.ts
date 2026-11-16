@@ -81,7 +81,7 @@ describe("skraft en workflow — arbitrage d'un mutant contesté (D22, ADR 0065)
   let tasksDir: string;
   beforeEach(async () => {
     root = await createProject();
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();

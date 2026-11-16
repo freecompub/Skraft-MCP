@@ -202,8 +202,8 @@ describe("Exécution des canaris", () => {
   let bac: string;
   let projet: string;
   beforeEach(async () => {
-    bac = await mkdtemp(join(tmpdir(), "agent-studio-bac-"));
-    projet = await mkdtemp(join(tmpdir(), "agent-studio-projet-"));
+    bac = await mkdtemp(join(tmpdir(), "skraft-bac-"));
+    projet = await mkdtemp(join(tmpdir(), "skraft-projet-"));
     await writeFile(join(projet, "pyproject.toml"), "");
   });
   afterEach(() => Promise.all([rm(bac, { recursive: true, force: true }), rm(projet, { recursive: true, force: true })]));
@@ -314,8 +314,8 @@ describe("Un canari ne peut pas écrire hors de la copie isolée", () => {
   let bac: string;
   let dehors: string;
   beforeEach(async () => {
-    bac = await mkdtemp(join(tmpdir(), "agent-studio-bac-"));
-    dehors = await mkdtemp(join(tmpdir(), "agent-studio-dehors-"));
+    bac = await mkdtemp(join(tmpdir(), "skraft-bac-"));
+    dehors = await mkdtemp(join(tmpdir(), "skraft-dehors-"));
   });
   afterEach(() => Promise.all([rm(bac, { recursive: true, force: true }), rm(dehors, { recursive: true, force: true })]));
 

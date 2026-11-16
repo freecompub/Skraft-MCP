@@ -43,7 +43,7 @@ function auMoins(v: string, min: string): boolean {
 const ALIAS = ["fable", "opus", "sonnet", "haiku"] as const;
 
 /** Nom de notre serveur MCP dans la configuration donnée au CLI. */
-const SERVEUR = "agent-studio";
+const SERVEUR = "skraft";
 
 const cible = (r: ToolCallRequest): string | undefined => r.command ?? r.path ?? r.url;
 
@@ -80,7 +80,7 @@ export function createClaudeRuntime(deps: ClaudeRuntimeDeps): AgentRuntime {
       },
     });
     // Fichiers du tour : prompt système et configuration MCP (qui porte le jeton), lisibles par nous seuls.
-    const dossier = await mkdtemp(join(tmpdir(), "agent-studio-claude-"));
+    const dossier = await mkdtemp(join(tmpdir(), "skraft-claude-"));
     const fichierPrompt = join(dossier, "prompt.md");
     const fichierMcp = join(dossier, "mcp.json");
     const noms = cfg.tools.map((t) => `\`${t.name}\` s'appelle \`${nomMcp(SERVEUR, t.name)}\``).join(", ");

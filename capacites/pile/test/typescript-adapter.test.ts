@@ -8,7 +8,7 @@ import { createTypeScriptAdapter } from "../src/typescript/typescript-adapter.js
 const MONOREPO_NODE_MODULES = resolve(import.meta.dirname, "../../../node_modules");
 
 async function project(files: Record<string, string>): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "agent-studio-ts-"));
+  const root = await mkdtemp(join(tmpdir(), "skraft-ts-"));
   await symlink(MONOREPO_NODE_MODULES, join(root, "node_modules"));
   for (const [rel, content] of Object.entries({ "package.json": '{"name":"demo","type":"module","devDependencies":{"vitest":"*"}}', ...files })) {
     await mkdir(dirname(join(root, rel)), { recursive: true });
@@ -39,7 +39,7 @@ it("au-dessus", () => expect(cap(12, 10)).toBe(11));
 
   it("reconnaît un projet Vitest ; pas un dossier quelconque", async () => {
     expect(await adapter.detect(root)).toBe(true);
-    const other = await mkdtemp(join(tmpdir(), "agent-studio-empty-"));
+    const other = await mkdtemp(join(tmpdir(), "skraft-empty-"));
     expect(await adapter.detect(other)).toBe(false);
     await rm(other, { recursive: true });
   });

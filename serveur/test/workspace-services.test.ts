@@ -30,7 +30,7 @@ function fakeWorkspace(): Workspace {
 }
 
 async function setup(store = new MemoryTaskStore(), runtime = new ScriptedRuntime(), interactionStore = new MemoryInteractionStore(), taskSessionStore = new MemoryTaskSessionStore()) {
-  const usageRecorder = createUsageRecorder(await mkdtemp(join(tmpdir(), "agent-studio-usage-")));
+  const usageRecorder = createUsageRecorder(await mkdtemp(join(tmpdir(), "skraft-usage-")));
   let runtimeLoads = 0;
   const cards: TaskCardDto[] = [];
   const pending: InteractionDto[][] = [];
@@ -66,15 +66,16 @@ const until = async (check: () => boolean) => {
 
 describe("Services d'un projet (J2)", () => {
   async function ouvrir(opts: { profil?: string; projet?: string; allowedPrograms?: string[]; confirmer?: "allow-once" | "deny"; confirmerProgrammes?: "allow-once" | "deny"; fichiers?: string[]; contenus?: Record<string, string> }) {
-    const racine = await mkdtemp(join(tmpdir(), "agent-studio-profil-projet-"));
+    const racine = await mkdtemp(join(tmpdir(), "skraft-profil-projet-"));
     const cleanup = () => rm(racine, { recursive: true, force: true });
     for (const [rel, contenu] of Object.entries(opts.contenus ?? {})) {
       await mkdir(dirname(join(racine, rel)), { recursive: true });
       await writeFile(join(racine, rel), contenu);
     }
-    if (opts.profil !== undefined || opts.projet !== undefined) await mkdir(join(racine, ".agent-studio"), { recursive: true });
+    if (opts.profil !== undefined) await mkdir(join(racine, ".agent-studio"), { recursive: true });
+    if (opts.projet !== undefined) await mkdir(join(racine, ".skraft"), { recursive: true });
     if (opts.profil !== undefined) await writeFile(join(racine, ".agent-studio", "stack.yaml"), opts.profil);
-    if (opts.projet !== undefined) await writeFile(join(racine, ".agent-studio", "projet.yaml"), opts.projet);
+    if (opts.projet !== undefined) await writeFile(join(racine, ".skraft", "projet.yaml"), opts.projet);
     const posts: string[] = [];
     const ecrits: string[] = [];
     const services = await workspaceServicesFactory({
@@ -253,15 +254,15 @@ infrastructureModules: [django]
 describe("/stack init : la pile découverte par un agent, vérifiée par le code", () => {
   async function ouvrir(o: { reponses: object[]; programmes?: string[]; confirmer?: "allow-once" | "deny"; confirmerProgrammes?: "allow-once" | "deny"; projet?: string; contenus?: Record<string, string> }) {
     const questionsProgrammes: string[] = [];
-    const racine = await mkdtemp(join(tmpdir(), "agent-studio-decouverte-"));
+    const racine = await mkdtemp(join(tmpdir(), "skraft-decouverte-"));
     const contenus = { ...FICHIERS, ...o.contenus };
     for (const [rel, c] of Object.entries(contenus)) {
       await mkdir(dirname(join(racine, rel)), { recursive: true });
       await writeFile(join(racine, rel), c);
     }
     if (o.projet !== undefined) {
-      await mkdir(join(racine, ".agent-studio"), { recursive: true });
-      await writeFile(join(racine, ".agent-studio", "projet.yaml"), o.projet);
+      await mkdir(join(racine, ".skraft"), { recursive: true });
+      await writeFile(join(racine, ".skraft", "projet.yaml"), o.projet);
     }
     const prompts: string[] = [];
     const reponses = [...o.reponses];
@@ -292,7 +293,7 @@ describe("/stack init : la pile découverte par un agent, vérifiée par le code
         repo: {
           ...fakeWorkspace().repo,
           worktree: async () => {
-            const copie = await mkdtemp(join(tmpdir(), "agent-studio-copie-"));
+            const copie = await mkdtemp(join(tmpdir(), "skraft-copie-"));
             await cp(racine, copie, { recursive: true });
             copies.push(copie);
             return { root: copie, dispose: () => rm(copie, { recursive: true, force: true }) };
@@ -321,7 +322,7 @@ describe("/stack init : la pile découverte par un agent, vérifiée par le code
     expect(h.prompts[0]).toContain("`package.json`");
     expect(h.copies.length).toBeGreaterThan(0);
     expect(h.ecrits).toHaveLength(1);
-    expect(h.ecrits[0]).toMatch(/^\.agent-studio\/projet\.yaml\n/);
+    expect(h.ecrits[0]).toMatch(/^\.skraft\/projet\.yaml\n/);
     expect(h.ecrits[0]).toMatch(/pile:\n\s+id: maison/);
     await h.cleanup();
   }, 60_000);
@@ -361,7 +362,7 @@ describe("/stack init : la pile découverte par un agent, vérifiée par le code
     const h = await ouvrir({ reponses: [une(fausse), une()], programmes: [], confirmer: "allow-once", confirmerProgrammes: "allow-once" });
     await h.services.route("/stack init");
     expect(h.prompts).toHaveLength(2);
-    expect(h.questionsProgrammes).toEqual(["Autoriser « node » pour ce projet ?", "Écrire le profil de stack dans .agent-studio/projet.yaml ?"]);
+    expect(h.questionsProgrammes).toEqual(["Autoriser « node » pour ce projet ?", "Écrire le profil de stack dans .skraft/projet.yaml ?"]);
     expect(h.ecrits).toHaveLength(1);
     await h.cleanup();
   }, 60_000);

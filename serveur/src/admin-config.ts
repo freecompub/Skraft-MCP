@@ -56,10 +56,13 @@ export interface AdminConfig {
 }
 
 export function defaultAdminConfigPath(platform: NodeJS.Platform, env: Record<string, string | undefined>): string {
+  if (env["SKRAFT_ADMIN_CONFIG"]) return env["SKRAFT_ADMIN_CONFIG"];
+  // L'ancien nom reste lu (ADR 0097) : un poste administré le porte peut-être, et le refuser
+  // n'autoriserait plus aucun programme — même raisonnement qu'à l'ADR 0095 pour les clés retirées.
   if (env["AGENT_STUDIO_ADMIN_CONFIG"]) return env["AGENT_STUDIO_ADMIN_CONFIG"];
-  if (platform === "win32") return `${env["ProgramData"] ?? "C:\\ProgramData"}\\agent-studio\\admin.json`;
-  if (platform === "darwin") return "/Library/Application Support/agent-studio/admin.json";
-  return "/etc/agent-studio/admin.json";
+  if (platform === "win32") return `${env["ProgramData"] ?? "C:\\ProgramData"}\\skraft\\admin.json`;
+  if (platform === "darwin") return "/Library/Application Support/skraft/admin.json";
+  return "/etc/skraft/admin.json";
 }
 
 export async function loadAdminConfig(path: string): Promise<AdminConfig> {
@@ -72,7 +75,7 @@ export async function loadAdminConfig(path: string): Promise<AdminConfig> {
       source: "défaut",
       allowedPrograms: [...DEFAULT_ALLOWED_PROGRAMS],
       programConsent: true,
-      origineDesProgrammes: `Liste par défaut : aucun fichier d'administration à ${path}. Pour la changer, y écrire \`allowedPrograms\` (qui remplace la liste par défaut, sans s'y ajouter), ou désigner un autre fichier par la variable AGENT_STUDIO_ADMIN_CONFIG.`,
+      origineDesProgrammes: `Liste par défaut : aucun fichier d'administration à ${path}. Pour la changer, y écrire \`allowedPrograms\` (qui remplace la liste par défaut, sans s'y ajouter), ou désigner un autre fichier par la variable SKRAFT_ADMIN_CONFIG.`,
     };
   }
   let parsed: z.infer<typeof schema>;

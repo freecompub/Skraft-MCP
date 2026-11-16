@@ -55,7 +55,7 @@ function lanceurReel(): ProcessRunner {
 
 let bac: string;
 beforeEach(async () => {
-  bac = await mkdtemp(join(tmpdir(), "agent-studio-temoin-"));
+  bac = await mkdtemp(join(tmpdir(), "skraft-temoin-"));
   await cp(TEMOIN, bac, { recursive: true });
   // Les dépendances du dépôt, plutôt qu'un `pnpm install` par exécution.
   await symlink(join(RACINE_DEPOT, "node_modules"), join(bac, "node_modules"), "dir");

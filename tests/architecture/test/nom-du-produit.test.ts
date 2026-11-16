@@ -1,15 +1,14 @@
 /**
- * Le nom du produit dans les textes est **skraft** (ADR 0096). Ce dépôt est issu d'agent-studio : le
- * mot y désigne encore deux choses très différentes, et une seule est un défaut.
+ * Le produit s'appelle **skraft**, partout (ADR 0096 puis 0097). L'ADR 0096 avait gardé les
+ * identifiants — chemins, variables d'environnement, noms de protocole — au motif qu'un renommage
+ * casserait l'existant. **Cette raison était fausse, et personne ne l'avait vérifiée** : rien n'était
+ * publié (aucun paquet npm, aucun tag, `private: true`), il existait deux dossiers `.agent-studio`
+ * sur la seule machine concernée, aucun poste administré et aucune ref de checkpoint. L'ADR 0097 a
+ * donc tout renommé, au dernier moment où c'était gratuit.
  *
- * - Un **identifiant** — `~/.agent-studio/`, `.agent-studio/projet.yaml` dans le dépôt des projets,
- *   `AGENT_STUDIO_ADMIN_CONFIG`, `/etc/agent-studio/admin.json`, `refs/agent-studio/checkpoints`,
- *   l'en-tête `Editor-Version`, le nom du serveur MCP, l'identité Git des commits instantanés — est
- *   un contrat avec un disque, un dépôt ou un protocole. Le renommer casse l'existant : il reste, et
- *   la liste ci-dessous le dit pour chacun.
- * - Un **texte** lu par un agent ou par l'utilisateur ne nomme plus agent-studio. Le contrat
- *   d'exécution ajouté à chaque prompt disait « Fonctionnement dans agent-studio » : le code
- *   donnait au LLM un cadre faux, et rien ne le signalait.
+ * Ce qui reste est une **liste close de replis** : les emplacements abandonnés que le code lit encore
+ * pour qu'une configuration déjà posée ne devienne pas muette sans le dire. Chacun est déclaré avec
+ * sa raison. Un repli qui n'est plus lu se signale au lieu de rester.
  *
  * La garde ne regarde que les **chaînes** du code de production : un commentaire de provenance n'est
  * pas un nœud de chaîne, il passe donc de lui-même, comme pour l'ADR 0094.
@@ -22,19 +21,33 @@ import ts from "typescript";
 const RACINE = resolve(import.meta.dirname, "../../..");
 const IGNORES = new Set(["node_modules", ".git", "dist", "coverage", "docs", "test", "tests"]);
 const SOURCES = /\.(ts|mjs|js)$/;
+const ANCIEN = /agent[-_]studio/i;
 
-/** Le nom employé **comme mot** : ni `.agent-studio`, ni `agent-studio/x`, ni `agent-studio-x`, ni `agent-studio@`. */
+/** Le nom employé **comme mot**, et non collé à un séparateur : il ne doit plus rester nulle part. */
 const COMME_MOT = /(^|[^./\\@\w-])agent-studio($|[^./\\@\w-])/i;
 
-/** Les identifiants gardés, chacun avec sa raison : un contrat qu'un renommage casserait. */
-const IDENTIFIANTS: readonly { fichier: string; valeur: string; pourquoi: string }[] = [
-  { fichier: "capacites/runtime-claude/src/claude-runtime.ts", valeur: "agent-studio", pourquoi: "nom du serveur MCP : les outils s'appellent `mcp__agent-studio__*` dans la session du CLI" },
-  { fichier: "capacites/runtime-claude/src/relais.ts", valeur: "agent-studio", pourquoi: "même nom, côté serveur du relais" },
-  { fichier: "capacites/github/src/gh-auth.ts", valeur: "Editor-Version: agent-studio", pourquoi: "en-tête envoyé à l'API Copilot, qui l'attend tel quel" },
-  { fichier: "capacites/depot/src/git/cli-git-runner.ts", valeur: "agent-studio", pourquoi: "identité Git des commits instantanés déjà écrits dans les dépôts" },
+/**
+ * Les replis : emplacements abandonnés que le code lit encore, et rien d'autre. Chacun porte la
+ * raison pour laquelle le supprimer coûterait plus que le garder.
+ */
+const REPLIS: readonly { fichier: string; valeur: string; pourquoi: string }[] = [
+  { fichier: "serveur/src/admin-config.ts", valeur: "AGENT_STUDIO_ADMIN_CONFIG", pourquoi: "un poste administré porte peut-être l'ancienne variable ; la refuser n'autoriserait plus aucun programme (ADR 0095)" },
+  { fichier: "serveur/src/config.ts", valeur: ".agent-studio", pourquoi: "ancien dossier de `mcp-skraft.json` : une configuration posée à la main ne doit pas devenir muette en silence" },
+  { fichier: "serveur/src/emplacements.ts", valeur: ".agent-studio", pourquoi: "ancien dossier de données : des runs et des verrous vivants y sont peut-être encore" },
+  { fichier: "capacites/pile-du-projet/src/profil-du-projet.ts", valeur: ".agent-studio/projet.yaml", pourquoi: "fichier de projet avant l'ADR 0097, lu avec un avertissement qui dit où le déplacer" },
+  { fichier: "capacites/pile-du-projet/src/profil-du-projet.ts", valeur: ".agent-studio/stack.yaml", pourquoi: "profil nu d'avant l'ADR 0071, déjà déprécié avant ce renommage" },
+  { fichier: "capacites/pile/src/profile/quality-bar.ts", valeur: ".agent-studio/quality.yaml", pourquoi: "barre de qualité d'avant l'ADR 0071, déjà dépréciée avant ce renommage" },
+  { fichier: "workflows/skraft/livraison-socle.mjs", valeur: ".agent-studio/quality.yaml", pourquoi: "le workflow lit la même chaîne que le serveur, sinon un projet non migré perdrait sa barre" },
+  { fichier: "workflows/skraft/livraison-socle.mjs", valeur: ".agent-studio/projet.yaml", pourquoi: "idem pour le fichier de projet" },
+  { fichier: "workflows/skraft/support.mjs", valeur: ".agent-studio/quality.yaml", pourquoi: "gelé pendant un run : un agent ne doit pas pouvoir abaisser sa barre, même à l'ancien emplacement" },
+  { fichier: "workflows/skraft/support.mjs", valeur: ".agent-studio/projet.yaml", pourquoi: "idem" },
 ];
 
-const garde = (fichier: string, valeur: string) => IDENTIFIANTS.some((i) => i.fichier === fichier && i.valeur === valeur);
+/**
+ * Une déclaration autorise un **chemin** dans un fichier, pas une chaîne exacte : un avertissement
+ * rendu à l'utilisateur cite le chemin au milieu d'une phrase, et c'est précisément son usage légitime.
+ */
+const declare = (fichier: string, valeur: string) => REPLIS.some((r) => r.fichier === fichier && valeur.includes(r.valeur));
 
 async function fichiers(dossier: string, acc: string[] = []): Promise<string[]> {
   for (const e of await readdir(dossier, { withFileTypes: true })) {
@@ -59,23 +72,36 @@ function chaines(chemin: string, texte: string): string[] {
   return trouvees;
 }
 
-describe("Le nom du produit (ADR 0096)", () => {
-  it("aucun texte du code ne nomme agent-studio, sauf les identifiants déclarés", async () => {
-    const fautes: string[] = [];
-    for (const f of await fichiers(RACINE)) {
-      const rel = relative(RACINE, f);
-      for (const v of chaines(f, await readFile(f, "utf8")))
-        if (COMME_MOT.test(v) && !garde(rel, v)) fautes.push(`${rel} : ${JSON.stringify(v.length > 80 ? `${v.slice(0, 79)}…` : v)}`);
-    }
+const releve = async (): Promise<{ fichier: string; valeur: string }[]> => {
+  const out: { fichier: string; valeur: string }[] = [];
+  for (const f of await fichiers(RACINE)) {
+    const fichier = relative(RACINE, f);
+    for (const valeur of chaines(f, await readFile(f, "utf8"))) if (ANCIEN.test(valeur)) out.push({ fichier, valeur });
+  }
+  return out;
+};
+
+describe("Le nom du produit (ADR 0096, 0097)", () => {
+  it("le nom du produit n'est plus agent-studio nulle part", async () => {
+    const fautes = (await releve())
+      .filter((r) => COMME_MOT.test(r.valeur))
+      .map((r) => `${r.fichier} : ${JSON.stringify(r.valeur)}`);
     expect(fautes).toEqual([]);
   });
 
-  it("chaque identifiant gardé est encore dans le fichier qui le déclare", async () => {
-    const manquants: string[] = [];
-    for (const i of IDENTIFIANTS) {
-      const texte = await readFile(join(RACINE, i.fichier), "utf8").catch(() => "");
-      if (!chaines(i.fichier, texte).includes(i.valeur)) manquants.push(`${i.fichier} : ${i.valeur}`);
+  it("l'ancien nom ne subsiste que dans les replis déclarés", async () => {
+    const fautes = (await releve())
+      .filter((r) => !declare(r.fichier, r.valeur))
+      .map((r) => `${r.fichier} : ${JSON.stringify(r.valeur.length > 80 ? `${r.valeur.slice(0, 79)}…` : r.valeur)}`);
+    expect([...new Set(fautes)]).toEqual([]);
+  });
+
+  it("chaque repli déclaré est encore lu par le fichier qui le déclare", async () => {
+    const morts: string[] = [];
+    for (const r of REPLIS) {
+      const texte = await readFile(join(RACINE, r.fichier), "utf8").catch(() => "");
+      if (!chaines(r.fichier, texte).some((v) => v.includes(r.valeur))) morts.push(`${r.fichier} : ${r.valeur}`);
     }
-    expect(manquants).toEqual([]);
+    expect(morts).toEqual([]);
   });
 });

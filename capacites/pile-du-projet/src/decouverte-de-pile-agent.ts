@@ -8,7 +8,7 @@ import type { Decouverte, DemandeDecouverte, ReponseDecouverte } from "./decouve
  * `submit_pile`, question par `report_blocker`. Le prompt est une constante du cœur : il voyage
  * avec l'application et le serveur MCP sans fichier à copier.
  */
-export const ROLE_DECOUVREUR = "agent-studio/decouvreur-de-pile";
+export const ROLE_DECOUVREUR = "skraft/decouvreur-de-pile";
 
 export const PROMPT_DECOUVREUR = `Tu découvres la pile d'un projet : comment lancer ses tests, où vivent ses fichiers, comment
 lire ses rapports. Tu lis le projet avec tes outils de lecture ; tu n'écris rien, tu n'exécutes rien.

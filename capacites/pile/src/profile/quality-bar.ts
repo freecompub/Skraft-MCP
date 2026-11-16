@@ -1,5 +1,5 @@
 /**
- * Barre de qualité du projet (ADR 0049, 0071) : section `qualite` de `.agent-studio/projet.yaml`
+ * Barre de qualité du projet (ADR 0049, 0071) : section `qualite` de `.skraft/projet.yaml`
  * (l'ancien `quality.yaml` pendant la transition). PUR.
  *
  * Elle dit **ce qui est exigé** — seuils de couverture et de mutation par couche, ce qu'est le cœur
@@ -26,7 +26,8 @@ export interface QualityBar {
   dependencyRules: DependencyRule[];
 }
 
-export type QualityBarSource = ".agent-studio/projet.yaml" | ".agent-studio/quality.yaml" | ".skraft/quality.json" | "défaut";
+export type QualityBarSource = ".skraft/projet.yaml" | ".agent-studio/quality.yaml" | ".skraft/quality.json" | "défaut";
+
 
 /** Noms usuels des couches, français compris, seuls ou préfixés (`Tarification.Domaine`). */
 const DEFAULT_CORE = {
@@ -86,7 +87,7 @@ export function parseQualityBar(files: { projet?: string | null; yaml?: string |
   if (files.projet != null) {
     const p = lireFichierProjet(files.projet);
     if ("error" in p) return p;
-    const r = lireBarre(p.qualite ?? "", `\`${FICHIER_PROJET}\` (section qualite)`, ".agent-studio/projet.yaml");
+    const r = lireBarre(p.qualite ?? "", `\`${FICHIER_PROJET}\` (section qualite)`, ".skraft/projet.yaml");
     if ("error" in r) return r;
     const anciens = [...(files.yaml != null ? ["`.agent-studio/quality.yaml`"] : []), ...(files.legacyJson != null ? ["`.skraft/quality.json`"] : [])];
     return anciens.length ? { ...r, warnings: [`${anciens.join(" et ")} ignorés : \`${FICHIER_PROJET}\` fait foi, supprime-les (ADR 0071).`] } : r;
@@ -153,7 +154,7 @@ function lireAncienneBarre(legacyJson: string | null | undefined):
     return {
       source: ".skraft/quality.json",
       declaredCore: [],
-      warnings: ["Barre de qualité lue à l'ancien emplacement `.skraft/quality.json` : déplacez-la vers `.agent-studio/projet.yaml`, section qualite (ADR 0071)."],
+      warnings: ["Barre de qualité lue à l'ancien emplacement `.skraft/quality.json` : déplacez-la vers `.skraft/projet.yaml`, section qualite (ADR 0071)."],
       bar: {
         core,
         coverage: defined({ domain: q.coverage?.core, application: q.coverage?.core, rest: q.coverage?.edge }),

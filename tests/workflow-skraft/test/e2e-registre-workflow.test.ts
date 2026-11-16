@@ -10,14 +10,14 @@ import { ScriptedRuntime, type ScriptedBehavior } from "@skraft-mcp/agents/testi
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { acceptanceWriter, answerQuestions, assemble, createProject, git, put, shutdownHosts, simulatedAgents, until } from "./support/harness.js";
 
-const REGISTRE = ".agent-studio/lecons/brut/us12-f15ade30.jsonl";
+const REGISTRE = ".skraft/lecons/brut/us12-f15ade30.jsonl";
 
 describe("skraft en workflow — registre des erreurs commises (LEC-1)", () => {
   let root: string;
   let tasksDir: string;
   beforeEach(async () => {
     root = await createProject();
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();

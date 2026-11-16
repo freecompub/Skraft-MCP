@@ -12,9 +12,9 @@ import { TourInterrompu } from "@skraft-mcp/workflow";
 import { CATALOGUES } from "./catalogues.mjs";
 
 /** Le fichier des leçons, écrit seulement par le code. */
-export const FICHIER_DES_LECONS = ".agent-studio/lecons/lecons.jsonl";
+export const FICHIER_DES_LECONS = ".skraft/lecons/lecons.jsonl";
 /** L'ordre des stories, pour compter celles qui passent sans nouvelle occurrence d'une leçon. */
-export const FICHIER_DES_STORIES = ".agent-studio/lecons/stories.jsonl";
+export const FICHIER_DES_STORIES = ".skraft/lecons/stories.jsonl";
 /** Une leçon validée qui ne revient pas pendant autant de stories consécutives est retirée. */
 const STORIES_AVANT_RETRAIT = 10;
 /** Une leçon est validée quand ses erreurs couvrent au moins autant de stories distinctes. */
@@ -190,7 +190,7 @@ export const ecrireJsonl = (valeurs) => (valeurs.length ? `${valeurs.map((v) => 
 // ---------- Fin de run -----------------------------------------------------------------------
 
 /** Les fichiers du registre des erreurs (LEC-1), un par story. */
-const FICHIER_BRUT = /^\.agent-studio\/lecons\/brut\/[^/]+\.jsonl$/;
+const FICHIER_BRUT = /^\.skraft\/lecons\/brut\/[^/]+\.jsonl$/;
 /** Au plus autant d'erreurs montrées par groupe : l'agent classe un genre d'erreur, pas chaque occurrence. */
 const ERREURS_MONTREES = 5;
 /** Un groupe refusé est reproposé une fois, avec ses motifs ; au-delà, il attendra le run suivant. */

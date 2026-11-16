@@ -67,10 +67,10 @@ afterEach(() => rm(tmp, { recursive: true, force: true }));
 describe("deployer", () => {
   it("construit, inscrit le serveur dans chaque client présent avec ses variables, pose les commandes", async () => {
     const d = doublure();
-    const r = await deployer({ racine: RACINE, env: ["AGENT_STUDIO_ADMIN_CONFIG=/a/admin.json"] }, d.deps);
+    const r = await deployer({ racine: RACINE, env: ["SKRAFT_ADMIN_CONFIG=/a/admin.json"] }, d.deps);
     expect(d.lances).toContain(`node ${join(RACINE, "scripts", "build.mjs")}`);
-    expect(d.lances).toContain(`copilot mcp add skraft --env AGENT_STUDIO_ADMIN_CONFIG=/a/admin.json -- node ${MAIN}`);
-    expect(d.lances).toContain(`claude mcp add -s user skraft -e AGENT_STUDIO_ADMIN_CONFIG=/a/admin.json -- node ${MAIN}`);
+    expect(d.lances).toContain(`copilot mcp add skraft --env SKRAFT_ADMIN_CONFIG=/a/admin.json -- node ${MAIN}`);
+    expect(d.lances).toContain(`claude mcp add -s user skraft -e SKRAFT_ADMIN_CONFIG=/a/admin.json -- node ${MAIN}`);
     expect(r.lignes).toEqual(expect.arrayContaining(["Copilot CLI : serveur skraft inscrit.", "Claude Code : serveur skraft inscrit.", "Commandes /skraft-… : 1 lien posé."]));
   });
 
@@ -187,13 +187,13 @@ describe("deployer --desinstaller", () => {
     expect(force.lances).toContain("copilot mcp remove skraft");
   });
 
-  it("--donnees efface ~/.agent-studio/mcp-skraft, et lui seul", async () => {
-    await mkdir(join(tmp, ".agent-studio", "mcp-skraft", "tasks"), { recursive: true });
-    await writeFile(join(tmp, ".agent-studio", "admin.json"), "{}");
+  it("--donnees efface ~/.skraft, et lui seul", async () => {
+    await mkdir(join(tmp, ".skraft", "tasks"), { recursive: true });
+    await writeFile(join(tmp, ".skraft.json"), "{}");
     const d = doublure();
     const r = await deployer({ racine: RACINE, desinstaller: true, donnees: true, home: tmp }, d.deps);
-    await expect(stat(join(tmp, ".agent-studio", "mcp-skraft"))).rejects.toThrow();
-    expect((await stat(join(tmp, ".agent-studio", "admin.json"))).isFile()).toBe(true);
+    await expect(stat(join(tmp, ".skraft"))).rejects.toThrow();
+    expect((await stat(join(tmp, ".skraft.json"))).isFile()).toBe(true);
     expect(r.lignes.join("\n")).toMatch(/Données du serveur effacées/);
   });
 });

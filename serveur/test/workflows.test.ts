@@ -146,7 +146,7 @@ const until = async (check: () => Promise<boolean> | boolean) => {
   expect(await check()).toBe(true);
 };
 
-const WF = { ".agent-studio/workflows/demo/workflow.mjs": DEMO, ".agent-studio/workflows/demo/agents/redacteur.agent.md": "Tu résumes." };
+const WF = { ".skraft/workflows/demo/workflow.mjs": DEMO, ".skraft/workflows/demo/agents/redacteur.agent.md": "Tu résumes." };
 
 describe("Workflows en dossier dans l'application (ADR 0055)", () => {
   it("un workflow du projet devient une commande ; après accord, il tourne jusqu'au bout", async () => {
@@ -160,7 +160,7 @@ describe("Workflows en dossier dans l'application (ADR 0055)", () => {
   }, 30_000);
 
   it("le dossier de la machine est lu aussi ; le projet l'emporte à nom égal, et c'est dit", async () => {
-    const machine = Object.fromEntries(Object.entries(WF).map(([k, v]) => [k.replace(".agent-studio/workflows/", ""), v]));
+    const machine = Object.fromEntries(Object.entries(WF).map(([k, v]) => [k.replace(".skraft/workflows/", ""), v]));
     const o = await ouvrir({ projet: WF, machine });
     expect(o.posts.some((p) => /« demo » du projet remplace celui de la machine/.test(p))).toBe(true);
     await o.services.route("/demo x.md");
@@ -169,7 +169,7 @@ describe("Workflows en dossier dans l'application (ADR 0055)", () => {
   }, 30_000);
 
   it("un workflow invalide est écarté avec son motif, sans empêcher l'ouverture du projet", async () => {
-    const o = await ouvrir({ projet: { ".agent-studio/workflows/casse/workflow.mjs": "export const meta = { name: NOM };\nexport default async () => {};\n" } });
+    const o = await ouvrir({ projet: { ".skraft/workflows/casse/workflow.mjs": "export const meta = { name: NOM };\nexport default async () => {};\n" } });
     expect(o.posts.some((p) => /Workflow écarté.*casse.*meta non littéral/s.test(p))).toBe(true);
     expect(o.services.commands().map((c) => c.invocation)).not.toContain("casse");
     await o.services.dispose();
@@ -277,7 +277,7 @@ describe("Workflows en dossier dans l'application (ADR 0055)", () => {
     const entrees: TraceEntry[] = [];
     const trace: TraceStore = { append: async (e) => void entrees.push(e), list: async (id) => entrees.filter((e) => e.taskId === id), archive: async () => {} };
     const REJET = DEMO.replace(`await w.ecrireFichier(".skraft/resume.md", a.sortie.summary);`, `await w.rejet("cohérence", ["motif d'essai"]);\n    await w.ecrireFichier(".skraft/resume.md", a.sortie.summary);`);
-    const o = await ouvrir({ projet: { ...WF, ".agent-studio/workflows/demo/workflow.mjs": REJET }, reponse: "allow-once", trace });
+    const o = await ouvrir({ projet: { ...WF, ".skraft/workflows/demo/workflow.mjs": REJET }, reponse: "allow-once", trace });
     await o.services.lancerWorkflow("demo", "x.md");
     await until(async () => (await o.services.tasks()).some((t) => t.status === "finished"));
     expect(entrees.filter((e) => e.kind === "rejet")).toEqual([expect.objectContaining({ kind: "rejet", porte: "cohérence", motifs: ["motif d'essai"] })]);
@@ -315,7 +315,7 @@ describe("Workflows en dossier dans l'application (ADR 0055)", () => {
  * ni `milestones` ni `alerts`, et le `meta` n'a pas ces champs. Rien dans le produit ne peut plus
  * en produire.
  */
-const WFV = { ".agent-studio/workflows/valide/workflow.mjs": VALIDE, ".agent-studio/workflows/valide/agents/redacteur.agent.md": "Tu résumes." };
+const WFV = { ".skraft/workflows/valide/workflow.mjs": VALIDE, ".skraft/workflows/valide/agents/redacteur.agent.md": "Tu résumes." };
 
 describe("machinerie d'hôte, à travers un workflow", () => {
   it("la commande est exposée ; le texte libre part vers la session principale, et aucun runtime n'est chargé d'avance", async () => {

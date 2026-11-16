@@ -131,7 +131,7 @@ async function serveur(p: Projet, o: { pid: number; vivants: Set<number>; roots?
   const projets = createProjets({
     ouvrir: (root, journal, ouverture) => ouvrirServicesSansFenetre({ factory, workspace: async () => p.workspace, runtime: async () => p.runtime, journal })(root, ouverture),
     piles: createPilesFichiers(join(p.root, ".donnees-du-serveur", "piles")),
-    verrou: (root) => prendreVerrou(join(root, ".agent-studio", "mcp-skraft.lock"), { pid: o.pid, estVivant: (x) => o.vivants.has(x) }),
+    verrou: (root) => prendreVerrou(join(root, ".donnees-du-serveur", "mcp-skraft.lock"), { pid: o.pid, estVivant: (x) => o.vivants.has(x) }),
   });
   const mcp = createServeurSkraft({
     projets,
@@ -466,7 +466,7 @@ describe("Serveur MCP skraft (ADR 0068)", () => {
 
     it("le client sait demander : la question nomme le programme, et la pile du projet est retenue", async () => {
       const p = await projet();
-      await poser(p.root, { ".agent-studio/projet.yaml": avecUv });
+      await poser(p.root, { ".skraft/projet.yaml": avecUv });
       const questions: string[] = [];
       const s = await serveur(p, { pid: 1, vivants: new Set([1]), repondre: (q) => (questions.push(q), "Oui, cette fois") });
       expect((await s.etat()).pile).toEqual({ id: "python", source: "projet" });
@@ -477,7 +477,7 @@ describe("Serveur MCP skraft (ADR 0068)", () => {
 
     it("le client ne sait pas demander : la pile du projet est refusée, la détection reprend", async () => {
       const p = await projet();
-      await poser(p.root, { ".agent-studio/projet.yaml": avecUv });
+      await poser(p.root, { ".skraft/projet.yaml": avecUv });
       const s = await serveur(p, { pid: 1, vivants: new Set([1]) });
       const e = await s.etat();
       expect(e.pile).toEqual({ id: "typescript", source: "detection" });
@@ -512,8 +512,8 @@ describe("Serveur MCP skraft (ADR 0068)", () => {
       expect(r.texte).not.toMatch(/\/stack|Rouvrez/);
       expect(r.texte).toMatch(/Il prend effet au prochain appel de skraft/);
       // `node` n'est pas dans la liste du serveur de test : demandé avant d'être lancé, puis l'écriture.
-      expect(questions).toEqual([expect.stringMatching(/^Autoriser « node » pour ce projet \?/), expect.stringMatching(/^Écrire le profil de stack dans \.agent-studio\/projet\.yaml \?/)]);
-      expect(p.ecrits).toContain(".agent-studio/projet.yaml");
+      expect(questions).toEqual([expect.stringMatching(/^Autoriser « node » pour ce projet \?/), expect.stringMatching(/^Écrire le profil de stack dans \.skraft\/projet\.yaml \?/)]);
+      expect(p.ecrits).toContain(".skraft/projet.yaml");
       await s.fermer();
     }, 60_000);
 
@@ -569,7 +569,7 @@ describe("Serveur MCP skraft (ADR 0068)", () => {
       const p = await projet();
       const s = await serveur(p, { pid: 1, vivants: new Set([1]) });
       expect((await s.etat()).pile).toEqual({ id: "typescript", source: "detection" });
-      await poser(p.root, { ".agent-studio/projet.yaml": `pile:\n${PILE.trim().split("\n").map((l) => `  ${l}`).join("\n")}\n` });
+      await poser(p.root, { ".skraft/projet.yaml": `pile:\n${PILE.trim().split("\n").map((l) => `  ${l}`).join("\n")}\n` });
       await s.appel("skraft_pile", { action: "diagnostiquer" });
       expect((await s.etat()).pile).toEqual({ id: "python", source: "projet" });
       await s.fermer();
@@ -577,7 +577,7 @@ describe("Serveur MCP skraft (ADR 0068)", () => {
 
     it("diagnostiquer : le diagnostic de /stack doctor", async () => {
       const p = await projet();
-      await poser(p.root, { ".agent-studio/projet.yaml": `pile:\n${PILE.trim().split("\n").map((l) => `  ${l}`).join("\n")}\n` });
+      await poser(p.root, { ".skraft/projet.yaml": `pile:\n${PILE.trim().split("\n").map((l) => `  ${l}`).join("\n")}\n` });
       const s = await serveur(p, { pid: 1, vivants: new Set([1]) });
       expect((await s.appel("skraft_pile", { action: "diagnostiquer" })).texte).toMatch(/Diagnostic du profil/);
       await s.fermer();
@@ -684,7 +684,7 @@ describe("Serveur MCP skraft (ADR 0068)", () => {
 // LEC-2 (freecompub/AgentStudio#33, critères 11 à 14) : les leçons d'un projet, listées par statut ;
 // ratifier ou retirer passe par une question du client, à qui que ce soit (ADR 0087).
 describe("skraft_lecons", () => {
-  const FICHIER = ".agent-studio/lecons/lecons.jsonl";
+  const FICHIER = ".skraft/lecons/lecons.jsonl";
   const CLEAN = "architecture-review-criteria/references/clean-arch-violations.md";
   const L01 = { id: "L-01", groupe: "a", regle: "Le domaine ne dépend pas de l'infrastructure.", quand: "q", aFaire: "f", exemple: "us-4#1", sources: ["us-4#1", "us-7#2"], catalogue: { skill: CLEAN, section: "V-CA-01: Domain Importing from Infrastructure" }, role: "skraft-dev", phase: "DELIVER", statut: "validee" };
   const L02 = { ...L01, id: "L-02", groupe: "b", regle: "Un port se déclare dans le domaine.", sources: ["us-7#3"], exemple: "us-7#3", catalogue: { nouvelle: { skill: CLEAN, titre: "Port déclaré hors du domaine" } }, statut: "candidate" };

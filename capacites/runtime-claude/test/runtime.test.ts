@@ -104,7 +104,7 @@ describe("Runtime Claude par le CLI (ADR 0070)", () => {
     expect(f.lancements[0]!.entree).toBe("Fais le travail.");
     expect(f.lancements[0]!.cwd).toBe("/projet");
     expect(f.lancements[0]!.prompt).toContain("Tu es l'agent d'essai.");
-    expect(f.lancements[0]!.prompt).toContain("mcp__agent-studio__report_phase");
+    expect(f.lancements[0]!.prompt).toContain("mcp__skraft__report_phase");
     expect(evs.map((e) => e.type)).toEqual(["activity", "tool-start", "usage", "permission", "tool-end", "message", "usage", "usage", "idle"]);
     expect(evs.find((e) => e.type === "permission")).toMatchObject({ kind: "write", target: "src/a.ts", decision: "allow" });
     await s.close();

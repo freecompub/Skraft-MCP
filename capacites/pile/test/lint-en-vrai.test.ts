@@ -42,7 +42,7 @@ async function adaptateurLivre() {
 
 let bac: string;
 beforeEach(async () => {
-  bac = await mkdtemp(join(tmpdir(), "agent-studio-eslint-"));
+  bac = await mkdtemp(join(tmpdir(), "skraft-eslint-"));
   await cp(TEMOIN, bac, { recursive: true });
   await symlink(join(RACINE_DEPOT, "node_modules"), join(bac, "node_modules"), "dir");
 });

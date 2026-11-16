@@ -16,7 +16,7 @@ describe("Bibliothèque des scripts sous Vitest", () => {
     const manquants: string[] = [];
     for (const f of (await readdir(WORKFLOW_DIR)).filter((x) => x.endsWith(".mjs"))) {
       const source = await readFile(join(WORKFLOW_DIR, f), "utf8");
-      for (const m of source.matchAll(/import\s*\{([^}]*)\}\s*from\s*"@agent-studio\/workflow"/g))
+      for (const m of source.matchAll(/import\s*\{([^}]*)\}\s*from\s*"@skraft-mcp\/workflow"/g))
         for (const nom of m[1].split(",").map((x) => x.trim().split(/\s+as\s+/)[0]).filter(Boolean))
           if (lib[nom] === undefined) manquants.push(`${f} : ${nom}`);
     }

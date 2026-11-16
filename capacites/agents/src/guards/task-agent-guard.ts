@@ -41,10 +41,10 @@ function refusDeShell(deps: TaskAgentGuardDeps): string {
   return `Le shell est désactivé pour ce rôle, sans exception : aucune commande ne peut être autorisée, même en lecture. Utilise tes outils — ${sorties.join(" ; ")}.`;
 }
 
-/** Chemin relatif sous `.agent-studio/workflows/`, sans tenir compte de la casse (ADR 0055). */
+/** Chemin relatif sous `.skraft/workflows/`, sans tenir compte de la casse (ADR 0055). */
 export function estDossierDeWorkflow(rel: string): boolean {
   const s = rel.split("/").map((x) => x.toLowerCase());
-  return s[0] === ".agent-studio" && s[1] === "workflows";
+  return s[0] === ".skraft" && s[1] === "workflows";
 }
 
 export function createTaskAgentGuard(deps: TaskAgentGuardDeps): ToolCallGuard {

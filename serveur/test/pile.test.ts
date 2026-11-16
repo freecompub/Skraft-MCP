@@ -36,14 +36,15 @@ layout:
  */
 async function ouvrir(o: { detecte?: boolean; profilProjet?: string; fichierProjet?: string; fournie?: string; sansRepli?: boolean; repondre?: (q: ConfirmRequest) => ConfirmAnswer; consentement?: boolean; root?: string; taches?: string; repliPermis?: boolean }) {
   const root = o.root ?? (await mkdtemp(join(base, "projet-")));
-  if (o.profilProjet || o.fichierProjet) await mkdir(join(root, ".agent-studio"), { recursive: true });
+  if (o.profilProjet) await mkdir(join(root, ".agent-studio"), { recursive: true });
+  if (o.fichierProjet) await mkdir(join(root, ".skraft"), { recursive: true });
   if (o.profilProjet) await writeFile(join(root, ".agent-studio", "stack.yaml"), o.profilProjet);
-  if (o.fichierProjet) await writeFile(join(root, ".agent-studio", "projet.yaml"), o.fichierProjet);
+  if (o.fichierProjet) await writeFile(join(root, ".skraft", "projet.yaml"), o.fichierProjet);
   const posts: string[] = [];
   const services = await workspaceServicesFactory({
     stacks: [{ id: "typescript", layout: { acceptanceTests: [], unitTests: [], sources: [] }, infrastructureModules: [], detect: async () => o.detecte ?? false, isTestFile: () => false, testFilePattern: "^tests/", runTests: async () => ({ results: [], exitCode: 0, timedOut: false, output: "", durationMs: 0 }) }],
     allowedPrograms: ["pytest"],
-    origineDesProgrammes: "Liste de `allowedPrograms` dans /etc/agent-studio/admin.json.",
+    origineDesProgrammes: "Liste de `allowedPrograms` dans /etc/skraft/admin.json.",
     programConsent: o.consentement ?? true,
     ...(o.sansRepli ? { sansRepli: true } : {}),
     tasksDir: o.taches ?? join(root, ".taches"),
@@ -158,7 +159,7 @@ describe("Pile du projet (ADR 0068, point 8)", () => {
   });
 
   it("le refus d'un programme dit d'où vient la liste, pour une pile fournie, une pile du projet et un composant (09/11)", async () => {
-    const origine = /Programmes autorisés : pytest\. Liste de `allowedPrograms` dans \/etc\/agent-studio\/admin\.json\./;
+    const origine = /Programmes autorisés : pytest\. Liste de `allowedPrograms` dans \/etc\/skraft\/admin\.json\./;
     await expect(ouvrir({ fournie: profil("python-client", "uv"), sansRepli: true })).rejects.toThrow(origine);
     const a = await ouvrir({ fichierProjet: `pile:\n${profil("python-projet", "uv").trim().split("\n").map((l) => `  ${l}`).join("\n")}\n`, detecte: true });
     expect(a.posts.join("\n")).toMatch(origine);
@@ -202,7 +203,7 @@ describe("Programme hors liste, accepté par l'utilisateur", () => {
     expect(questions).toHaveLength(1);
     expect(questions[0]!.title).toBe("Autoriser « uv » pour ce projet ?");
     expect(questions[0]!.detail).toContain("tests : uv --junit-xml={rapport}");
-    expect(questions[0]!.detail).toContain("Liste de `allowedPrograms` dans /etc/agent-studio/admin.json.");
+    expect(questions[0]!.detail).toContain("Liste de `allowedPrograms` dans /etc/skraft/admin.json.");
     expect(questions[0]!.detail).toMatch(/sans shell/);
     expect(a.posts.join("\n")).toMatch(/« uv » accepté par l'utilisateur pour ce projet \(cette fois\)/);
     await a.services.dispose();

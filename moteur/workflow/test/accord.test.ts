@@ -20,7 +20,7 @@ const META: MetaWorkflow = {
   permissions: { ecriture: [".skraft/**", "@stack:unitTests"], tests: true, git: ["branche", "commit"] },
   agents: { "skraft-test": { prompt: "agents/skraft-test.agent.md", ecriture: ["@stack:unitTests"], outils: ["run_tests"], sortie: "report_phase" } },
 };
-const wf = (empreinte = "sha256:aaa"): WorkflowTrouve => ({ nom: "skraft", origine: "projet", dossier: "/projet/.agent-studio/workflows/skraft", meta: META, empreinte });
+const wf = (empreinte = "sha256:aaa"): WorkflowTrouve => ({ nom: "skraft", origine: "projet", dossier: "/projet/.skraft/workflows/skraft", meta: META, empreinte });
 
 let dir: string;
 beforeEach(async () => {
@@ -39,7 +39,7 @@ describe("accord par empreinte", () => {
   it("le résumé montre d'où vient le workflow, ce que le script peut faire et ses agents ; plus de profils (ADR 0087)", () => {
     const r = resumeAccord(wf());
     expect(r.title).toBe("Exécuter le workflow « skraft » (projet) ?");
-    expect(r.detail).toContain("/projet/.agent-studio/workflows/skraft");
+    expect(r.detail).toContain("/projet/.skraft/workflows/skraft");
     expect(r.detail).toContain("Écrire : .skraft/**, @stack:unitTests");
     expect(r.detail).toContain("Lancer les tests");
     expect(r.detail).toContain("Git : branche, commit");
@@ -75,7 +75,7 @@ describe("accord par empreinte", () => {
 
 describe("gel du dossier pendant une tâche", () => {
   it("le script ne peut pas écrire dans un dossier de workflow, quelle que soit la casse", async () => {
-    for (const chemin of [".agent-studio/workflows/skraft/portes/citations.mjs", ".Agent-Studio/Workflows/x.mjs"]) {
+    for (const chemin of [".skraft/workflows/skraft/portes/citations.mjs", ".Skraft/Workflows/x.mjs"]) {
       const f = fauxContexte();
       const t = await lancer({ nom: "t", empreinte: "v1", script: async (w) => w.ecrireFichier(chemin, "affaibli") }, f.ctx);
       expect((await t.record()).state.fin).toMatchObject({ statut: "echec", motif: expect.stringMatching(/dossier d'un workflow/) });

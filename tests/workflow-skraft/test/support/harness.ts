@@ -1,6 +1,6 @@
 /**
  * Banc d'essai du workflow skraft en dossier (ADR 0055), repris du banc de l'extension
- * skraft-workflow (2026-10-10). Le workflow est copié dans `.agent-studio/workflows/` du projet
+ * skraft-workflow (2026-10-10). Le workflow est copié dans `.skraft/workflows/` du projet
  * d'essai et commité, comme dans un vrai projet, puis activé et exécuté isolé. Repris à l'origine de
  * `extensions/skraft/test/support/harness.ts` (2026-10-08) et réduit : vrai dépôt Git, vraie pile (moteur, hôte, exécuteur d'agents, preuves,
  * interactions persistées), agents simulés par un runtime scripté. Aucun LLM.
@@ -83,7 +83,7 @@ export function implPlanDe(criteres: (number | string)[], test: string): string 
 }
 
 export async function createProject(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "agent-studio-skraft-"));
+  const root = await mkdtemp(join(tmpdir(), "skraft-"));
   await put(root, "package.json", '{ "name": "demo", "type": "module" }\n');
   await put(root, "src/domain/bolus-calculator.ts", "export class BolusCalculator {}\n");
   await put(root, "src/settings/max-bolus-setting.ts", "export class MaxBolusSetting {}\n");
@@ -285,7 +285,7 @@ let runtime: Promise<string> | undefined;
 /** Runtime du processus enfant des workflows, construit une fois pour toute la suite. */
 function runtimeEnfant(): Promise<string> {
   runtime ??= (async () => {
-    const dir = await mkdtemp(join(tmpdir(), "agent-studio-workflow-runtime-"));
+    const dir = await mkdtemp(join(tmpdir(), "skraft-workflow-runtime-"));
     const entree = join(dir, "workflow-child.mjs");
     await bundle(resolve(import.meta.dirname, "../../../../moteur/workflow/src/hote/enfant-entree.ts"), entree);
     return entree;
@@ -298,10 +298,10 @@ function runtimeEnfant(): Promise<string> {
  * l'emporterait — un workflow de projet se versionne avec le projet.
  */
 export async function installerWorkflow(root: string): Promise<void> {
-  await cp(WORKFLOW_DIR, join(root, ".agent-studio/workflows/skraft-workflow"), { recursive: true });
-  git(root, "add", "-A", ".agent-studio/workflows");
+  await cp(WORKFLOW_DIR, join(root, ".skraft/workflows/skraft-workflow"), { recursive: true });
+  git(root, "add", "-A", ".skraft/workflows");
   // Déjà installé (redémarrage sur le même projet) : rien à commiter.
-  if (git(root, "status", "--porcelain", ".agent-studio/workflows")) git(root, "commit", "-qm", "chore: workflow skraft");
+  if (git(root, "status", "--porcelain", ".skraft/workflows")) git(root, "commit", "-qm", "chore: workflow skraft");
 }
 
 const handles: ExtensionHandle[] = [];
@@ -390,7 +390,7 @@ export async function assemble(root: string, runtime: ScriptedRuntime, tasksDir:
   };
   // Workflow trouvé dans le projet, accord retenu, exécution isolée (`docs/11` §5 à §8).
   await installerWorkflow(root);
-  const recherche = await trouverWorkflows({ projet: join(root, ".agent-studio/workflows") });
+  const recherche = await trouverWorkflows({ projet: join(root, ".skraft/workflows") });
   if (recherche.erreurs.length) throw new Error(`Workflow écarté : ${JSON.stringify(recherche.erreurs)}`);
   const r = await activerWorkflow(recherche.workflows[0]!, hostDeps, {
     isolation: { launcher: createNodeLauncher(), runtimeEntry: await runtimeEnfant() },

@@ -172,7 +172,7 @@ describe("Hôte d'extension en processus", () => {
     const { mkdtemp, mkdir, writeFile, rm } = await import("node:fs/promises");
     const { tmpdir } = await import("node:os");
     const { join } = await import("node:path");
-    const dir = await mkdtemp(join(tmpdir(), "agent-studio-ext-md-"));
+    const dir = await mkdtemp(join(tmpdir(), "skraft-ext-md-"));
     try {
       await mkdir(join(dir, "agents"));
       await mkdir(join(dir, "skills/craft"), { recursive: true });

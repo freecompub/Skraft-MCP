@@ -8,7 +8,7 @@ l'application n'ait pas besoin d'un adaptateur écrit en TypeScript pour ce lang
 L'outil `skraft_pile` du serveur MCP (`/skraft-pile`) fait découvrir la pile par un agent, qui
 lit le projet ; le code la vérifie — programmes, schéma, diagnostic, canaris lancés dans une copie —
 avant de l'écrire après votre accord (ADR 0076). Sinon, copier l'exemple qui convient dans
-`.agent-studio/projet.yaml`, à la racine du projet, puis l'ajuster (ADR 0071). Le fichier a deux sections, validées chacune selon ses règles :
+`.skraft/projet.yaml`, à la racine du projet, puis l'ajuster (ADR 0071). Le fichier a deux sections, validées chacune selon ses règles :
 
 - `pile` — **comment** lancer les outils : tests, lint, format, mutation, emplacements, canaris.
   Elle est lue à l'ouverture et **l'emporte sur la détection automatique** ; refusée, la raison
@@ -17,9 +17,10 @@ avant de l'écrire après votre accord (ADR 0076). Sinon, copier l'exemple qui c
 - `qualite` — **ce qui est exigé** : chemins du cœur, seuils de couverture et de mutation, règles
   de dépendance. Elle ne lance rien. Sans elle, les valeurs par défaut s'appliquent.
 
-Toute autre clé de premier niveau est refusée. Les anciens `.agent-studio/stack.yaml` et
-`.agent-studio/quality.yaml` sont encore lus, avec un avertissement, tant que `projet.yaml`
-n'existe pas ; ensuite ils sont ignorés.
+Toute autre clé de premier niveau est refusée. Les anciens emplacements sont encore lus, avec un
+avertissement qui dit où aller, tant que `.skraft/projet.yaml` n'existe pas ; ensuite ils sont
+ignorés et signalés comme tels : `.agent-studio/projet.yaml` (le même fichier avant le renommage,
+ADR 0097), puis `.agent-studio/stack.yaml` et `.agent-studio/quality.yaml` (d'avant l'ADR 0071).
 
 La commande `format` est facultative : elle **vérifie** la mise en forme sans rien modifier
 (`prettier --check`, `dotnet format --verify-no-changes`), en fin de scénario à côté du lint. Seul

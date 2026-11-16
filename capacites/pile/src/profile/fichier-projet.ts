@@ -1,11 +1,11 @@
 /**
- * Un seul fichier de projet (ADR 0071) : `.agent-studio/projet.yaml`, section `pile` (comment lancer
+ * Un seul fichier de projet (ADR 0071) : `.skraft/projet.yaml`, section `pile` (comment lancer
  * les outils, schéma du profil de pile) et section `qualite` (ce qui est exigé, schéma de la barre).
  * Ici, on ne fait que séparer : chaque section est rendue en YAML à son propre validateur. PUR.
  */
 import { parse as parseYaml, parseDocument, stringify } from "yaml";
 
-export const FICHIER_PROJET = ".agent-studio/projet.yaml";
+export const FICHIER_PROJET = ".skraft/projet.yaml";
 const SECTIONS = ["pile", "qualite", "composants"] as const;
 
 /** Un composant d'un projet qui mélange les technologies (ADR 0074) ; `pile` en YAML, pour son propre validateur. */

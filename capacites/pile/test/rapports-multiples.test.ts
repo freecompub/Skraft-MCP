@@ -61,7 +61,7 @@ function runner(agir: (args: readonly string[]) => Promise<ProcessResult>) {
 
 let racine: string;
 beforeEach(async () => {
-  racine = await mkdtemp(join(tmpdir(), "agent-studio-rapports-"));
+  racine = await mkdtemp(join(tmpdir(), "skraft-rapports-"));
 });
 afterEach(() => rm(racine, { recursive: true, force: true }));
 

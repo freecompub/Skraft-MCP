@@ -21,7 +21,7 @@ const req = (id: string, over: Partial<InteractionRequest> = {}): InteractionReq
 describe("JsonInteractionStore (demandes persistées, D31)", () => {
   let dir: string;
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-studio-int-"));
+    dir = await mkdtemp(join(tmpdir(), "skraft-int-"));
   });
   afterEach(() => rm(dir, { recursive: true, force: true }));
 

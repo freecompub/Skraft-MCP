@@ -20,7 +20,7 @@ describe("skraft en workflow — porte de fin de scénario (pile simulée)", () 
   let tasksDir: string;
   beforeEach(async () => {
     root = await createProject();
-    tasksDir = await mkdtemp(join(tmpdir(), "agent-studio-skraft-tasks-"));
+    tasksDir = await mkdtemp(join(tmpdir(), "skraft-tasks-"));
   });
   afterEach(async () => {
     await shutdownHosts();
@@ -30,7 +30,7 @@ describe("skraft en workflow — porte de fin de scénario (pile simulée)", () 
 
   it("mutation sous le seuil du domaine : scénario refusé avec les survivants, repris en sessions séparées, puis livré", async () => {
     // Mutation par scénario, demandée par la barre du projet (ADR 0049) ; par défaut elle tourne en fin de DELIVER.
-    await put(root, ".agent-studio/projet.yaml", "qualite:\n  mutation:\n    moment: scenario\n");
+    await put(root, ".skraft/projet.yaml", "qualite:\n  mutation:\n    moment: scenario\n");
     git(root, "add", "-A");
     git(root, "commit", "-qm", "barre de qualité : mutation par scénario");
     const roles: string[] = [];

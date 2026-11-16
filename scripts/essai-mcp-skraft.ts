@@ -62,7 +62,7 @@ const transport = new StdioClientTransport({
     ...(process.env as Record<string, string>),
     PATH: [join(homedir(), ".dotnet"), process.env["PATH"] ?? ""].join(delimiter),
     SKRAFT_MCP_CONFIG: join(base, "mcp-skraft.json"),
-    AGENT_STUDIO_ADMIN_CONFIG: join(base, "admin.json"),
+    SKRAFT_ADMIN_CONFIG: join(base, "admin.json"),
   },
   stderr: "inherit",
 });

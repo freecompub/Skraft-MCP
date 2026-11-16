@@ -33,7 +33,7 @@ export const meta = {
   },
   // Tout ce que le script et ses agents peuvent écrire. `revert` : les phases rembobinent à l'escalade.
   permissions: {
-    ecriture: [".skraft/**", "docs/adr/**", "docs/adr/adr-???-*.md", "docs/adr/supersessions.md", ".agent-studio/lecons/**", "@stack:acceptanceTests", "@stack:unitTests", "@stack:sources"],
+    ecriture: [".skraft/**", "docs/adr/**", "docs/adr/adr-???-*.md", "docs/adr/supersessions.md", ".skraft/lecons/**", "@stack:acceptanceTests", "@stack:unitTests", "@stack:sources"],
     tests: true,
     git: ["branche", "commit", "revert"],
   },

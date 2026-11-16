@@ -44,7 +44,7 @@ export async function createRelais(o: OptionsRelais): Promise<Relais> {
   const jeton = randomBytes(24).toString("hex");
 
   function serveurMcp(): Server {
-    const s = new Server({ name: "agent-studio", version: "0.0.0" }, { capabilities: { tools: {} } });
+    const s = new Server({ name: "skraft", version: "0.0.0" }, { capabilities: { tools: {} } });
     s.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
         ...o.outils.map((t) => ({ name: t.name, description: t.description, inputSchema: t.parameters as { type: "object" } })),

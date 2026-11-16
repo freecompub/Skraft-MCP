@@ -25,12 +25,12 @@ beforeAll(async () => {
   home = join(base, "home");
   depot = join(base, "depot");
   const git = (...a: string[]) => execFileSync("git", a, { cwd: depot, env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" } });
-  execFileSync("mkdir", ["-p", depot, join(home, ".agent-studio")]);
+  execFileSync("mkdir", ["-p", depot, join(home, ".skraft")]);
   await writeFile(join(depot, "package.json"), JSON.stringify({ name: "essai", devDependencies: { vitest: "^4" } }));
   git("init", "-q", "-b", "main");
   git("add", "-A");
   git("commit", "-q", "-m", "init");
-  await writeFile(join(home, ".agent-studio", "mcp-skraft.json"), JSON.stringify({ autorises: [base] }));
+  await writeFile(join(home, ".skraft.json"), JSON.stringify({ autorises: [base] }));
 }, 120_000);
 afterAll(() => rm(base, { recursive: true, force: true }));
 
@@ -39,7 +39,7 @@ async function connecter(env: Record<string, string> = {}) {
     command: process.execPath,
     args: [join(paquet, "dist/main.mjs")],
     cwd: depot,
-    env: { PATH: process.env["PATH"] ?? "", HOME: home, AGENT_STUDIO_ADMIN_CONFIG: join(home, "admin-absent.json"), ...env },
+    env: { PATH: process.env["PATH"] ?? "", HOME: home, SKRAFT_ADMIN_CONFIG: join(home, "admin-absent.json"), ...env },
     stderr: "pipe",
   });
   const client = new Client({ name: "essai", version: "0.0.0" });
@@ -61,7 +61,7 @@ describe("Serveur MCP construit, en stdio (ADR 0068)", () => {
       await client.close();
     }
     // Le journal va dans le dossier de données, pas sur stdout (qui casserait le protocole).
-    expect(await readFile(join(home, ".agent-studio", "mcp-skraft", "logs", "mcp-skraft.log"), "utf8")).toMatch(/serveur MCP skraft prêt/);
+    expect(await readFile(join(home, ".skraft", "logs", "mcp-skraft.log"), "utf8")).toMatch(/serveur MCP skraft prêt/);
   }, 60_000);
 
   it("le processus enfant construit rejoue le workflow skraft livré, isolé (--permission), sans rien lire hors de lui", async () => {
@@ -90,7 +90,7 @@ describe("Serveur MCP construit, en stdio (ADR 0068)", () => {
     } finally {
       await client.close();
     }
-    expect(await readFile(join(home, ".agent-studio", "mcp-skraft", "logs", "mcp-skraft.log"), "utf8")).toMatch(/"runtime":"claude"/);
+    expect(await readFile(join(home, ".skraft", "logs", "mcp-skraft.log"), "utf8")).toMatch(/"runtime":"claude"/);
   }, 60_000);
 
   it("projet hors des dossiers autorisés par la configuration : refusé", async () => {

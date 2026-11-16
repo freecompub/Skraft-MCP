@@ -68,7 +68,7 @@ describe("parseVitestReport — racine passant par un lien symbolique", () => {
     const { mkdtemp, realpath, rm } = await import("node:fs/promises");
     const { tmpdir } = await import("node:os");
     const { join } = await import("node:path");
-    const racine = await mkdtemp(join(tmpdir(), "agent-studio-lien-"));
+    const racine = await mkdtemp(join(tmpdir(), "skraft-lien-"));
     try {
       const reel = await realpath(racine);
       const rapport = {
