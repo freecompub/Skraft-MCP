@@ -89,7 +89,8 @@ l'on a démarré `copilot`. Ce que Copilot CLI fait du serveur, vu à l'essai :
 - il sait **poser les questions** du serveur (*elicitation*), en session interactive seulement :
   `copilot -p` les refuse toutes d'office ;
 - il **abandonne un appel d'outil au bout de 3 minutes** : `skraft_attendre` attend 50 s au plus, et
-  une découverte de pile reste en général bien en dessous.
+  `skraft_pile` lance le travail en arrière-plan ; `action: "suivre"` rend son état sans attendre
+  les agents ni les canaris (ADR 0096).
 
 ## Les commandes `/skraft-…`
 
@@ -136,7 +137,7 @@ Facultatif ; `SKRAFT_MCP_CONFIG` en désigne un autre. Une clé inconnue est ref
 | Clé | Défaut | Rôle |
 |---|---|---|
 | `autorises` | `[]` | Dossiers (absolus, `~` accepté) où un projet est accepté, en plus des roots déclarés par le client. Un projet doit être un dépôt Git situé dans l'un ou l'autre. Ailleurs, si le client sait poser une question (*elicitation*), le serveur demande à l'utilisateur d'accepter le dépôt : une fois, ou toujours (retenu dans `~/.agent-studio/mcp-skraft/depots-acceptes.json`) ; sinon il refuse (ADR 0075). |
-| `hostname` | `github.com` | Hôte GitHub (ou GitHub Enterprise) pour la connexion Copilot. |
+| `hostname` | `github.com` | Hôte GitHub (ou GitHub Enterprise) pour la connexion Copilot. `/skraft-connexion` permet de choisir l'hôte et conserve le choix ici. |
 | `runtime` | `copilot` | `copilot` ou `claude` : qui fait travailler les agents. |
 | `modeles` | défaut du runtime | Les deux architectes demandent un effort élevé et un contexte long (ADR 0077) : ils l'obtiennent si le modèle `strong` le déclare (Copilot), ou s'il s'agit de `sonnet` ou `opus` (Claude, variante `[1m]`) ; sinon l'option est abandonnée et le journal le dit. Modèle par classe de rôle : `strong` (les deux architectes, le réfutateur), `standard` (chercheur, acceptance, testeur, développeur, arbitre de mutation, lentilles cold-reader, test-integrity, architecture), `light` (classifieur, lentille quality-gates). Avec Claude : `opus`, `sonnet`, `haiku` par défaut. |
 
@@ -216,6 +217,10 @@ compilation. Il prend, dans cet ordre :
 Sans aucune des trois, le serveur refuse de démarrer, et dit de fournir `pile`.
 
 Le plus simple est de laisser **`skraft_pile`** l'écrire (ADR 0076).
+L'appel rend la main : rappelle-le avec `action: "suivre"` et le même `projet`, en espaçant les
+rappels, jusqu'au résultat. Une seule opération tourne par projet dans ce serveur (ADR 0096).
+`skraft_etat` montre aussi ses messages, même sans pile déclarée.
+
 1. Un agent lit le projet et propose sa pile, BDD compris, à partir de ce que le code a détecté.
 2. Le code la vérifie : programmes (un programme hors de la liste est demandé à l'utilisateur
    avant d'être lancé), schéma, BDD, diagnostic, puis canaris lancés dans une copie du projet.
@@ -225,6 +230,8 @@ Le plus simple est de laisser **`skraft_pile`** l'écrire (ADR 0076).
 Si l'agent pose une question, la réponse revient par l'argument `reponse`, en une phrase complète.
 `sansBdd`, `lanceur`, `features`, `etapes` précisent le BDD. `skraft_pile` avec action
 `diagnostiquer` vérifie à nouveau une pile déclarée.
+La réponse et le diagnostic se suivent eux aussi par `action: "suivre"`. Le suivi est en mémoire :
+après un redémarrage du serveur, le profil écrit reste, mais une découverte inachevée ne reprend pas.
 
 Un projet qui installe ses outils chez lui les déclare dans `outils` (par exemple
 `[.venv/bin, .venv/Scripts]` pour uv) : `pytest` se lance alors sans `uv` à autoriser. Exemple de pile .NET, en BDD avec Reqnroll,
@@ -278,8 +285,8 @@ buildErrors:
 |---|---|---|
 | `skraft_connexion` | — | Connexion du runtime. Copilot : rend un code et une adresse à valider dans le navigateur. Claude : vérifie `claude auth status`, sinon dit de lancer `claude auth login`. Rappeler pour vérifier. |
 | `skraft_demarrer` | `story` (chemin relatif au projet), `auto`, `archi`, `pile`, `accord`, `projet` | Démarre un run, en arrière-plan. Au premier lancement, rend le **résumé à faire accepter** (agents, droits d'écriture, questions) sans rien démarrer ; rappeler avec les mêmes arguments et `accord: "une-fois"` ou `"toujours"` (retenu tant que le workflow ne change pas). `auto` : retient la difficulté proposée sans la faire confirmer. `archi` : skill d'architecture par son nom ou son langage (`java`) ; par défaut la clean architecture. |
-| `skraft_pile` | `action` (`proposer` par défaut, ou `diagnostiquer`), `lanceur`, `features`, `etapes`, `sansBdd`, `reponse`, `projet` | **La pile du projet** (ADR 0075, 0076). `proposer` : un agent découvre la pile en lisant le projet (BDD compris), le code la vérifie en l'exécutant (canaris) et l'écrit dans `.agent-studio/projet.yaml` après l'accord de l'utilisateur, que le client lui demande ; sans question possible, la proposition est rendue et rien n'est écrit. `lanceur`, `features`, `etapes` : la moitié du BDD qui n'a pas été trouvée ; `sansBdd` : le projet n'en fait pas. `reponse` : la réponse à une question de l'agent de découverte, en une phrase complète. `diagnostiquer` : programmes trouvés, emplacements, et canaris qui lancent vraiment les tests, dans une copie du projet. Le projet est relu au prochain appel. |
-| `skraft_etat` | `projet` | JSON : mode du serveur (pilote ou consultation), workflow et accord, pile retenue, runs (phase, étape, dernier rejet, usage, et **`progression`**, la ligne à montrer telle quelle), **questions en attente** (identifiant, options, réponse libre), derniers messages. |
+| `skraft_pile` | `action` (`proposer` par défaut, `diagnostiquer`, `suivre`), `lanceur`, `features`, `etapes`, `sansBdd`, `reponse`, `projet` | **La pile du projet** (ADR 0075, 0076, 0096). `proposer` et `diagnostiquer` lancent le travail en arrière-plan ; `suivre` rend les messages ou le résultat, sans nouvelle découverte. Le code vérifie la proposition de l'agent par les canaris avant l'accord d'écriture dans `.agent-studio/projet.yaml`. `reponse` répond à une question de l'agent terminée, en une phrase complète ; elle est refusée pendant le travail. `lanceur`, `features`, `etapes`, `sansBdd` précisent le BDD. Le projet est relu après la fin. |
+| `skraft_etat` | `projet` | JSON : mode du serveur (pilote ou consultation), workflow et accord, pile retenue, runs (phase, étape, dernier rejet, usage, et **`progression`**, la ligne à montrer telle quelle), **questions en attente** et derniers messages. Pendant une opération de pile, rend `decouverte` (`etat`, `messages`, `erreur`) sans ouvrir le projet ; après sa fin, l'ajoute à l'état normal ou rend explicitement `erreurPile` si le projet ne peut pas être ouvert. |
 | `skraft_attendre` | `tache`, `delai` (secondes, 30 par défaut, 50 au plus : un client MCP abandonne souvent un appel au-delà de 60 s), `projet` | **Attend un changement**, puis rend ce qui a changé **depuis le dernier appel** (phase, étape, rejet avec sa porte et son motif, lus dans la trace du run, question à poser, réponse reçue, message, fin), la ligne de progression de chaque run, les questions en attente et `termine`. Rien ne se perd entre deux appels. Run déjà fini : réponse immédiate. |
 | `skraft_repondre` | `question`, `option`, `texte`, `projet` | Répond à une question en attente, par l'identifiant et l'option lus dans `skraft_etat` ; `texte` : réponse libre ou commentaire. L'hôte pose la question à l'utilisateur, il ne répond jamais à sa place. |
 | `skraft_pr` | `tache`, `issue`, `projet` | Publie un run fini dont la story vient d'une issue : pousse `skraft/<slug>` et ouvre une PR liée à l'issue (« Closes #n »), après l'accord de l'utilisateur. `issue` : l'issue à lier, si la story n'en était pas une. |
@@ -295,7 +302,8 @@ serveur.
 
 1. `skraft_connexion` si le runtime n'est pas encore connecté.
 2. `skraft_pile` si le projet n'a pas de pile : répondre aux questions qu'affiche le client
-   (ouvrir le dépôt, autoriser un programme, écrire le profil).
+   (ouvrir le dépôt, autoriser un programme, écrire le profil), et suivre le travail avec
+   `skraft_pile { action: "suivre" }` jusqu'au résultat.
 3. `skraft_demarrer { story: "stories/US-2.md" }` : montrer le résumé rendu à l'utilisateur ; s'il
    accepte, rappeler avec `accord`. La réponse donne l'identifiant de la tâche.
 4. `skraft_attendre { tache }` en boucle, tant que `termine` est faux : à chaque retour, dire à

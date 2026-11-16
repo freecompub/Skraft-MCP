@@ -61,3 +61,48 @@ describe("confirmerParLeClient", () => {
     expect(confirmerParLeClient(client({ elicitation: { form: {}, url: {} } }, accepte("Non")).c).peutDemander()).toBe(true);
   });
 });
+
+describe("choisirHoteGithub", () => {
+  it("propose GitHub.com ou Enterprise, puis demande le hostname choisi", async () => {
+    const reponses = [
+      { action: "accept", content: { plateforme: "GitHub Enterprise" } },
+      { action: "accept", content: { hostname: "github.exemple.fr" } },
+    ];
+    const { c, demandes } = client({ elicitation: {} }, async () => reponses.shift()!);
+
+    await expect(confirmerParLeClient(c).choisirHoteGithub()).resolves.toBe("github.exemple.fr");
+    expect(demandes).toEqual([
+      {
+        message: expect.stringContaining("GitHub.com"),
+        requestedSchema: {
+          type: "object",
+          properties: { plateforme: { type: "string", title: "Plateforme GitHub", enum: ["GitHub.com", "GitHub Enterprise"] } },
+          required: ["plateforme"],
+        },
+      },
+      {
+        message: expect.stringContaining("hostname"),
+        requestedSchema: {
+          type: "object",
+          properties: { hostname: { type: "string", title: "Hostname Enterprise", minLength: 1, maxLength: 253 } },
+          required: ["hostname"],
+        },
+      },
+    ]);
+  });
+
+  it("retourne github.com pour le choix public et null si le client ne peut pas demander", async () => {
+    const publicResponse = client({ elicitation: {} }, async () => ({ action: "accept", content: { plateforme: "GitHub.com" } }));
+    await expect(confirmerParLeClient(publicResponse.c).choisirHoteGithub()).resolves.toBe("github.com");
+    await expect(confirmerParLeClient(client(undefined, accepte("GitHub.com")).c).choisirHoteGithub()).resolves.toBeNull();
+  });
+
+  it("ne poursuit pas si la sélection ou le hostname Enterprise est refusé", async () => {
+    await expect(confirmerParLeClient(client({ elicitation: {} }, async () => ({ action: "decline" })).c).choisirHoteGithub()).resolves.toBeNull();
+    const reponses = [
+      { action: "accept", content: { plateforme: "GitHub Enterprise" } },
+      { action: "accept", content: { hostname: "" } },
+    ];
+    await expect(confirmerParLeClient(client({ elicitation: {} }, async () => reponses.shift()!).c).choisirHoteGithub()).resolves.toBeNull();
+  });
+});

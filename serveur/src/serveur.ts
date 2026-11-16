@@ -37,6 +37,10 @@ export interface OptionsServeur {
   publierPr?: (o: { root: string; ref: RefIssue; branche: string; bilan: string }) => Promise<{ ok: true; url: string; nouvelle: boolean } | { ok: false; motif: string }>;
   /** Dépôts acceptés « toujours » par l'utilisateur (ADR 0075) ; sans, « toujours » vaut pour ce serveur. */
   depots?: Depots;
+  /** Hôte configuré, utilisé si le client ne sait pas demander un choix interactif. */
+  hostnameGithub?: string;
+  /** En runtime Copilot, retient l'hôte choisi par l'utilisateur pour les connexions suivantes. */
+  retenirHostname?: (hostname: string) => Promise<void>;
   version?: string;
 }
 
@@ -64,9 +68,23 @@ export function createServeurSkraft(o: OptionsServeur): McpServer {
   }
 
   const confirmer = confirmerParLeClient(mcp.server);
+  let hostnameEnCours: string | null = null;
+  let hostnameRetenu = o.hostnameGithub;
   /** Dépôts acceptés pour ce serveur ; une question en cours par dépôt, pour ne pas la poser deux fois. */
   const acceptes = new Set<string>();
   const enQuestion = new Map<string, Promise<boolean>>();
+  type OperationPile = { resultat?: Resultat; messages(): string[] };
+  const operationsPile = new Map<string, OperationPile>();
+  const vueOperationPile = (operation: OperationPile) => ({
+    etat: operation.resultat ? "terminee" : "en-cours",
+    messages: operation.resultat ? operation.resultat.content.map((c) => c.text) : operation.messages(),
+    erreur: operation.resultat?.isError === true,
+  });
+  const suivrePile = (operation: OperationPile): Resultat =>
+    operation.resultat ?? texte([
+      'Découverte ou diagnostic de pile en cours. Rappelle `skraft_pile` avec action: "suivre" et le même projet ; ne relance pas la découverte.',
+      ...operation.messages(),
+    ].join("\n\n"));
 
   /**
    * Dépôt hors des dossiers permis (ADR 0075) : si le client sait poser une question, on la pose à
@@ -271,27 +289,41 @@ export function createServeurSkraft(o: OptionsServeur): McpServer {
       description: "État du projet : mode du serveur (pilote ou consultation), workflow et son accord, pile retenue, runs (phase, étape, dernier rejet), questions en attente d'une réponse humaine, derniers messages ; en JSON.",
       inputSchema: { projet },
     },
-    outil(async (p) => {
-      const m = p.mode();
-      const w = (await p.services.workflows()).find((x) => x.nom === o.workflow);
-      const { progression } = await lireInstantane(p);
-      const taches = (await p.services.tasks()).map((t) => ({
-        // La ligne à montrer telle quelle à l'utilisateur (09/11).
-        progression: progression.get(t.id) ?? "",
-        id: t.id,
-        titre: t.title,
-        status: t.status,
-        phase: t.phase,
-        phaseLabel: t.phaseLabel,
-        ...(t.step ? { etape: t.step } : {}),
-        ...(t.feedback ? { dernierRejet: t.feedback } : {}),
-        ...(t.usage ? { usage: t.usage.total } : {}),
-      }));
-      const questions = (await p.services.pendingInteractions()).map(questionPourHote);
-      return texte(
-        JSON.stringify({ projet: p.root, mode: m.pilote ? "pilote" : "consultation", pid, ...(m.pilote ? {} : { detenteur: m.detenteur }), workflow: w ? { nom: w.nom, accordRetenu: w.accordRetenu } : null, pile: p.services.pile(), taches, questions, messages: p.messages() }, null, 2),
-      );
-    }),
+    async (a) => {
+      try {
+        const r = await resoudre(a.projet);
+        if (!r.ok) return erreur(r.motif);
+        const operation = operationsPile.get(r.root);
+        if (operation && !operation.resultat)
+          return texte(JSON.stringify({ projet: r.root, pid, decouverte: vueOperationPile(operation) }, null, 2));
+        const resultat = await outil(async (p) => {
+          const m = p.mode();
+          const w = (await p.services.workflows()).find((x) => x.nom === o.workflow);
+          const { progression } = await lireInstantane(p);
+          const taches = (await p.services.tasks()).map((t) => ({
+            // La ligne à montrer telle quelle à l'utilisateur (09/11).
+            progression: progression.get(t.id) ?? "",
+            id: t.id,
+            titre: t.title,
+            status: t.status,
+            phase: t.phase,
+            phaseLabel: t.phaseLabel,
+            ...(t.step ? { etape: t.step } : {}),
+            ...(t.feedback ? { dernierRejet: t.feedback } : {}),
+            ...(t.usage ? { usage: t.usage.total } : {}),
+          }));
+          const questions = (await p.services.pendingInteractions()).map(questionPourHote);
+          return texte(
+            JSON.stringify({ projet: p.root, mode: m.pilote ? "pilote" : "consultation", pid, ...(m.pilote ? {} : { detenteur: m.detenteur }), workflow: w ? { nom: w.nom, accordRetenu: w.accordRetenu } : null, pile: p.services.pile(), taches, questions, messages: p.messages(), ...(operation ? { decouverte: vueOperationPile(operation) } : {}) }, null, 2),
+          );
+        })({ projet: r.root });
+        if (resultat.isError && operation)
+          return texte(JSON.stringify({ projet: r.root, pid, decouverte: vueOperationPile(operation), erreurPile: resultat.content.map((c) => c.text).join("\n") }, null, 2));
+        return resultat;
+      } catch (e) {
+        return erreur(e instanceof Error ? e.message : String(e));
+      }
+    },
   );
 
   mcp.registerTool(
@@ -371,12 +403,26 @@ export function createServeurSkraft(o: OptionsServeur): McpServer {
     "skraft_connexion",
     {
       description:
-        "Connecte skraft à GitHub (Copilot fait travailler ses agents). Rend un code et une adresse à montrer à l'utilisateur, qui valide dans son navigateur ; rappelle l'outil pour vérifier.",
+        "Connecte le runtime Copilot à GitHub.com ou à une instance GitHub Enterprise choisie par l'utilisateur. Rend un code et une adresse à valider dans le navigateur ; rappelle l'outil pour vérifier.",
       inputSchema: {},
     },
     async () => {
       try {
-        const r = await o.connexion.connecter();
+        let hostname: string | undefined;
+        if (o.retenirHostname) {
+          if (hostnameEnCours) hostname = hostnameEnCours;
+          else {
+            if (!confirmer.peutDemander()) hostname = hostnameRetenu;
+            else hostname = (await confirmer.choisirHoteGithub()) ?? undefined;
+            if (!hostname) return erreur(confirmer.peutDemander() ? "Connexion annulée ou hostname Enterprise invalide : rien n'a été changé." : "Ce client ne sait pas demander où se connecter. Configure `hostname` dans `~/.agent-studio/mcp-skraft.json` (github.com ou le hostname GitHub Enterprise), puis redémarre le client.");
+          }
+        }
+        const r = await o.connexion.connecter(hostname);
+        if (r.ok && hostname && o.retenirHostname) {
+          await o.retenirHostname(hostname);
+          hostnameRetenu = hostname;
+          hostnameEnCours = /lancée|attente/i.test(r.texte) ? hostname : null;
+        } else if (!r.ok) hostnameEnCours = null;
         return r.ok ? texte(r.texte) : erreur(r.texte);
       } catch (e) {
         return erreur(e instanceof Error ? e.message : String(e));
@@ -481,9 +527,9 @@ export function createServeurSkraft(o: OptionsServeur): McpServer {
     "skraft_pile",
     {
       description:
-        "Fait découvrir la pile du projet par un agent (comment lancer ses tests, où vivent ses fichiers, son BDD), la vérifie en l'exécutant, et l'écrit dans .agent-studio/projet.yaml après l'accord de l'utilisateur, que le client lui demande ; ou, avec action « diagnostiquer », vérifie la pile déclarée (programmes trouvés, emplacements, canaris qui lancent vraiment les tests). À appeler quand skraft n'a pas de pile. Montre la réponse à l'utilisateur telle quelle.",
+        "Lance en arrière-plan la découverte de pile ou son diagnostic. Rappelle avec action « suivre » et le même projet jusqu'au résultat : chaque appel est court, une seule opération tourne par projet. L'agent propose, le code vérifie par les canaris, puis le client demande l'accord d'écriture dans .agent-studio/projet.yaml. Une réponse à une question de l'agent lance la suite avec « reponse ». Montre les messages et le résultat à l'utilisateur tels quels.",
       inputSchema: {
-        action: z.enum(["proposer", "diagnostiquer"]).optional().describe("proposer (par défaut) ou diagnostiquer."),
+        action: z.enum(["proposer", "diagnostiquer", "suivre"]).optional().describe("proposer (par défaut), diagnostiquer, ou suivre l'opération déjà lancée sans en lancer une autre."),
         lanceur: sansEspace("Le lanceur BDD").optional().describe("Lanceur BDD, s'il n'a pas été trouvé (reqnroll, cucumber-js, pytest-bdd…)."),
         features: sansEspace("Le dossier des .feature").optional().describe("Dossier des .feature, s'il n'a pas été trouvé."),
         etapes: sansEspace("Le dossier des étapes").optional().describe("Dossier des définitions d'étapes, s'il n'a pas été trouvé."),
@@ -501,31 +547,53 @@ export function createServeurSkraft(o: OptionsServeur): McpServer {
       try {
         const r = await resoudre(a.projet);
         if (!r.ok) return erreur(r.motif);
+        const enCours = operationsPile.get(r.root);
+        if (a.action === "suivre") {
+          if (a.reponse) return erreur('Pour répondre à la question, utilise action: "proposer" avec `reponse`, pas « suivre ».');
+          return enCours ? suivrePile(enCours) : erreur("Aucune découverte ni diagnostic lancé pour ce projet dans ce serveur. Appelle `skraft_pile` pour démarrer.");
+        }
+        if (enCours && !enCours.resultat)
+          return a.reponse
+            ? erreur("La découverte est encore en cours : aucune nouvelle réponse n'est transmise. Suis-la avec action « suivre », puis réponds à sa question.")
+            : suivrePile(enCours);
+        if (a.reponse && (!enCours?.resultat || !enCours.resultat.content.some((c) => /Réponds par `skraft_pile` avec `reponse`/.test(c.text))))
+          return erreur("Aucune question de découverte en attente dans ce serveur. Lance et suis la découverte avant de lui transmettre une réponse.");
         const diagnostic = a.action === "diagnostiquer";
         // Proposer fait travailler l'agent de découverte (ADR 0076) : il faut une connexion utilisable.
         if (!diagnostic) {
           const c = await o.connexion.verifier();
           if (!c.ok) return erreur(c.motif);
         }
-        return await o.projets.pourLaPile(r.root, confirmer.peutDemander() ? { confirmerProgrammes: confirmer } : {}, async (p) => {
-          if (!diagnostic) {
-            const refus = enConsultation(p.mode(), "Écris la pile");
-            if (refus) return refus;
+        const apresConnexion = operationsPile.get(r.root);
+        if (apresConnexion && apresConnexion !== enCours) return suivrePile(apresConnexion);
+        const operation: OperationPile = { messages: () => [] };
+        operationsPile.set(r.root, operation);
+        void (async () => {
+          try {
+            operation.resultat = await o.projets.pourLaPile(r.root, confirmer.peutDemander() ? { confirmerProgrammes: confirmer } : {}, async (p) => {
+              if (!diagnostic) {
+                const refus = enConsultation(p.mode(), "Écris la pile");
+                if (refus) return refus;
+              }
+              const options = [
+                ...(a.lanceur ? ["--lanceur", a.lanceur] : []),
+                ...(a.features ? ["--features", a.features] : []),
+                ...(a.etapes ? ["--etapes", a.etapes] : []),
+                ...(a.sansBdd ? ["--sans-bdd"] : []),
+                // En dernier : `--reponse` prend toute la fin de la ligne.
+                ...(a.reponse ? ["--reponse", a.reponse] : []),
+              ];
+              const avant = p.messages();
+              operation.messages = () => p.messages().filter((m) => !avant.includes(m)).map(consignesPourLeClient);
+              await p.services.route(diagnostic ? "/stack doctor" : ["/stack init", ...options].join(" "));
+              // Le projet est relu au prochain appel ; les consignes de `/stack` sont dites dans les termes de l'outil.
+              return texte(operation.messages().join("\n\n"));
+            });
+          } catch (e) {
+            operation.resultat = erreur(e instanceof Error ? e.message : String(e));
           }
-          const options = [
-            ...(a.lanceur ? ["--lanceur", a.lanceur] : []),
-            ...(a.features ? ["--features", a.features] : []),
-            ...(a.etapes ? ["--etapes", a.etapes] : []),
-            ...(a.sansBdd ? ["--sans-bdd"] : []),
-            // En dernier : `--reponse` prend toute la fin de la ligne.
-            ...(a.reponse ? ["--reponse", a.reponse] : []),
-          ];
-          const avant = p.messages();
-          await p.services.route(diagnostic ? "/stack doctor" : ["/stack init", ...options].join(" "));
-          const dits = p.messages().filter((m) => !avant.includes(m));
-          // Le projet est relu au prochain appel ; les consignes de `/stack` sont dites dans les termes de l'outil.
-          return texte(dits.map(consignesPourLeClient).join("\n\n"));
-        });
+        })();
+        return suivrePile(operation);
       } catch (e) {
         return erreur(e instanceof Error ? e.message : String(e));
       }

@@ -15,12 +15,14 @@ function fauxAuth(depart: AuthStatus) {
   let fin: ((s: AuthStatus) => void) | null = null;
   let echec: ((e: Error) => void) | null = null;
   let logins = 0;
+  let hostnameDemande: string | undefined;
   const auth: GitHubAuth = {
     status: async () => status,
     copilotQuota: async () => null,
     token: async () => JETON,
-    async login(onCode: (c: DeviceCode) => void) {
+    async login(onCode: (c: DeviceCode) => void, options) {
       logins++;
+      hostnameDemande = options?.hostname;
       onCode({ code: "ABCD-1234", verificationUrl: "https://github.com/login/device" });
       return new Promise<AuthStatus>((res, rej) => {
         fin = (s) => ((status = s), res(s));
@@ -35,6 +37,7 @@ function fauxAuth(depart: AuthStatus) {
     valider: () => fin!({ loggedIn: true, user: "octo", tokenKind: "oauth", copilotCompatible: true, hostname: "github.com" }),
     echouer: () => echec!(new Error("Connexion abandonnée")),
     logins: () => logins,
+    hostnameDemande: () => hostnameDemande,
   };
 }
 
@@ -82,6 +85,16 @@ describe("Connexion à GitHub sans fenêtre (ADR 0068, point 7)", () => {
     expect(await c.connecter()).toEqual({ ok: false, texte: expect.stringContaining("Connexion abandonnée") });
     await c.connecter();
     expect(f.logins()).toBe(2);
+  });
+
+  it("passe le hostname Enterprise choisi au flux de connexion", async () => {
+    const f = fauxAuth({ loggedIn: false, hostname: "github.com" });
+    const c = createConnexion(f.auth);
+
+    const result = await c.connecter("github.exemple.fr");
+
+    expect(result.texte).toContain("ABCD-1234");
+    expect(f.hostnameDemande()).toBe("github.exemple.fr");
   });
 
   it("le runtime reçoit le jeton, une seule fois démarré ; non connecté, il refuse avec le motif ; le jeton n'apparaît dans aucune réponse", async () => {

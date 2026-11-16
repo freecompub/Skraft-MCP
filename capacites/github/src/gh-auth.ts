@@ -42,15 +42,17 @@ export function createGhAuth(deps: GhAuthDeps): GitHubAuth {
     }
   }
 
-  async function status(): Promise<AuthStatus> {
-    const s = await gh("auth", "status", "--hostname", host);
-    if (s.code !== 0) return { loggedIn: false, hostname: host };
-    const user = await gh("api", "--hostname", host, "user", "--jq", ".login");
-    const token = await gh("auth", "token", "--hostname", host);
-    if (user.code !== 0 || token.code !== 0) return { loggedIn: false, hostname: host };
+  async function statusSur(hote: string): Promise<AuthStatus> {
+    const s = await gh("auth", "status", "--hostname", hote);
+    if (s.code !== 0) return { loggedIn: false, hostname: hote };
+    const user = await gh("api", "--hostname", hote, "user", "--jq", ".login");
+    const token = await gh("auth", "token", "--hostname", hote);
+    if (user.code !== 0 || token.code !== 0) return { loggedIn: false, hostname: hote };
     const tokenKind = tokenKindOf(token.stdout.trim());
-    return { loggedIn: true, user: user.stdout.trim(), tokenKind, copilotCompatible: tokenKind !== "classic-pat", hostname: host };
+    return { loggedIn: true, user: user.stdout.trim(), tokenKind, copilotCompatible: tokenKind !== "classic-pat", hostname: hote };
   }
+
+  const status = () => statusSur(host);
 
   /**
    * Lu sur `/copilot_internal/user`, point d'accès que les éditeurs interrogent (d'où l'en-tête
@@ -114,6 +116,13 @@ export function createGhAuth(deps: GhAuthDeps): GitHubAuth {
       // L'hôte visé ne devient l'hôte courant qu'une fois la connexion réussie : un échec
       // laisserait sinon toute la session pointée sur la mauvaise instance.
       const cible = opts?.hostname !== undefined ? verifierHote(opts.hostname) : host;
+      if (cible !== host) {
+        const existante = await statusSur(cible);
+        if (existante.loggedIn && existante.copilotCompatible) {
+          host = cible;
+          return existante;
+        }
+      }
       // L'application ouvre elle-même la page de connexion (écran d'authentification) : l'Entrée que
       // gh attend lui ferait l'ouvrir une seconde fois. Son navigateur devient une commande sans
       // effet, sans toucher à son attente ni à son sondage (revue de la PR #12).

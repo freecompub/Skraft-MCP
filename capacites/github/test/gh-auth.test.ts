@@ -2,14 +2,15 @@ import { describe, expect, it } from "vitest";
 import { createGhAuth } from "../src/gh-auth.js";
 import type { CommandResult, CommandRunner, InteractiveProcess, ProcessSpawner } from "../src/protocols.js";
 
-function runner(table: Record<string, CommandResult>): CommandRunner & { calls: string[] } {
+function runner(table: Record<string, CommandResult | CommandResult[]>): CommandRunner & { calls: string[] } {
   const calls: string[] = [];
   return {
     calls,
     async run(cmd, args) {
       const key = [cmd, ...args].join(" ");
       calls.push(key);
-      const r = table[key];
+      const valeur = table[key];
+      const r = Array.isArray(valeur) ? valeur[Math.min(calls.filter((c) => c === key).length - 1, valeur.length - 1)] : valeur;
       if (!r) throw new Error(`commande inattendue : ${key}`);
       return r;
     },
@@ -133,7 +134,7 @@ describe("GhAuth", () => {
   it("se connecter à une instance Enterprise vise cet hôte et le retient", async () => {
     const HOTE = "github.exemple.fr";
     const table = {
-      [`gh auth status --hostname ${HOTE}`]: ok(""),
+      [`gh auth status --hostname ${HOTE}`]: [ko("not logged in"), ok("")],
       [`gh api --hostname ${HOTE} user --jq .login`]: ok("salarie\n"),
       [`gh auth token --hostname ${HOTE}`]: ok("gho_ent\n"),
     };
@@ -148,6 +149,19 @@ describe("GhAuth", () => {
     expect(spawned[0]).toBe(`gh auth login --hostname ${HOTE} --git-protocol https --web`);
     // L'hôte est retenu : le statut suivant l'interroge sans qu'on le repasse.
     expect(await auth.status()).toMatchObject({ hostname: HOTE });
+  });
+
+  it("réutilise une connexion déjà active sur l'instance Enterprise choisie", async () => {
+    const HOTE = "github.exemple.fr";
+    const table = {
+      [`gh auth status --hostname ${HOTE}`]: ok(""),
+      [`gh api --hostname ${HOTE} user --jq .login`]: ok("salarie\n"),
+      [`gh auth token --hostname ${HOTE}`]: ok("gho_ent\n"),
+    };
+    const auth = createGhAuth({ runner: runner(table), spawner: null as never });
+
+    await expect(auth.login(() => {}, { hostname: HOTE })).resolves.toMatchObject({ loggedIn: true, user: "salarie", hostname: HOTE });
+    expect(auth.hostname()).toBe(HOTE);
   });
 
   it("un hôte qui n'est pas un nom de domaine est refusé", async () => {
@@ -173,7 +187,7 @@ describe("GhAuth", () => {
   it("une connexion en échec ne change pas l'hôte courant", async () => {
     // Sinon toute la session vise ensuite la mauvaise instance : statut, jeton, déconnexion.
     const proc: InteractiveProcess = { onOutput: () => {}, write: () => {}, exited: Promise.resolve(1) };
-    const auth = createGhAuth({ runner: runner(LOGGED_IN), spawner: { spawn: () => proc } });
+    const auth = createGhAuth({ runner: runner({ ...LOGGED_IN, "gh auth status --hostname github.exemple.fr": ko("not logged in") }), spawner: { spawn: () => proc } });
     await expect(auth.login(() => {}, { hostname: "github.exemple.fr" })).rejects.toThrow(/a échoué/);
     expect(auth.hostname()).toBe("github.com");
     expect(await auth.status()).toMatchObject({ hostname: "github.com" });

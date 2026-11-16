@@ -17,7 +17,7 @@ import { createCopilotClient, createCopilotRuntime } from "@skraft-mcp/runtime-c
 import { createTypeScriptAdapter } from "@skraft-mcp/pile";
 import { cliGitRunnerFactory, openWorkspace } from "@skraft-mcp/depot";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { cheminConfiguration, lireConfiguration } from "./config.js";
+import { cheminConfiguration, lireConfiguration, sauvegarderHostname } from "./config.js";
 import { createConnexion } from "./connexion.js";
 import { createConnexionClaude } from "./connexion-claude.js";
 import { createDepotsFichier } from "./depots.js";
@@ -49,7 +49,8 @@ export async function assemblerServeur(o: OptionsAssemblage): Promise<{ ok: true
   const fichierJournal = join(donnees, "logs", "mcp-skraft.log");
   const logger = createJsonLogger({ write: (ligne) => appendFileSync(fichierJournal, `${ligne}\n`), level: "info" }, { pid: process.pid });
 
-  const lue = await lireConfiguration(cheminConfiguration(o.env, o.home), { home: o.home });
+  const fichierConfiguration = cheminConfiguration(o.env, o.home);
+  const lue = await lireConfiguration(fichierConfiguration, { home: o.home });
   if (!lue.ok) return lue;
   const config = lue.config;
   const admin = await loadAdminConfig(defaultAdminConfigPath(process.platform, o.env));
@@ -79,7 +80,7 @@ export async function assemblerServeur(o: OptionsAssemblage): Promise<{ ok: true
   // Copilot, seulement ce que la configuration nomme (sinon le runtime décide).
   const modeles = config.runtime === "claude" ? { ...MODELES_CLAUDE, ...config.modeles } : config.modeles;
   const modelFor = async (cls: "strong" | "standard" | "light" | undefined) => (cls ? modeles[cls] : undefined);
-  const git = cliGitRunnerFactory({ config: { [`credential.https://${config.hostname}.helper`]: "!gh auth git-credential" } });
+  const git = () => cliGitRunnerFactory({ config: { [`credential.https://${config.hostname}.helper`]: "!gh auth git-credential" } });
   const surSortieDErreur = (c: string) => logger.warn("sortie d'erreur d'un workflow", { output: c.slice(0, 2_000) });
 
   const factory = workspaceServicesFactory({
@@ -99,7 +100,7 @@ export async function assemblerServeur(o: OptionsAssemblage): Promise<{ ok: true
   });
   const cle = (root: string) => createHash("sha256").update(root).digest("hex").slice(0, 16);
   const projets = createProjets({
-    ouvrir: (root, journal, ouverture) => ouvrirServicesSansFenetre({ factory, workspace: (r) => openWorkspace(r, { git }), runtime, journal, modelFor })(root, ouverture),
+    ouvrir: (root, journal, ouverture) => ouvrirServicesSansFenetre({ factory, workspace: (r) => openWorkspace(r, { git: git() }), runtime, journal, modelFor })(root, ouverture),
     // Hors du dépôt : les checkpoints capturent les fichiers non suivis (ADR 0068, point 5).
     verrou: (root) => prendreVerrou(join(donnees, "verrous", `${cle(root)}.lock`), { pid: process.pid, estVivant: processusVivant }),
     piles: createPilesFichiers(join(donnees, "piles")),
@@ -108,7 +109,7 @@ export async function assemblerServeur(o: OptionsAssemblage): Promise<{ ok: true
   // mise en forme par un agent qui n'écrit que le fichier de la story.
   const gh = createGhIssues({ runner: createNodeCommandRunner() });
   const preparerUs = async (texte: string, root: string) => {
-    const ws = await openWorkspace(root, { git });
+    const ws = await openWorkspace(root, { git: git() });
     return preparerUsGithub({
       texte,
       hote: config.hostname,
@@ -142,7 +143,19 @@ export async function assemblerServeur(o: OptionsAssemblage): Promise<{ ok: true
     const complet = /^\s*\[?[A-Za-z]\w*-\d+\]?\s*[—–:-]/.test(titre) ? titre : `US-${q.ref.numero} — ${titre || "user story"}`;
     return publierPr({ ...q, titre: complet }, avecAide);
   };
-  const mcp = createServeurSkraft({ projets, workflow: WORKFLOW_SKRAFT, autorises: config.autorises, depots: createDepotsFichier(join(donnees, "depots-acceptes.json")), cwd: o.cwd, connexion, preparerUs, publierPr: publier, version: o.version });
+  const mcp = createServeurSkraft({
+    projets,
+    workflow: WORKFLOW_SKRAFT,
+    autorises: config.autorises,
+    depots: createDepotsFichier(join(donnees, "depots-acceptes.json")),
+    cwd: o.cwd,
+    connexion,
+    ...(config.runtime === "copilot" ? { hostnameGithub: config.hostname } : {}),
+    preparerUs,
+    publierPr: publier,
+    ...(config.runtime === "copilot" ? { retenirHostname: async (hostname: string) => { await sauvegarderHostname(fichierConfiguration, hostname); config.hostname = hostname; } } : {}),
+    version: o.version,
+  });
   logger.info("serveur MCP skraft prêt", { version: o.version, autorises: config.autorises.length, runtime: config.runtime });
   return { ok: true, mcp, projets };
 }

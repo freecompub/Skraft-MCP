@@ -3,11 +3,11 @@
  * valeurs prudentes : aucun dossier autorisé en plus des roots du client, github.com. Invalide :
  * refus explicite, jamais une configuration à moitié lue.
  */
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { cheminConfiguration, lireConfiguration } from "../src/config.js";
+import { cheminConfiguration, lireConfiguration, sauvegarderHostname } from "../src/config.js";
 
 let d: string;
 beforeAll(async () => {
@@ -47,5 +47,15 @@ describe("Configuration du serveur MCP", () => {
   it("emplacement : variable d'environnement, sinon ~/.agent-studio/mcp-skraft.json", () => {
     expect(cheminConfiguration({ SKRAFT_MCP_CONFIG: "/etc/skraft.json" }, "/home/moi")).toBe("/etc/skraft.json");
     expect(cheminConfiguration({}, "/home/moi")).toBe(join("/home/moi", ".agent-studio", "mcp-skraft.json"));
+  });
+
+  it("change seulement le hostname et conserve les autres réglages", async () => {
+    const f = join(d, "sauvegarde.json");
+    const config = { autorises: ["/srv/projets"], hostname: "github.com", runtime: "copilot", modeles: { standard: "model" } };
+    await writeFile(f, JSON.stringify(config));
+
+    await sauvegarderHostname(f, "github.exemple.fr");
+
+    expect(JSON.parse(await readFile(f, "utf8"))).toEqual({ ...config, hostname: "github.exemple.fr" });
   });
 });

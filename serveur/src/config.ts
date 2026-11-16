@@ -4,9 +4,9 @@
  * GitHub (point 7). Les programmes autorisés et la politique de permissions viennent d'`admin.json`, comme pour
  * l'application.
  */
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { isAbsolute, join } from "node:path";
+import { dirname, isAbsolute, join } from "node:path";
 import { z } from "zod";
 
 /** Classes de rôle des agents (ADR 0048) et modèle choisi pour chacune. */
@@ -32,6 +32,19 @@ const schema = z
 
 export function cheminConfiguration(env: NodeJS.ProcessEnv = process.env, home = homedir()): string {
   return env["SKRAFT_MCP_CONFIG"] || join(home, ".agent-studio", "mcp-skraft.json");
+}
+
+export async function sauvegarderHostname(fichier: string, hostname: string): Promise<void> {
+  let configuration: Record<string, unknown> = {};
+  try {
+    const json: unknown = JSON.parse(await readFile(fichier, "utf8"));
+    if (typeof json !== "object" || json === null || Array.isArray(json)) throw new Error("La configuration doit être un objet JSON.");
+    configuration = json as Record<string, unknown>;
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
+  }
+  await mkdir(dirname(fichier), { recursive: true });
+  await writeFile(fichier, `${JSON.stringify({ ...configuration, hostname }, null, 2)}\n`, { mode: 0o600 });
 }
 
 export async function lireConfiguration(fichier: string, o: { home?: string } = {}): Promise<{ ok: true; config: ConfigurationServeur } | { ok: false; motif: string }> {

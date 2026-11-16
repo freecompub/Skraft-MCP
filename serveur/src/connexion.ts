@@ -13,7 +13,7 @@ export interface Connexion {
   /** Connexion utilisable par Copilot, ou ce qu'il faut faire. */
   verifier(): Promise<{ ok: true } | { ok: false; motif: string }>;
   /** Outil `skraft_connexion` : lance le flux, ou dit où il en est. */
-  connecter(): Promise<{ ok: boolean; texte: string }>;
+  connecter(hostname?: string): Promise<{ ok: boolean; texte: string }>;
   /** Runtime démarré une fois, au premier besoin, avec le jeton courant. */
   runtime(fabrique: FabriqueRuntime): () => Promise<AgentRuntime>;
 }
@@ -35,33 +35,41 @@ export function createConnexion(auth: GitHubAuth): Connexion {
   const consigne = (c: DeviceCode) =>
     `Ouvre ${c.verificationUrl} et saisis le code ${c.code}, puis rappelle skraft_connexion pour vérifier la connexion.`;
 
-  async function lancer(): Promise<{ ok: boolean; texte: string }> {
-    const code = await new Promise<DeviceCode>((resolve, reject) => {
-      auth
-        .login((c) => {
-          flux = { code: c, termine: false };
-          resolve(c);
-        })
-        .then(
-          (s: AuthStatus) => {
-            if (flux) flux.termine = true;
-            if (!s.loggedIn && flux) flux.erreur = "la connexion n'a pas abouti";
-          },
-          (e: unknown) => {
-            const motif = e instanceof Error ? e.message : String(e);
-            if (flux) {
-              flux.termine = true;
-              flux.erreur = motif;
-            } else reject(e);
-          },
-        );
+  async function lancer(hostname?: string): Promise<{ ok: boolean; texte: string }> {
+    const resultat = await new Promise<{ code: DeviceCode } | { status: AuthStatus }>((resolve, reject) => {
+      let codeEmis = false;
+      const onCode = (code: DeviceCode) => {
+        codeEmis = true;
+        flux = { code, termine: false };
+        resolve({ code });
+      };
+      auth.login(onCode, hostname ? { hostname } : undefined).then(
+        (s: AuthStatus) => {
+          if (flux) flux.termine = true;
+          if (!s.loggedIn && flux) flux.erreur = "la connexion n'a pas abouti";
+          if (!codeEmis) resolve({ status: s });
+        },
+        (e: unknown) => {
+          const motif = e instanceof Error ? e.message : String(e);
+          if (flux) {
+            flux.termine = true;
+            flux.erreur = motif;
+          } else reject(e);
+        },
+      );
     });
-    return { ok: true, texte: `Connexion à GitHub lancée. ${consigne(code)}` };
+    if ("status" in resultat) {
+      flux = null;
+      return resultat.status.loggedIn
+        ? { ok: true, texte: `Déjà connecté à GitHub (${resultat.status.hostname}) en tant que ${resultat.status.user}.` }
+        : { ok: false, texte: `La connexion à GitHub (${hostname ?? auth.hostname()}) n'a pas abouti. Rappelle skraft_connexion pour recommencer.` };
+    }
+    return { ok: true, texte: `Connexion à GitHub (${hostname ?? auth.hostname()}) lancée. ${consigne(resultat.code)}` };
   }
 
   return {
     verifier,
-    async connecter() {
+    async connecter(hostname) {
       if (flux && !flux.termine) return { ok: true, texte: `Connexion en attente de validation. ${consigne(flux.code)}` };
       if (flux?.erreur) {
         const motif = flux.erreur;
@@ -70,12 +78,13 @@ export function createConnexion(auth: GitHubAuth): Connexion {
       }
       const etaitEnCours = flux !== null;
       flux = null;
+      if (hostname && hostname !== auth.hostname()) return lancer(hostname);
       const v = await verifier();
       if (v.ok) {
         const s = (await auth.status()) as Extract<AuthStatus, { loggedIn: true }>;
         return { ok: true, texte: etaitEnCours ? `Connecté à GitHub (${s.hostname}) en tant que ${s.user}.` : `Déjà connecté à GitHub (${s.hostname}) en tant que ${s.user}.` };
       }
-      return lancer();
+      return lancer(hostname);
     },
     runtime: (fabrique) =>
       runtimeParesseux(verifier, async () => {
