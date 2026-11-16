@@ -8,7 +8,7 @@ import { DEFAULT_ALLOWED_PROGRAMS_FOR_TESTS } from "../../capacites/pile/test/su
 describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
   let dir: string;
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-studio-admin-"));
+    dir = await mkdtemp(join(tmpdir(), "skraft-admin-"));
   });
   afterEach(() => rm(dir, { recursive: true, force: true }));
 
@@ -48,7 +48,7 @@ describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
     it("sans fichier : la liste par défaut, le fichier attendu et la règle de remplacement", async () => {
       const chemin = join(dir, "absent.json");
       expect((await loadAdminConfig(chemin)).origineDesProgrammes).toBe(
-        `Liste par défaut : aucun fichier d'administration à ${chemin}. Pour la changer, y écrire \`allowedPrograms\` (qui remplace la liste par défaut, sans s'y ajouter), ou désigner un autre fichier par la variable AGENT_STUDIO_ADMIN_CONFIG.`,
+        `Liste par défaut : aucun fichier d'administration à ${chemin}. Pour la changer, y écrire \`allowedPrograms\` (qui remplace la liste par défaut, sans s'y ajouter), ou désigner un autre fichier par la variable SKRAFT_ADMIN_CONFIG.`,
       );
     });
 
@@ -119,7 +119,7 @@ describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
         allowedPrograms: ["dotnet"],
         trustedPublishers: [{ publisher: "tiers", keyId: "abc", publicKeyPem: "PEM", trustedUpdates: true }],
         developerMode: true,
-        revocation: { file: "/etc/agent-studio/revocation.json", rootPublicKeyPem: "ROOT" },
+        revocation: { file: "/etc/skraft/revocation.json", rootPublicKeyPem: "ROOT" },
         profile: { role: "po", permissionPolicy: "prudente", defaultMode: "simple" },
         permissionPolicy: "prudente",
         defaultMode: "simple",
@@ -141,9 +141,16 @@ describe("Configuration administrateur (ADR 0087 : plus de profil)", () => {
   });
 
   it("emplacement système par défaut selon la plateforme", () => {
-    expect(defaultAdminConfigPath("linux", {})).toBe("/etc/agent-studio/admin.json");
-    expect(defaultAdminConfigPath("darwin", {})).toBe("/Library/Application Support/agent-studio/admin.json");
-    expect(defaultAdminConfigPath("win32", { ProgramData: "C:\\ProgramData" })).toBe("C:\\ProgramData\\agent-studio\\admin.json");
-    expect(defaultAdminConfigPath("linux", { AGENT_STUDIO_ADMIN_CONFIG: "/opt/x.json" })).toBe("/opt/x.json");
+    expect(defaultAdminConfigPath("linux", {})).toBe("/etc/skraft/admin.json");
+    expect(defaultAdminConfigPath("darwin", {})).toBe("/Library/Application Support/skraft/admin.json");
+    expect(defaultAdminConfigPath("win32", { ProgramData: "C:\\ProgramData" })).toBe("C:\\ProgramData\\skraft\\admin.json");
+    expect(defaultAdminConfigPath("linux", { SKRAFT_ADMIN_CONFIG: "/opt/x.json" })).toBe("/opt/x.json");
+  });
+
+  // ADR 0097 : un poste administré peut porter l'ancienne variable ; elle reste lue, la nouvelle
+  // l'emporte, et aucune des deux n'est refusée.
+  it("l'ancienne variable AGENT_STUDIO_ADMIN_CONFIG est lue en repli", () => {
+    expect(defaultAdminConfigPath("linux", { AGENT_STUDIO_ADMIN_CONFIG: "/opt/ancien.json" })).toBe("/opt/ancien.json");
+    expect(defaultAdminConfigPath("linux", { AGENT_STUDIO_ADMIN_CONFIG: "/opt/ancien.json", SKRAFT_ADMIN_CONFIG: "/opt/neuf.json" })).toBe("/opt/neuf.json");
   });
 });
