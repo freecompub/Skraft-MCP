@@ -3,7 +3,7 @@
  * choisit de continuer la session (les phases approuvées ne sont pas refaites) ou d'en ouvrir une
  * nouvelle, qui écrase la précédente.
  */
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ScriptedRuntime } from "@skraft-mcp/agents/testing";
@@ -47,7 +47,7 @@ describe("skraft en workflow — reprise d'une story arrêtée (ADR 0089)", () =
     return { app, runtime };
   }
 
-  async function relancer(app: Awaited<ReturnType<typeof assemble>>, choix: "continuer" | "nouvelle") {
+  async function relancer(app: Awaited<ReturnType<typeof assemble>>, choix: "continuer" | "continuer-ici" | "nouvelle") {
     const avant = new Set((await app.engine.list()).map((t) => t.id));
     await app.registry.command("skraft-workflow")!.handler("--auto stories/us-12.md");
     await until(async () => (await app.interactions.pending()).some((p) => p.title === "US-12 a déjà une session : la continuer ?"), 60_000);
@@ -69,6 +69,22 @@ describe("skraft en workflow — reprise d'une story arrêtée (ADR 0089)", () =
     const sujets = git(root, "log", "--format=%s").split("\n");
     expect(sujets.filter((s) => s === `docs(skraft): distill de ${SLUG}`)).toHaveLength(1);
     expect(sujets).toContain(`feat(${SLUG}): livraison de la story`);
+  }, 180_000);
+
+  it("continuer ici : une correction commitée après DISTILL reste présente et dans l'historique", async () => {
+    const { app } = await premierRunArrete();
+    const configuration = "surefire.reportsDirectory=rapports\n";
+    await writeFile(join(root, "rapports.properties"), configuration);
+    git(root, "add", "rapports.properties");
+    git(root, "commit", "-m", "fix: configure les rapports de tests");
+    const correction = git(root, "rev-parse", "HEAD");
+
+    const id = await relancer(app, "continuer-ici");
+    const bilan = await fin(app, id, 90_000);
+
+    expect(await readFile(join(root, "rapports.properties"), "utf8")).toBe(configuration);
+    expect(git(root, "log", "--format=%H").split("\n")).toContain(correction);
+    expect(bilan.phases).toEqual(["RESEARCH", "DESIGN", "DISTILL", "DELIVER"]);
   }, 180_000);
 
   it("nouvelle session : la branche est recréée depuis le départ, tout est refait", async () => {

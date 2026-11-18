@@ -22,7 +22,7 @@ export function planScenarios(input) {
   }
   const rank = (n) => (order.includes(n) ? order.indexOf(n) : order.length + n);
   const tests = input.acceptanceTestIds
-    .map((id) => ({ id, ac: acOf(id) }))
+    .map((id) => ({ id, ac: [...(input.criteresParTest?.[id] ?? [acOf(id)])].sort((a, b) => rank(a) - rank(b))[0] ?? null }))
     .filter((t) => t.ac !== null)
     .sort((a, b) => rank(a.ac) - rank(b.ac) || a.id.localeCompare(b.id));
   const seen = new Map();

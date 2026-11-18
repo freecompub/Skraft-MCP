@@ -6,6 +6,7 @@ export { parseEslintReport } from "./typescript/eslint-report.js";
 export { createNodeProcessRunner } from "./process/node-process-runner.js";
 export { fingerprintFiles, type ReadableFiles } from "./fingerprint.js";
 export { parseXunit, type XunitCase } from "./reports/junit-xml.js";
+export { lireScenariosBdd, type ScenarioBdd } from "./reports/scenarios-bdd.js";
 export { parseStrykerReport } from "./mutation/stryker-report.js";
 export { selectStackAdapter } from "./select-stack.js";
 export { parseStackProfile, LANCEURS_BDD, LECTEURS_PAR_SECTION, CANARY_KINDS, REPORT_READERS, type CanaryKind, type ReportReader, type StackProfile, type ParseOptions, programmesDuProfil, type ProgrammeNomme } from "./profile/stack-profile.js";

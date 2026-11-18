@@ -222,6 +222,10 @@ rappels, jusqu'au résultat. Une seule opération tourne par projet dans ce serv
 `skraft_etat` montre aussi ses messages, même sans pile déclarée.
 
 1. Un agent lit le projet et propose sa pile, BDD compris, à partir de ce que le code a détecté.
+   Il reçoit un inventaire des dossiers portant un manifeste, sans limite de profondeur et séparé
+   des 400 fichiers d'arborescence montrés (ADR 0097). Un projet Maven reste dans cet inventaire
+   même si aucun modèle de profil du code ne le reconnaît. Les dossiers cachés, dépendances
+   installées et dossiers de compilation restent exclus.
 2. Le code la vérifie : programmes (un programme hors de la liste est demandé à l'utilisateur
    avant d'être lancé), schéma, BDD, diagnostic, puis canaris lancés dans une copie du projet.
 3. Une pile refusée repart à l'agent avec les motifs, trois essais au plus.
@@ -232,6 +236,8 @@ Si l'agent pose une question, la réponse revient par l'argument `reponse`, en u
 `diagnostiquer` vérifie à nouveau une pile déclarée.
 La réponse et le diagnostic se suivent eux aussi par `action: "suivre"`. Le suivi est en mémoire :
 après un redémarrage du serveur, le profil écrit reste, mais une découverte inachevée ne reprend pas.
+Un profil existant n'est pas écrasé par la découverte : un profil partiel doit être complété
+explicitement, après vérification et accord, pas considéré comme un inventaire complet du dépôt.
 
 Un projet qui installe ses outils chez lui les déclare dans `outils` (par exemple
 `[.venv/bin, .venv/Scripts]` pour uv) : `pytest` se lance alors sans `uv` à autoriser. Exemple de pile .NET, en BDD avec Reqnroll,
@@ -278,6 +284,36 @@ buildErrors:
 - **Qualité** : la section `qualite` de `projet.yaml` fixe les seuils (couverture, mutation). Par
   défaut, la mutation exige 100 % pour le domaine et l'application, jugée sur les **seules lignes
   modifiées** par la story ; la couverture est rapportée, pas exigée.
+
+### Rapports d'exécution BDD
+
+Les tags `@ac-N` du Gherkin portent les critères ; les titres restent métier. Pour prouver
+l'exécution, le rapport doit désigner chaque fichier `.feature` et sa ligne de scénario ou
+d'exemple (ADR 0100). Un nom de test contenant AC-N ne suffit pas.
+
+Le JSON Cucumber peut compléter le rapport principal dans le même dossier frais :
+
+```yaml
+tests:
+  command: [pytest, "--junitxml={rapports}/unitaires.xml", "--cucumberjson={rapports}/suite.cucumber.json"]
+  report: junit-xml
+  bddReport: cucumber-json
+```
+
+Chaque module écrit un fichier `*.cucumber.json` distinct. Les tests unitaires et erreurs de
+compilation sont conservés ; les doublons JUnit sont réconciliés sans rapprocher des titres par
+similarité. Les collisions ou désaccords de rapports sont bloquants.
+
+Les URI relatives sont rapportées à la racine du composant, sauf `bddReportBase` explicite.
+Avec pytest-bdd, vérifier la base réellement publiée : selon l'emplacement des définitions,
+il inclut le nom de leur dossier parent. Ne pas deviner cette base. Avec Cucumber-JVM, sélectionner
+les features par chemin de fichier, absolu en cas de modules différents, plutôt que par une URI
+`classpath:` non résolue ; configurer les chemins de sortie dans chaque module Maven.
+
+Une étape indéfinie, ambiguë, en attente, un scénario ignoré ou non collecté reste bloquant.
+Un lanceur sans origine exploitable, notamment le JSON standard de Vitest Cucumber, nécessite
+un reporter adapté : Skraft ne fabrique pas une preuve à partir des noms. Un plan de scénario
+dont le lanceur ne distingue pas les lignes d'exemples reste également bloqué.
 
 ## Outils
 

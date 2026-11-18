@@ -44,6 +44,20 @@ describe("detecterBdd", () => {
     expect(detecterBdd({ fichiers: [], manifestes: [{ path: "requirements.txt", content: "behave==1.2.6\n" }] }).lanceur).toBe("behave");
     expect(detecterBdd({ fichiers: [], manifestes: [{ path: "pyproject.toml", content: 'dependencies = ["pytest-bdd>=7"]' }] }).lanceur).toBe("pytest-bdd");
   });
+
+  it("reconnaît le lanceur Vitest Cucumber existant sans le déclarer comme Jest Cucumber", () => {
+    const detection = detecterBdd({
+      fichiers: ["src/__tests__/demande.feature", "src/__tests__/steps/demande.spec.ts"],
+      manifestes: [{ path: "package.json", content: '{"devDependencies":{"@amiceli/vitest-cucumber":"7.0.0"}}' }],
+    });
+    expect(detection).toEqual({ lanceur: "vitest-cucumber", features: "src/__tests__", etapes: "src/__tests__/steps" });
+    const lu = parseStackProfile(`${proposeProfile({ fichiers: ["package.json"], dependances: ["vitest"] })}${blocBdd(detection)}`, {
+      allowedPrograms: ["npx", "vitest", "eslint"],
+    });
+    expect("error" in lu ? lu.error : lu.profile.bdd).toEqual([
+      { lanceur: "vitest-cucumber", features: "src/__tests__", etapes: "src/__tests__/steps" },
+    ]);
+  });
 });
 
 describe("blocBdd — ce que /stack init ajoute au profil proposé", () => {

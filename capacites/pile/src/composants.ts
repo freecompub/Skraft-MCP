@@ -64,7 +64,10 @@ export function createComposedAdapter(composants: readonly Composant[]): StackAd
       const exitCodes = runs.map((r) => r.exitCode);
       const couverture = runs.flatMap((r, i) => (r.coverage?.files ?? []).map((f) => ({ ...f, file: vers(composants[i]!, f.file) })));
       return {
-        results: runs.flatMap((r, i) => r.results.map((x) => ({ ...x, id: `${prefixe(composants[i]!)}${x.id}`, file: vers(composants[i]!, x.file) }))),
+        results: runs.flatMap((r, i) => r.results.map((x) => ({
+          ...x, id: `${prefixe(composants[i]!)}${x.id}`, file: vers(composants[i]!, x.file),
+          ...(x.bdd ? { bdd: { ...x.bdd, file: vers(composants[i]!, x.bdd.file) } } : {}),
+        }))),
         exitCode: exitCodes.includes(null) ? null : (exitCodes.find((x) => x !== 0) ?? 0),
         timedOut: runs.some((r) => r.timedOut),
         output: runs.map((r, i) => `── ${composants[i]!.nom} ──\n${r.output}`).join("\n"),

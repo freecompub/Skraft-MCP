@@ -613,9 +613,8 @@ function stackCommandDeps(args: {
     },
 
     /**
-     * Dossiers jusqu'à 4 niveaux sous la racine (ADR 0074), dépendances installées et dossiers
-     * cachés écartés : chacun avec ses fichiers de premier niveau et les dépendances de son
-     * `package.json`, pour que `proposeProfile` le reconnaisse comme il reconnaît la racine.
+     * Dossiers portant un manifeste, sans limite de profondeur (ADR 0097), dépendances installées
+     * et dossiers cachés écartés : chacun avec ses fichiers et dépendances de premier niveau.
      */
     async sousProjets() {
       const tous = await fichiers();
@@ -624,12 +623,13 @@ function stackCommandDeps(args: {
       for (const f of tous) {
         const segs = f.split("/");
         const dossier = segs.slice(0, -1);
-        if (dossier.length > 4 || dossier.some(ignore)) continue;
+        if (dossier.some(ignore)) continue;
         const cle = dossier.join("/") || ".";
         parDossier.set(cle, [...(parDossier.get(cle) ?? []), segs.at(-1)!]);
       }
       const out = [];
       for (const [racine, noms] of [...parDossier].sort(([a], [b]) => a.localeCompare(b))) {
+        if (!noms.some((nom) => MANIFESTE.test(nom))) continue;
         let dependances: string[] = [];
         if (noms.includes("package.json"))
           try {

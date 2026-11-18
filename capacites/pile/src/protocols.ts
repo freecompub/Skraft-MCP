@@ -12,6 +12,8 @@ export interface TestResult {
   status: "passed" | "failed" | "skipped";
   failureKind?: FailureKind;
   message?: string;
+  /** Origine du cas BDD dans le rapport du lanceur ; ligne du scénario ou de son exemple, à partir de 1. */
+  bdd?: { file: string; line: number };
 }
 
 export interface TestRun {

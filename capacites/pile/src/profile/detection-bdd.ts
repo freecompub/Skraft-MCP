@@ -14,6 +14,7 @@ export const MARQUES_DES_LANCEURS: Record<LanceurBdd, readonly string[]> = {
   specflow: ["SpecFlow"],
   "cucumber-js": ["@cucumber/cucumber"],
   "jest-cucumber": ["jest-cucumber"],
+  "vitest-cucumber": ["@amiceli/vitest-cucumber"],
   "cucumber-jvm": ["io.cucumber"],
   "pytest-bdd": ["pytest-bdd", "pytest_bdd"],
   behave: ["behave"],

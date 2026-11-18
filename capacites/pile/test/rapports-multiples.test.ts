@@ -66,6 +66,13 @@ beforeEach(async () => {
 afterEach(() => rm(racine, { recursive: true, force: true }));
 
 describe("Le jeton {rapports} dans un profil", () => {
+  it("valide le lecteur natif complémentaire et sa base d'URI explicite", () => {
+    const p = profil(`[dotnet, test, "{rapports}"]`, "  bddReport: cucumber-json\n  bddReportBase: ..");
+    expect(p.tests).toMatchObject({ bddReport: "cucumber-json", bddReportBase: ".." });
+    expect(() => profil(`[dotnet, test, "{rapport}"]`, "  bddReport: cucumber-json")).toThrow(/bddReport.*\{rapports\}/);
+    expect(() => profil(`[dotnet, test, "{rapports}"]`, "  bddReportBase: ..")).toThrow(/bddReportBase.*bddReport/);
+  });
+
   it("est accepté dans la commande de test", () => {
     expect(AVEC_RAPPORTS.tests.command).toContain("junit;LogFilePath={rapports}/{assembly}.xml");
   });
@@ -103,6 +110,53 @@ infrastructureModules: []
 });
 
 describe("L'adaptateur avec {rapports}", () => {
+  it("remplace le rapport propriétaire Surefire Cucumber, sans compter deux fois ses exemples", async () => {
+    const p = { ...AVEC_RAPPORTS, tests: { ...AVEC_RAPPORTS.tests, bddReport: "cucumber-json" as const } };
+    const r = runner(async args => {
+      const d = dossierDe(args);
+      await writeFile(join(d, "unitaires.xml"), junit("Unitaire", "calcul"));
+      await writeFile(join(d, "cucumber.xml"), `<testsuite name="io.cucumber.junit.platform.engine.CucumberTestEngine">
+        <testcase classname="Exemples" name="Example #1.1"><failure type="org.opentest4j.AssertionFailedError" message="expected 1 but was 2"/></testcase>
+        <testcase classname="Exemples" name="Example #1.2"/>
+      </testsuite>`);
+      await writeFile(join(d, "suite.cucumber.json"), JSON.stringify([{
+        uri: "file:features/panier.feature", name: "Chiffrer",
+        elements: [10, 11].map((line, i) => ({
+          type: "scenario", name: "Le panier est chiffré", line,
+          steps: [{ result: i ? { status: "passed" } : { status: "failed", error_message: "org.opentest4j.AssertionFailedError: expected 1 but was 2" } }],
+        })),
+      }]));
+      return sortie({ exitCode: 1 });
+    });
+    const run = await createProfileAdapter(p, { runner: r }).runTests({ root: racine });
+    expect(run.results.map(x => x.id)).toEqual(["Unitaire.calcul", "features/panier.feature:10", "features/panier.feature:11"]);
+    expect(run.results[1]!.failureKind).toBe("assertion");
+  });
+
+  it("lit les rapports natifs BDD de plusieurs modules dans la même exécution que leurs tests unitaires", async () => {
+    const p = { ...AVEC_RAPPORTS, tests: { ...AVEC_RAPPORTS.tests, bddReport: "cucumber-json" as const } };
+    const r = runner(async args => {
+      const d = dossierDe(args);
+      await writeFile(join(d, "unitaires.xml"), junit("Unitaire", "calcul"));
+      for (const module of ["core", "starter"]) {
+        await mkdir(join(d, module));
+        await writeFile(join(d, module, "cucumber.json"), JSON.stringify([{
+          uri: `${module}/features/panier.feature`, name: "Chiffrer",
+          elements: [{ type: "scenario", name: "Le panier est chiffré", line: 3, steps: [{ result: { status: "passed" } }] }],
+        }]));
+      }
+      return sortie({ stdout: ERREUR_CS, exitCode: 1 });
+    });
+    const run = await createProfileAdapter(p, { runner: r }).runTests({ root: racine });
+    expect(run.results.map(x => x.id)).toEqual([
+      "Unitaire.calcul", "core/features/panier.feature:3", "starter/features/panier.feature:3",
+      expect.stringContaining("PanierTests.cs"),
+    ]);
+    expect(run.results[1]!.bdd).toEqual({ file: "core/features/panier.feature", line: 3 });
+    expect(run.results.at(-1)!.failureKind).toBe("missing_symbol");
+    expect(existsSync(dossierDe(r.appels[0]!))).toBe(false);
+  });
+
   it("donne un dossier vide, hors du projet, et laisse intact ce que le profil met autour", async () => {
     let vu = "";
     const r = runner(async (args) => {

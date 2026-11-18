@@ -6,6 +6,8 @@
 continuer. Au relancement, l'utilisateur choisit de continuer la session précédente ou d'en ouvrir une
 nouvelle, et une nouvelle session écrase la précédente.
 
+Complété par l'ADR 0099 : un troisième choix conserve explicitement l'état actuel de la branche.
+
 Concerne le workflow (`workflows/skraft`), donc le serveur MCP, et la plateforme qu'il utilise (Workspace,
 API des extensions, moteur de workflows). L'extension `extensions/skraft` n'est pas concernée (ADR 0054).
 Suppose le slug de l'ADR 0088 : une même story retrouve toujours sa branche.

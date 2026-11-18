@@ -7,6 +7,7 @@ import { parseCoberturaReport } from "../coverage/cobertura-report.js";
 import type { CoverageReport, ProcessRunner, TestResult } from "../protocols.js";
 import { compileBuildErrorSpec, readBuildErrors } from "./build-errors.js";
 import { lireTests } from "./read-report.js";
+import { estRapportDuMoteurCucumber, lireCucumberJson, reunirRapportsBdd } from "../reports/cucumber-json.js";
 import type { StackProfile } from "./stack-profile.js";
 import { JETON_RAPPORT, JETON_RAPPORTS, substituer } from "./tokens.js";
 
@@ -127,20 +128,29 @@ export async function executerTests(profile: StackProfile, runner: ProcessRunner
     const base = { exitCode: r.exitCode, sortie, durationMs: r.durationMs };
     if (r.timedOut) return { ...base, results: null, timedOut: true };
 
+    const chemins = plusieurs ? await fichiersSous(rapport) : [];
+    const fichiersBdd = profile.tests.bddReport ? chemins.filter(f => f.endsWith("cucumber.json")) : [];
+    const principaux = chemins.filter(f => !fichiersBdd.includes(f));
     const bruts = surLaSortie
       ? [r.stdout]
       : plusieurs
-        ? await Promise.all((await fichiersSous(rapport)).map((f) => readFile(f, "utf8")))
+        ? await Promise.all(principaux.map((f) => readFile(f, "utf8")))
         : await readFile(rapport, "utf8").then((b) => [b], () => [] as string[]);
     // Les erreurs de compilation sont lues même quand des rapports existent : un symbole absent
     // arrête la compilation d'UN projet, qui seul ne produit pas de rapport. Ne les lire qu'en
     // l'absence de tout rapport effaçait ce rouge, le plus courant du pas RED.
     const erreurs = erreursDeCompilation(profile, sortie, opts.cwd);
-    if (bruts.length === 0) return { ...base, results: erreurs.length > 0 ? erreurs : null, timedOut: false };
+    const casBdd = (await Promise.all(fichiersBdd.map(async f => lireCucumberJson(await readFile(f, "utf8"), opts.cwd, profile.tests.bddReportBase)))).flat();
+    if (bruts.length === 0 && casBdd.length === 0) return { ...base, results: erreurs.length > 0 ? erreurs : null, timedOut: false };
+    if (bruts.length === 0 && casBdd.length && !erreurs.length)
+      throw new Error("Rapport principal absent : le rapport Cucumber complète les résultats unitaires, il ne les remplace pas.");
+    const moteurs = profile.tests.bddReport && profile.tests.report === "junit-xml" ? bruts.filter(estRapportDuMoteurCucumber) : [];
+    const unitaires = bruts.filter(b => !moteurs.includes(b)).flatMap(b => lireTests(profile.tests.report, b, opts.cwd));
+    const temoins = moteurs.length ? moteurs.flatMap(b => lireTests("junit-xml", b, opts.cwd)) : undefined;
     const coverage = await lireCouverture(profile, couverture, opts.cwd);
     return {
       ...base,
-      results: [...bruts.flatMap((b) => lireTests(profile.tests.report, b, opts.cwd)), ...erreurs],
+      results: [...reunirRapportsBdd(unitaires, casBdd, temoins), ...erreurs],
       timedOut: false,
       ...(coverage ? { coverage } : {}),
     };

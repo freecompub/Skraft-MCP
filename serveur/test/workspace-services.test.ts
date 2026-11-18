@@ -268,7 +268,8 @@ describe("/stack init : la pile découverte par un agent, vérifiée par le code
     const runtime = new ScriptedRuntime().behave(ROLE_DECOUVREUR, async (t) => {
       prompts.push(t.prompt);
       const r = reponses.shift();
-      if (r) await t.callTool("submit_pile", r);
+      if (r && "question" in r) await t.callTool("report_blocker", r);
+      else if (r) await t.callTool("submit_pile", r);
     });
     const posts: string[] = [];
     const ecrits: string[] = [];
@@ -381,6 +382,40 @@ describe("/stack init : la pile découverte par un agent, vérifiée par le code
     expect(h.prompts[0]).toContain("`api/package.json`");
     expect(h.ecrits[0]).toMatch(/composants:[\s\S]*racine: api/);
     await h.cleanup();
+  }, 60_000);
+
+  it("l'inventaire montre les projets Maven et le front après 400 fichiers, même au cinquième niveau", async () => {
+    const contenus = {
+      ...Object.fromEntries(Array.from({ length: 401 }, (_, i) => [`docs/page-${i}.md`, "documentation"])),
+      "src/backend/af-souscription-dab/pom.xml": "<project><artifactId>af-souscription-dab</artifactId></project>",
+      "src/backend/apixp-bff-dab/pom.xml": "<project><artifactId>apixp-bff-dab</artifactId></project>",
+      "src/backend/libs/agent-client/pom.xml": "<project><modules><module>agent-client-core</module></modules></project>",
+      "src/backend/libs/agent-client/agent-client-core/pom.xml": "<project><artifactId>agent-client-core</artifactId></project>",
+      "src/front/apps/shell/package.json": '{"name":"shell"}',
+      "src/backend/target/generated/pom.xml": "<project/>",
+      ".github/skills/template/pom.xml": "<project/>",
+    };
+    const h = await ouvrir({ reponses: [{ question: "Quelle commande Maven utiliser ?", choices: ["mvn test"] }], contenus, confirmer: "deny" });
+    try {
+      await h.services.route("/stack init");
+      expect(h.prompts).toHaveLength(1);
+      const inventaire = h.prompts[0]?.split("## Sous-projets à examiner\n\n")[1]?.split("\n\n##")[0] ?? "";
+      for (const racine of [
+        "src/backend/af-souscription-dab",
+        "src/backend/apixp-bff-dab",
+        "src/backend/libs/agent-client",
+        "src/backend/libs/agent-client/agent-client-core",
+      ]) {
+        expect(inventaire).toContain(`\`${racine}\``);
+        expect(inventaire).toContain("`pom.xml`");
+      }
+      expect(inventaire).toContain("`src/front/apps/shell`");
+      expect(inventaire).toContain("`package.json`");
+      expect(inventaire).not.toMatch(/target|\.github/);
+      expect(h.ecrits).toEqual([]);
+    } finally {
+      await h.cleanup();
+    }
   }, 60_000);
 
   it("le BDD détecté par le code est un indice ; une pile qui l'ignore est refusée", async () => {

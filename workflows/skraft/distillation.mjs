@@ -5,7 +5,8 @@
 */
 import { correspond as matchesAny, essayer } from "@skraft-mcp/workflow";
 import { checkAcceptanceRed, checkPlans, checkValues, planDeTest, testsDeLaStory } from "./distill.mjs";
-import { checkGherkin, checkTitresBdd, dossiersDesFeatures, gherkinDeLaStory, gherkinDuDisque } from "./gherkin.mjs";
+import { checkGherkin, dossiersDesFeatures, gherkinDeLaStory, gherkinDuDisque } from "./gherkin.mjs";
+import { criteresDesTestsBdd } from "./tracabilite-bdd.mjs";
 import { ecrireLeRegistre, releverLesDefauts } from "./registre.mjs";
 import { reviewFacts } from "./review-brief.mjs";
 import { ecrireRapports, enregistrerLivrables, nouveauSuivi, oublierLeRun, reviser, specialiste } from "./revue.mjs";
@@ -36,6 +37,7 @@ export async function distiller(w, d, lentilles, max) {
       d.acceptanceHash = null;
       d.regressions = [];
       d.testsDeLaStory = null;
+      d.criteresParTest = {};
       // Livrables et rapports du run effacé : oubliés (D6, D8 de docs/12).
       oublierLeRun(suivi);
       return creerDossiers(w, d.slug);
@@ -47,6 +49,7 @@ async function unEssai(w, d, s, cp, lentilles, motifs, essai) {
   d.acceptanceHash = null;
   d.avertissementsDeValeurs = [];
   d.regressions = [];
+  d.criteresParTest = {};
   let approuve = false;
   try {
     const disp = await w.disposition();
@@ -95,13 +98,14 @@ export function motifsDesScenarios({ fichiers, slug, bdd, gherkinAvant, criteria
   const lus = (garder) => chemins.filter(garder).map((path) => ({ path, content: fichiers[path] }));
   // BDD (ADR 0074) : le Gherkin vit dans les dossiers `features` du projet, non dans `.skraft/`.
   // Seuls les scénarios de la story sont jugés ; toucher à ceux d'une story précédente est refusé.
-  const { features, modifies } = gherkinDeLaStory(gherkinAvant ?? [], lus((f) => dossiers.some((x) => f.startsWith(`${x}/`)) && f.endsWith(".feature")));
+  const sources = lus((f) => dossiers.some((x) => f.startsWith(`${x}/`)) && f.endsWith(".feature"));
+  const { features, modifies } = gherkinDeLaStory(gherkinAvant ?? [], sources);
   if (modifies.length)
     return { motifs: modifies, porte: "gherkin" };
-  const gherkin = [...checkGherkin(features), ...(bdd?.length ? checkTitresBdd(features) : [])];
+  const gherkin = checkGherkin(features);
   if (gherkin.length)
     return { motifs: gherkin, porte: "gherkin" };
-  const valeurs = checkValues({ criteria, features, acceptanceTests: lus((f) => matchesAny(globsAcceptance, f)) });
+  const valeurs = checkValues({ criteria, features: bdd?.length ? sources : features, bdd, gherkinAvant, acceptanceTests: lus((f) => matchesAny(globsAcceptance, f)) });
   // Les valeurs absentes avertissent sans bloquer (ADR 0090) : elles suivent jusqu'à la revue.
   const avertissements = valeurs.avertissements;
   if (valeurs.motifs.length)
@@ -142,7 +146,12 @@ async function portes(w, d, s, cp, globsAcceptance, essai, bdd) {
   const run = await w.lancerTests({ etiquette: "DISTILL_RED" });
   if (run.timedOut)
     return { motifs: ["Les tests ont dépassé le délai."], porte: "RED d'acceptance" };
-  const red = checkAcceptanceRed({ criteria: d.story.criteria, testPlan, results: run.results, avant: d.testsAvant });
+  const origine = {
+    bdd, gherkinAvant: d.gherkinAvant,
+    features: Object.entries(fichiers).filter(([path]) => path.endsWith(".feature")).map(([path, content]) => ({ path, content })),
+    results: run.results,
+  };
+  const red = checkAcceptanceRed({ criteria: d.story.criteria, testPlan, avant: d.testsAvant, ...origine });
   if (red.reasons.length)
     return { motifs: red.reasons, porte: "RED d'acceptance" };
   const compte = (st) => run.results.filter((r) => r.status === st).length;
@@ -150,7 +159,8 @@ async function portes(w, d, s, cp, globsAcceptance, essai, bdd) {
   await enregistrerLivrables(w, s, (await w.fichiersModifies(cp)).filter((f) => f.status !== "deleted").map((f) => f.path), essai, sha256);
   d.acceptanceHash = await w.empreinte(["@stack:acceptanceTests"]);
   d.regressions = red.regressions;
-  d.testsDeLaStory = testsDeLaStory(run.results, d.testsAvant);
+  d.criteresParTest = criteresDesTestsBdd(origine);
+  d.testsDeLaStory = testsDeLaStory(run.results, d.testsAvant, d.criteresParTest);
   // La matrice du plan de test est gardée : DELIVER y vérifie les écarts déclarés (ADR 0067).
   d.planDeTest = planDeTest(testPlan);
   return { motifs: [], porte: "" };

@@ -40,7 +40,7 @@ const MISSING_SYMBOL =
 const PLANTAGE_NATIF = /Assertion\s+failed:\s*\(|\.(?:cc|cpp|c|h)(?::\d+)?:\s*Assertion\b|\bcore dumped\b|\bSIGABRT\b|\bsegmentation fault\b/i;
 
 const ASSERTION =
-  /AssertionError|XCTAssert\w*|expect\(.*\)\.|^\s*Expected:|expected .+ to |assertion failed|assert\w*\(|Assert\.\w+/im;
+  /AssertionError|AssertionFailedError|XCTAssert\w*|expect\(.*\)\.|^\s*Expected:|expected .+ to |assertion failed|assert\w*\(|Assert\.\w+/im;
 // Codes de couleur ANSI éventuellement présents dans les messages.
 const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "g");
 

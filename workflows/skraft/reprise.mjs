@@ -12,7 +12,7 @@ const ORDRE = ["RESEARCH", "DESIGN", "DISTILL", "DELIVER"];
 /** Ce que les phases suivantes reçoivent, tel que le dossier de passation le construit. */
 const CHAMPS = [
   "niveau", "architecture", "phasesSautees", "questions", "reponses", "recherche", "adrs", "regressions",
-  "acceptanceHash", "testsAvant", "testsDeLaStory", "planDeTest", "derogations", "derogationsCouverture",
+  "acceptanceHash", "testsAvant", "testsDeLaStory", "criteresParTest", "planDeTest", "derogations", "derogationsCouverture",
   "testsObsoletes", "ecartsAuPlan", "nonCommitees", "verifications", "notesHorsChangement",
 ];
 
@@ -88,10 +88,12 @@ export function questionDeReprise(story, etat) {
       prochaine
         ? `Continuer : la session reprend à ${prochaine}, depuis le commit de ${etat.phases.at(-1)} ; ce qui avait été fait après est effacé.`
         : "Continuer : la story est déjà livrée, rien n'est refait.",
+      "Continuer depuis l'état actuel : aucun rembobinage ; les corrections présentes sur la branche sont conservées. Cela conserve aussi d'éventuels travaux non approuvés, sans les approuver. Les phases déjà approuvées ne sont pas rejouées.",
       "Nouvelle session : la branche est recréée depuis le point de départ de la première ; le travail de la session précédente est perdu.",
     ].join("\n"),
     options: [
       { id: "continuer", label: "Continuer la session précédente" },
+      { id: "continuer-ici", label: "Continuer depuis l'état actuel (conserver les corrections)" },
       { id: "nouvelle", label: "Nouvelle session (écrase la précédente)" },
     ],
   };
@@ -115,6 +117,10 @@ export async function proposerLaReprise(w, story, slug, base) {
   if (choix.decision === "nouvelle") {
     await w.brancher(`skraft/${slug}`, { depuis: etat.base ?? base, ecraser: true });
     return null;
+  }
+  if (choix.decision === "continuer-ici") {
+    await w.informer(`Reprise de ${story.id} depuis l'état actuel, sans rembobinage : les corrections présentes sont conservées. Le précontrôle des tests reste obligatoire.`);
+    return etat;
   }
   const sha = commitDeReprise(await w.historique(), etat);
   if (sha) {

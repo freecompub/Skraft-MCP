@@ -1,13 +1,13 @@
 /**
  * BDD (ADR 0074), jumeau du test de l'extension : le TDD toujours, le BDD au choix. Sur une pile en BDD,
- * le `.feature` de DISTILL va au projet (dossier `features` du couple), le titre de chaque scénario
- * commence par son critère, et le gel couvre le `.feature` et ses étapes ; DELIVER garde sa boucle TDD.
+ * le `.feature` de DISTILL va au projet, le tag porte le critère et le rapport porte l'origine ;
+ * le gel couvre le `.feature` et ses étapes ; DELIVER garde sa boucle TDD.
  */
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ScriptedRuntime, type ScriptedBehavior } from "@skraft-mcp/agents/testing";
-import type { StackAdapter } from "@skraft-mcp/pile";
+import { lireScenariosBdd, type StackAdapter } from "@skraft-mcp/pile";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { answerQuestions, assemble, createProject, fakeStack, git, implPlanDe, put, shutdownHosts, simulatedAgents, testPlanDe, unitTestWriter, until } from "./support/harness.js";
 import { fin, lancerWorkflow } from "./support/fin.js";
@@ -16,10 +16,31 @@ const FEATURES = "tests/features";
 /** Pile simulée en BDD : le `.feature` dans `tests/features`, ses étapes (les tests lancés) dans `tests/acceptance`. */
 function pileBdd(): StackAdapter {
   const s = fakeStack();
-  return { ...s, layout: { ...s.layout, acceptanceTests: [...s.layout.acceptanceTests, `${FEATURES}/**`] }, bdd: [{ lanceur: "cucumber-js", features: FEATURES, etapes: "tests/acceptance" }] };
+  return {
+    ...s, layout: { ...s.layout, acceptanceTests: [...s.layout.acceptanceTests, `${FEATURES}/**`] },
+    bdd: [{ lanceur: "cucumber-js", features: FEATURES, etapes: "tests/acceptance" }],
+    async runTests(o) {
+      const run = await s.runTests(o);
+      const path = `${FEATURES}/plafond.feature`;
+      const content = await readFile(join(o.root, path), "utf8").catch((e: NodeJS.ErrnoException) => {
+        if (e.code === "ENOENT") return null;
+        throw e;
+      });
+      if (content === null) return run;
+      const scenarios = lireScenariosBdd([{ path, content }]);
+      return { ...run, results: run.results.map(r => {
+        if (!r.file.endsWith("story.acceptance.test.ts")) return r;
+        // Ce lanceur simulé connaît ses étapes ; le lecteur natif a ses propres tests d'intégration.
+        const n = Number(/ac-(\d+)/.exec(r.id)?.[1]);
+        const scenario = scenarios.find(s => s.criteres.includes(n));
+        if (!scenario) throw new Error(`Étape simulée sans scénario : ${r.id}`);
+        return { ...r, id: `${path}:${scenario.line}`, bdd: { file: path, line: scenario.line } };
+      }) };
+    },
+  };
 }
 
-/** Agent d'acceptance qui suit la consigne BDD du dossier ; `titres: false`, il oublie le critère dans les titres. */
+/** Agent simulé : les titres métier peuvent ou non répéter le critère. */
 const acceptanceBdd = (root: string, o: { titres: boolean }): ScriptedBehavior => async (t) => {
   const slug = /Dossier de travail : \.skraft\/([^/]+)\//.exec(t.prompt)?.[1] ?? "x";
   const dossier = /Écris le `\.feature` dans (\S+)/.exec(t.prompt)?.[1];
@@ -58,13 +79,13 @@ describe("skraft en workflow — BDD au choix (ADR 0074)", () => {
     expect(git(root, "ls-files", ".skraft/us12-f15ade30/distill/features")).toBe("");
   }, 180_000);
 
-  it("titres sans critère : DISTILL refusée par la porte gherkin, qui nomme le scénario", async () => {
+  it("titres métier sans critère : la story est livrée par les origines de scénario, sans AC dans les identifiants exécutés", async () => {
     const app = await assemble(root, simulatedAgents(new ScriptedRuntime(), root, { "skraft-acceptance": acceptanceBdd(root, { titres: false }) }), tasksDir, { stack: pileBdd() });
     answerQuestions(app);
     const id = await lancerWorkflow(app, "stories/us-12.md", "medium-hard");
-    await until(async () => ((await app.trace.list(id)).filter((e) => e.kind === "rejet") as { porte: string }[]).some((r) => r.porte === "gherkin"), 90_000);
-    const rejet = ((await app.trace.list(id)).filter((e) => e.kind === "rejet") as { porte: string; motifs: string[] }[]).find((r) => r.porte === "gherkin")!;
-    expect(rejet.motifs[0]).toMatch(/tests\/features\/plafond\.feature : le titre du scénario « critère 1 » \(@ac-1\) doit commencer par « AC-1 »/);
+    const bilan = await fin(app, id, 120_000);
+    expect(bilan.livraison!.scenarios.map(s => s[0])).toEqual(["ac-1", "ac-2", "ac-3"]);
+    expect(git(root, "show", `HEAD:${FEATURES}/plafond.feature`)).toContain("Scénario: critère 1");
   }, 180_000);
 
   // Run du 08/11 : le dossier `features` contient déjà les scénarios d'une story précédente.

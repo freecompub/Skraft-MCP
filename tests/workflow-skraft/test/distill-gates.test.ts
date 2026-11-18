@@ -305,3 +305,107 @@ describe("Porte RED d'acceptance : les tests d'une story précédente", () => {
     ]);
   });
 });
+
+describe("BDD : le critère vient du feature, le résultat désigne le scénario exécuté", () => {
+  const feature = {
+    path: "features/plafond.feature",
+    content: `Fonctionnalité: Plafonner la dose
+  @ac-2
+  Scénario: La dose proposée respecte le plafond
+    Soit un plafond de 10 U
+    Quand le calcul donne 12 U
+    Alors la dose proposée est 10 U
+`,
+  };
+  const entree = {
+    criteria: [{ n: 2, text: "La dose respecte le plafond", literals: [] }],
+    features: [feature],
+    bdd: [{ lanceur: "cucumber-jvm", features: "features", etapes: "steps" }],
+    acceptanceTests: [],
+    avant: [],
+    testPlan: "",
+  };
+  const resultat = {
+    id: "DoseFeature.LaDoseProposeeRespecteLePlafond",
+    file: "DoseFeature",
+    bdd: { file: feature.path, line: 3 },
+    status: "failed",
+    failureKind: "assertion",
+    message: "AssertionError: expected 10 but was 12",
+  };
+
+  it("la couverture BDD est portée par @ac-2 dans le feature, sans marqueur dans les étapes", () => {
+    expect(checkValues(entree)).toEqual({ motifs: [], avertissements: [] });
+  });
+
+  it("le résultat rouge relié au scénario est reconnu sans AC dans son nom", () => {
+    expect(checkAcceptanceRed({ ...entree, results: [resultat] })).toEqual({ reasons: [], regressions: [] });
+  });
+
+  it.each([
+    ["aucun scénario exécuté", []],
+    ["un test nommé AC-2 sans lien avec le feature", [{ ...resultat, id: "Ac2_TestOrdinaire", bdd: undefined }]],
+    ["un résultat provenant d'un autre feature", [{ ...resultat, bdd: { file: "features/autre.feature", line: 3 } }]],
+  ])("%s : le scénario reste non collecté", (_cas, results) => {
+    const r = checkAcceptanceRed({ ...entree, results });
+    expect(r.reasons.join("\n")).toMatch(/non collecté/i);
+    expect(r.reasons.join("\n")).toContain(feature.path);
+  });
+
+  it("une étape indéfinie est une erreur BDD, pas un rouge métier accepté", () => {
+    const r = checkAcceptanceRed({
+      ...entree,
+      results: [{ ...resultat, failureKind: "other_error", message: "UndefinedStepException: étape sans définition" }],
+    });
+    expect(r.reasons.join("\n")).toContain("pour une mauvaise raison");
+    expect(r.reasons.join("\n")).toContain("UndefinedStepException");
+  });
+
+  it("les scénarios anciens ne déplacent pas la ligne du nouveau cas de la story", () => {
+    const ancien = { ...feature, content: feature.content.replace("@ac-2", "@ac-1").replace("La dose proposée", "Une dose ancienne") };
+    const apres = { ...ancien, content: `${ancien.content}\n${feature.content.split("\n").slice(1).join("\n")}` };
+    const line = apres.content.split("\n").findIndex(l => /Scénario: La dose proposée/.test(l)) + 1;
+    expect(checkAcceptanceRed({
+      ...entree, features: [apres], gherkinAvant: [ancien],
+      results: [{ ...resultat, bdd: { file: feature.path, line } }],
+    })).toEqual({ reasons: [], regressions: [] });
+  });
+
+  it("chaque exemple doit être collecté, pas seulement le plan de scénario", () => {
+    const exemple = { ...feature, content: `# language: fr
+Fonctionnalité: Plafonner
+  @ac-2
+  Plan du scénario: Respecter le plafond
+    Soit une dose de <dose>
+    Alors le résultat est <resultat>
+    Exemples:
+      | dose | resultat |
+      | 12 | 10 |
+      | 8 | 8 |
+` };
+    const r = checkAcceptanceRed({
+      ...entree, features: [exemple],
+      results: [{ ...resultat, bdd: { file: feature.path, line: 9 } }],
+    });
+    expect(r.reasons).toHaveLength(1);
+    expect(r.reasons[0]).toMatch(/non collecté.*plafond.feature:10/);
+  });
+
+  it("un scénario correctement rouge ne masque pas une erreur de compilation dans un autre module", () => {
+    const r = checkAcceptanceRed({
+      ...entree, results: [resultat, {
+        id: "starter/src/test/java/WebappProtegee.java",
+        file: "starter/src/test/java/WebappProtegee.java",
+        status: "failed", failureKind: "other_error",
+        message: "package org.springframework.security.config does not exist",
+      }],
+    });
+    expect(r.reasons.join("\n")).toContain("org.springframework.security.config");
+  });
+
+  it("DELIVER ne rajoute pas un test classique parallèle portant le même AC que le scénario BDD", () => {
+    const r = { ...resultat, id: "features/plafond.feature:3" };
+    const ordinaire = { id: "TestOrdinaire.ac-2", file: "TestOrdinaire", status: "passed" };
+    expect(testsDeLaStory([r, ordinaire], [], { [r.id]: [2] })).toEqual([r.id]);
+  });
+});

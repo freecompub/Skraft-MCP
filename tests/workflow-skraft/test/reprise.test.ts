@@ -1,7 +1,7 @@
 // @ts-nocheck — le workflow est en JavaScript, sans types (ADR 0055) : ce test vérifie son comportement, pas ses types.
 /** Reprise d'une story (ADR 0089) : ce que le code note à chaque phase approuvée, et ce qu'il en relit. */
-import { describe, expect, it } from "vitest";
-import { commitDeReprise, etatApresPhase, lireEtat, questionDeReprise, releveDeDepart, restaurer } from "../../../workflows/skraft/reprise.mjs";
+import { describe, expect, it, vi } from "vitest";
+import { commitDeReprise, etatApresPhase, lireEtat, proposerLaReprise, questionDeReprise, releveDeDepart, restaurer } from "../../../workflows/skraft/reprise.mjs";
 
 const story = { id: "US-2", title: "Remise par palier", criteria: [], openQuestions: [] };
 const vue = () => ({
@@ -60,6 +60,18 @@ describe("état noté à chaque phase approuvée", () => {
     expect(neuf.adrs).toHaveLength(1);
     expect(neuf.registre.erreurs).toHaveLength(1);
   });
+
+  it("la reprise BDD conserve le lien source–critères et les mêmes identifiants de preuve pour DELIVER", () => {
+    const id = "features/plafond.feature:11";
+    const depart = { ...vue(), testsDeLaStory: [id], criteresParTest: { [id]: [2] } };
+    const etat = JSON.parse(JSON.stringify(etatApresPhase(depart, "DISTILL")));
+    const neuf = vue();
+    restaurer(neuf, etat);
+    expect(neuf.testsDeLaStory).toEqual([id]);
+    expect(neuf.criteresParTest).toEqual({ [id]: [2] });
+    const r = { results: [{ id, status: "failed" }], exitCode: 1, timedOut: false };
+    expect(releveDeDepart(r, etat)).toMatchObject({ results: [], exitCode: 0 });
+  });
 });
 
 describe("retour au dernier commit de phase", () => {
@@ -79,19 +91,46 @@ describe("retour au dernier commit de phase", () => {
 });
 
 describe("question posée à l'utilisateur", () => {
-  it("continuer ou une nouvelle session qui écrase la précédente ; le détail dit ce qui est fait, ce qui reprend, ce qui serait perdu", () => {
+  it("continuer au checkpoint, continuer ici ou recommencer ; le détail dit ce qui est conservé ou perdu", () => {
     const q = questionDeReprise(story, etatApresPhase(vue(), "DESIGN"));
     expect(q.titre).toBe("US-2 a déjà une session : la continuer ?");
     expect(q.options).toEqual([
       { id: "continuer", label: "Continuer la session précédente" },
+      { id: "continuer-ici", label: "Continuer depuis l'état actuel (conserver les corrections)" },
       { id: "nouvelle", label: "Nouvelle session (écrase la précédente)" },
     ]);
-    for (const attendu of ["skraft/us02-abcd1234", "RESEARCH, DESIGN", "reprend à DISTILL", "perdu"]) expect(q.detail).toContain(attendu);
+    for (const attendu of ["skraft/us02-abcd1234", "RESEARCH, DESIGN", "reprend à DISTILL", "perdu", "aucun rembobinage", "sans les approuver"]) expect(q.detail).toContain(attendu);
   });
 
   it("story déjà livrée : continuer ne refait rien", () => {
     const livree = etatApresPhase({ ...vue(), phasesFaites: ["RESEARCH", "DESIGN", "DISTILL"].map((phase) => ({ phase, fichiers: [] })) }, "DELIVER");
     expect(questionDeReprise(story, livree).detail).toMatch(/déjà livrée/);
+  });
+});
+
+describe("reprise après une correction de configuration commitée", () => {
+  const etat = etatApresPhase(vue(), "DESIGN");
+  const workflow = (decision) => ({
+    lireFichier: async () => JSON.stringify(etat),
+    humain: async () => ({ decision }),
+    historique: vi.fn(async () => [{ sha: "design", subject: "docs(skraft): design de us02-abcd1234" }]),
+    revenirA: vi.fn(async () => ({ nonSuivis: [] })),
+    brancher: vi.fn(),
+    informer: vi.fn(),
+  });
+
+  it("conserve les corrections présentes quand l'utilisateur choisit explicitement de continuer ici", async () => {
+    const w = workflow("continuer-ici");
+    expect(await proposerLaReprise(w, story, "us02-abcd1234", "configuration")).toEqual(etat);
+    expect(w.revenirA).not.toHaveBeenCalled();
+    expect(w.brancher).not.toHaveBeenCalled();
+    expect(w.informer).toHaveBeenCalledWith(expect.stringMatching(/sans rembobinage/));
+  });
+
+  it("conserve le retour au dernier commit pour le choix historique de continuation", async () => {
+    const w = workflow("continuer");
+    expect(await proposerLaReprise(w, story, "us02-abcd1234", "configuration")).toEqual(etat);
+    expect(w.revenirA).toHaveBeenCalledWith("design");
   });
 });
 

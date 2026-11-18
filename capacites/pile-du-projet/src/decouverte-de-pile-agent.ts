@@ -20,6 +20,12 @@ Tu reçois des indices trouvés par le code (fichiers, dépendances, BDD détect
 de profil reconnu par ses règles). Pars d'eux, vérifie-les en lisant le projet, et écarte-t'en si
 le projet dit autre chose.
 
+L'inventaire des sous-projets est indépendant des modèles reconnus par le code et n'est pas
+tronqué avec l'arborescence. Examine les manifestes de chaque racine inventoriée, y compris ceux
+pour lesquels aucune règle ne propose de profil. L'absence d'un modèle n'est pas l'absence d'un
+sous-projet. Un manifeste parent et ceux de ses modules sont des candidats à examiner, pas une
+obligation de déclarer des piles qui se chevauchent.
+
 ## Le profil (YAML)
 
 - \`id\` : un nom court pour cette pile.
@@ -45,6 +51,14 @@ le projet dit autre chose.
 - \`bdd\` : \`false\`, ou une liste de couples \`{ lanceur, features, etapes }\` (les lanceurs connus te
   sont donnés). Si le projet
   montre des \`.feature\` ou un lanceur BDD, déclare-le, ou \`bdd: false\` s'il n'en fait pas.
+  En BDD, la preuve doit relier le rapport au fichier .feature et à la ligne du scénario ou de
+  l'exemple exécuté ; les tags \`@ac-N\` viennent des sources, pas des noms des tests. Pour un
+  lanceur qui produit le JSON Cucumber, ajoute \`tests.bddReport: cucumber-json\` et fais écrire
+  un fichier \`*.cucumber.json\` distinct par module dans \`{rapports}\`, en complément du rapport
+  principal. Les URI doivent désigner les sources réelles ; leur base relative peut être déclarée
+  par \`tests.bddReportBase\`. Une URI \`classpath:\` non résolue ne convient pas. Vérifie que le
+  rapport publie réellement cette origine : n'invente ni reporter ni option. Si le projet
+  ne permet pas cette preuve, pose la question plutôt que de proposer une pile prétendument BDD.
 - \`infrastructureModules\` : ce que le domaine ne doit pas importer (bibliothèques d'accès aux
   données, frameworks web).
 - \`canaries\` : quatre tests témoins, un par genre — \`passed\` (un test qui passe), \`assertion\`

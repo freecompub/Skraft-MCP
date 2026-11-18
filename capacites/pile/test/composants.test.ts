@@ -75,6 +75,18 @@ describe("Adaptateur composé (ADR 0074)", () => {
     expect(r).toEqual({ available: true, tool: "lint-dotnet", analyzed: ["services/api/src/A.cs"], violations: [{ file: "services/api/src/A.cs", line: 3, rule: "r", message: "m" }] });
   });
 
+  it("ramène aussi l'origine BDD à la racine du dépôt, sans confondre deux composants", async () => {
+    const { a } = faux("x", { runTests: async () => ({
+      results: [{ id: "features/panier.feature:3", file: "features/panier.feature", bdd: { file: "features/panier.feature", line: 3 }, status: "passed" }],
+      exitCode: 0, timedOut: false, output: "", durationMs: 1,
+    }) });
+    const run = await createComposedAdapter([{ nom: "a", racine: "a", adapter: a }, { nom: "b", racine: "b", adapter: a }]).runTests({ root: "/projet" });
+    expect(run.results.map(r => [r.id, r.bdd])).toEqual([
+      ["a: features/panier.feature:3", { file: "a/features/panier.feature", line: 3 }],
+      ["b: features/panier.feature:3", { file: "b/features/panier.feature", line: 3 }],
+    ]);
+  });
+
   it("aucun composant n'a l'outil : l'opération est absente, comme pour une pile seule", () => {
     expect(createComposedAdapter([{ nom: "web", racine: "web", adapter: web.a }]).lint).toBeUndefined();
   });

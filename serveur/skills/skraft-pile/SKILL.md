@@ -22,4 +22,8 @@ même si aucune pile n'est encore déclarée.
 Le suivi appartient au serveur courant : après un redémarrage, consulte d'abord l'état du projet.
 Si aucun profil n'a été écrit, relance la découverte ; ne prétends pas que l'opération a repris.
 
+Un profil existant n'est pas écrasé par la découverte. S'il ne couvre qu'une partie du dépôt,
+signale les composants manquants ; ne prétends pas que les autres projets sont absents, et ne
+supprime pas le profil pour relancer sans l'accord de l'utilisateur.
+
 Les questions de skraft, et celles que le client affiche (ouvrir un dépôt, autoriser un programme, écrire un profil), reviennent à l'utilisateur : tu ne réponds jamais à la place de l'utilisateur.

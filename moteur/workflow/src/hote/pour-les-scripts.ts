@@ -24,6 +24,7 @@ export const {
   couvertureDuDiff,
   problemesTestsExistants,
   bddNonDeclare,
+  lireScenariosBdd,
   estUnManifeste,
   memeRefus,
   normaliserMotifs,

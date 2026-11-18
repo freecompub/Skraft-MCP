@@ -4,7 +4,7 @@
  * contrôles de skraft en ont besoin (empreinte, motifs de fichiers, barre de qualité) ; les donner
  * ici évite que le dossier embarque des modules, et garde le rejeu exact.
  */
-import { baselineProblems, bddNonDeclare, coverageForChanges, coreFilesMissing, layerOf, MANIFESTE, matchesAny, parseQualityBar } from "@skraft-mcp/pile";
+import { baselineProblems, bddNonDeclare, coverageForChanges, coreFilesMissing, layerOf, lireScenariosBdd, MANIFESTE, matchesAny, parseQualityBar } from "@skraft-mcp/pile";
 import { disjoncte, memeRefus, normaliserMotifs } from "@skraft-mcp/agents";
 import { parse as parseYaml } from "yaml";
 import { agir, essayer, motifsInterruption } from "../aides.js";
@@ -33,6 +33,7 @@ export const bibliotheque = Object.freeze({
   problemesTestsExistants: baselineProblems,
   /** BDD non déclaré (08/11) : motifs des composants muets qui en montrent les signes. */
   bddNonDeclare,
+  lireScenariosBdd,
   /** Le chemin est-il un manifeste de dépendances (`package.json`, `*.csproj`…) ? */
   estUnManifeste: (chemin: string): boolean => MANIFESTE.test(chemin),
   /** Disjoncteur des réessais (ADR 0073) : même porte, mêmes motifs ; et le préfixe de l'escalade. */

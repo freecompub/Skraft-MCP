@@ -66,7 +66,7 @@ export type CanaryKind = (typeof CANARY_KINDS)[number];
 export const JETON_MARQUE = "{marque}";
 
 /** Lanceurs BDD connus (ADR 0074) : un profil les nomme, il n'en invente pas. */
-export const LANCEURS_BDD = ["reqnroll", "specflow", "cucumber-js", "jest-cucumber", "cucumber-jvm", "pytest-bdd", "behave"] as const;
+export const LANCEURS_BDD = ["reqnroll", "specflow", "cucumber-js", "jest-cucumber", "vitest-cucumber", "cucumber-jvm", "pytest-bdd", "behave"] as const;
 
 /** Chemin relatif à la racine, sans `..` : un profil ne désigne rien hors du projet. */
 const cheminDuProjet = (champ: string) =>
@@ -111,7 +111,10 @@ const schema = z
     detect: z
       .array(z.union([z.string().min(1), z.object({ fichier: cheminDuProjet("fichier"), contient: z.string().min(1) }).strict()]))
       .min(1),
-    tests: commande,
+    tests: commande.extend({
+      bddReport: z.literal("cucumber-json").optional(),
+      bddReportBase: z.string().min(1).refine(f => !f.startsWith("/") && !/^[A-Za-z]:/.test(f), "`bddReportBase` doit être relatif à la racine du composant.").optional(),
+    }),
     lint: commande.optional(),
     /**
      * Vérification de la mise en forme, sans rien modifier (ADR 0071) : le code de sortie suffit,
@@ -272,6 +275,10 @@ export function parseStackProfile(raw: string, opts: ParseOptions): { profile: S
   // Le programme est le premier élément : c'est lui qui s'exécute, les arguments ne sont
   // que des données passées sans shell.
   const autorises = new Set(opts.allowedPrograms);
+  if (parsed.data.tests.bddReport && !parsed.data.tests.command.some(a => a.includes(JETON_RAPPORTS)))
+    return { error: "Profil de stack refusé : tests.bddReport exige {rapports}, avec un fichier *.cucumber.json distinct par module, en complément du rapport principal." };
+  if (parsed.data.tests.bddReportBase && !parsed.data.tests.bddReport)
+    return { error: "Profil de stack refusé : tests.bddReportBase exige tests.bddReport: cucumber-json." };
   for (const [section, c] of [
     ["tests", parsed.data.tests],
     ["lint", parsed.data.lint],

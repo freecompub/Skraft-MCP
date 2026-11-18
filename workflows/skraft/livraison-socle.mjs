@@ -90,7 +90,7 @@ export function natures(disp) {
   const acceptance = (p) => matchesAny(disp.acceptanceTests, p);
   // `isTestFile` de l'adaptateur approché par les emplacements déclarés.
   const unit = (p) => !acceptance(p) && matchesAny(disp.unitTests, p);
-  const resultatAcceptance = (r) => acOf(r.id) !== null || acceptance(r.file);
+  const resultatAcceptance = (r) => (r.bdd && (disp.bdd ?? []).some(c => r.bdd.file.startsWith(`${c.features.replace(/\/$/, "")}/`))) || acOf(r.id) !== null || acceptance(r.file);
   return { acceptance, unit, resultatAcceptance, production: (p) => !acceptance(p) && !unit(p) };
 }
 

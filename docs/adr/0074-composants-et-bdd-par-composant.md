@@ -8,6 +8,8 @@ Concerne `stack-adapters`, `project-services` (`/stack init`, `/stack doctor`), 
 et le workflow `workflows/skraft/` (donc aussi le serveur MCP). Complète l'ADR 0071 (fichier de
 projet) et l'ADR 0072 (profils de pile).
 
+La limite de profondeur de détection du point 1.5 est remplacée par l'inventaire de l'ADR 0097.
+
 ## Contexte
 
 **Une seule pile par projet.** `projet.yaml` n'a qu'une section `pile` ; sans elle,

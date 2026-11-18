@@ -1,4 +1,4 @@
-import { detecterBdd, partiesTrouvees, proposeProfile, type DetectionBdd, type IndicesDuProjet, type StackProfile } from "@skraft-mcp/pile";
+import { detecterBdd, MANIFESTE, partiesTrouvees, proposeProfile, type DetectionBdd, type IndicesDuProjet, type StackProfile } from "@skraft-mcp/pile";
 
 /**
  * La pile découverte par un agent, vérifiée par le code (ADR 0076). L'agent propose ; ce fichier dit
@@ -64,6 +64,14 @@ export function indicesPourLAgent(o: { indices: IndicesDuProjet; sousProjets: re
   ];
   // Ce que reconnaissent les règles du code : un point de départ, pas une obligation.
   const racines = [{ racine: ".", indices: o.indices }, ...o.sousProjets.filter((s) => s.racine !== ".")];
+  const inventaire = racines.flatMap((r) => {
+    const manifestes = r.indices.fichiers.filter((f) => MANIFESTE.test(f));
+    return manifestes.length ? [`- Racine \`${r.racine}\` : ${manifestes.map((f) => `\`${f}\``).join(", ")}`] : [];
+  });
+  sections.push(
+    `## Sous-projets à examiner\n\n${inventaire.length ? inventaire.join("\n") : "(aucun manifeste repéré)"}\n\n` +
+      "Cet inventaire n'est pas tronqué avec l'arborescence. Un sous-projet reste à examiner même si aucune règle du code ne propose de modèle pour lui.",
+  );
   const modeles = racines.flatMap((r) => {
     const m = proposeProfile(r.indices);
     return m ? [`Racine \`${r.racine}\` :\n\n\`\`\`yaml\n${m}\`\`\``] : [];

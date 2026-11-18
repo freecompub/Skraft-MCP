@@ -1,5 +1,6 @@
 // Converti en JavaScript le 2026-10-10 depuis extensions/skraft-workflow/src/distill.ts (ADR 0055).
 import { normalizeLiteral } from "./story.mjs";
+import { checkRedBdd, scenariosBdd } from "./tracabilite-bdd.mjs";
 /** Numéro de critère porté par un identifiant de test (`ac-2`, `Ac2`, `ac_2`). */
 export function acOf(testId) {
   // `ac-2`, `AC_2`, `ac2` isolés, ou `Ac2` en camelCase (`testAc2Plafonne`).
@@ -40,17 +41,21 @@ export function checkValues(i) {
   for (const f of i.features)
     for (const [n, text] of featureScenarios(f.content))
       scenarios.set(n, { text: `${scenarios.get(n)?.text ?? ""}${text}`, path: scenarios.get(n)?.path ?? f.path });
+  const bdd = new Map();
+  for (const s of scenariosBdd(i))
+    for (const n of s.criteres)
+      bdd.set(n, { text: `${bdd.get(n)?.text ?? ""}\n${s.texte}`, path: s.file });
   for (const c of i.criteria) {
-    const scenario = scenarios.get(c.n);
+    const scenario = bdd.get(c.n) ?? scenarios.get(c.n);
     const tests = i.acceptanceTests.filter((t) => t.content.split("\n").some((l) => acOf(l) === c.n));
     if (!scenario)
       reasons.push(`Aucun scénario tagué @ac-${c.n} pour le critère ${c.n}.`);
-    if (!tests.length)
+    if (!tests.length && !bdd.has(c.n))
       reasons.push(`Aucun test d'acceptance ne porte le marqueur ac-${c.n} (critère ${c.n}).`);
     for (const literal of c.literals) {
       if (scenario && !hasLiteral(scenario.text, literal))
         avertissements.push(`La valeur « ${literal} » du critère ${c.n} n'apparaît pas dans le scénario @ac-${c.n} (${scenario.path}).`);
-      if (tests.length && !tests.some((t) => codeHasLiteral(t.content, literal)))
+      if (!bdd.has(c.n) && tests.length && !tests.some((t) => codeHasLiteral(t.content, literal)))
         avertissements.push(`La valeur « ${literal} » du critère ${c.n} n'apparaît pas dans le test d'acceptance du critère ${c.n} (${tests.map((t) => t.path).join(", ")}).`);
     }
   }
@@ -61,9 +66,10 @@ const existaient = (avant) => new Set((avant ?? []).map((t) => t.id));
 * Tests d'acceptance de la story : marqués `ac-<n>` et absents du relevé d'INIT (ADR 0074 §4). Ceux
 * d'une story précédente portent aussi un marqueur (run du 08/11) : DELIVER ne doit pas en faire des scénarios.
 */
-export function testsDeLaStory(results, avant) {
+export function testsDeLaStory(results, avant, bdd = {}) {
   const vus = existaient(avant);
-  return results.filter((r) => acOf(r.id) !== null && !vus.has(r.id)).map((r) => r.id);
+  const criteresBdd = new Set(Object.values(bdd).flat());
+  return results.filter((r) => (Object.hasOwn(bdd, r.id) || (acOf(r.id) !== null && !criteresBdd.has(acOf(r.id)))) && !vus.has(r.id)).map((r) => r.id);
 }
 /**
 * Porte RED d'acceptance : rouge sur assertion ou symbole manquant accepté ; autre erreur rejetée ;
@@ -79,6 +85,18 @@ export function checkAcceptanceRed(i) {
       reasons.push(`Le test « ${r.id} » passait avant la story et échoue maintenant : DISTILL ne doit casser aucun test existant.`);
   if (reasons.length)
     return { reasons, regressions };
+  if (i.bdd?.length) {
+    const declares = new Set(scenariosBdd(i).flatMap(s => s.criteres));
+    const classiques = i.criteria.filter(c => !declares.has(c.n));
+    const autres = i.results.filter(r => !r.bdd && classiques.some(c => acOf(r.id) === c.n));
+    const bdd = checkRedBdd({ ...i, autresAcceptances: autres.map(r => r.id) });
+    // Dans un projet mixte, les tests classiques conservent leur convention de noms.
+    const horsBdd = classiques.length ? checkAcceptanceRed({
+      ...i, bdd: [], criteria: classiques,
+      results: autres,
+    }) : { reasons: [], regressions: [] };
+    return { reasons: [...bdd.reasons, ...horsBdd.reasons], regressions: [...bdd.regressions, ...horsBdd.regressions] };
+  }
   // `results` est la suite ENTIÈRE ; les tests d'acceptance s'y reconnaissent au marqueur que
   // skraft exige lui-même (ADR 0041), jamais à l'endroit où le langage range ses fichiers.
   const acceptance = i.results.filter((r) => acOf(r.id) !== null && !existaient(i.avant).has(r.id));

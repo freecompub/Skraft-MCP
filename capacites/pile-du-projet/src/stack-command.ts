@@ -35,7 +35,7 @@ export interface StackCommandDeps {
   stackActive(): { id: string; declaree: boolean } | null;
   ecrireProfil(yaml: string): Promise<void>;
   /**
-   * Dossiers du projet jusqu'à 4 niveaux, avec ce qu'ils portent (ADR 0074). Absente : seule la
+   * Dossiers du projet portant un manifeste, sans limite de profondeur (ADR 0097). Absente : seule la
    * racine est regardée (`indices`), comme avant les composants.
    */
   sousProjets?(): Promise<SousProjet[]>;

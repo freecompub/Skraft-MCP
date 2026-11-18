@@ -65,7 +65,7 @@ export function lignePile(id, layout) {
 }
 /** Consigne BDD (ADR 0074) : où écrire le `.feature` et ses étapes, et la règle du titre ; vide sans BDD. */
 export function ligneBdd(bdd) {
-  return (bdd ?? []).map((c) => `BDD (ADR 0074) : les scénarios Gherkin sont les tests d'acceptance du projet. Écris le \`.feature\` dans ${c.features} (et non dans \`.skraft/\`), et ses définitions d'étapes dans ${c.etapes} (lanceur : ${c.lanceur}). Le titre de chaque scénario commence par son critère : « Scénario: AC-1 … » pour \`@ac-1\`. Charge la skill \`bdd-step-definitions\` avant d'écrire les étapes.`).join("\n");
+  return (bdd ?? []).map((c) => `BDD (ADR 0100) : les scénarios Gherkin sont les tests d'acceptance du projet. Écris le \`.feature\` dans ${c.features} (et non dans \`.skraft/\`), et ses définitions d'étapes dans ${c.etapes} (lanceur : ${c.lanceur}). La traçabilité vient des tags \`@ac-N\` du Gherkin ; garde des titres métier, sans préfixe AC imposé et sans test d'acceptance parallèle. Le rapport du lanceur doit désigner le fichier .feature et la ligne de chaque scénario ou exemple exécuté. Une étape indéfinie, ambiguë, en attente ou un scénario non collecté bloque la porte. Charge la skill \`bdd-step-definitions\` avant d'écrire les étapes.`).join("\n");
 }
 /**
 * Réponses humaines citables (décidé le 07/11) : sans fichier, une réponse n'arrivait que par le

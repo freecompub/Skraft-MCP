@@ -47,6 +47,17 @@ describe("planScenarios", () => {
     const s = planScenarios({ implPlan: "", acceptanceTestIds: ["a.test.ts > ac-1 x", "a.test.ts > ac-1 y", "a.test.ts > sans marqueur"], regressions: [] });
     expect(s.map((x) => x.id)).toEqual(["ac-1", "ac-1#2"]);
   });
+
+  it("BDD : DELIVER conserve les identifiants exécutés et les critères reliés par DISTILL", () => {
+    const ids = ["features/plafond.feature:11", "features/plafond.feature:12"];
+    const s = planScenarios({
+      implPlan: "ac-2 puis ac-1", acceptanceTestIds: ids, regressions: [ids[1]],
+      criteresParTest: { [ids[0]]: [1, 2], [ids[1]]: [1] },
+    });
+    expect(s.map(x => [x.id, x.acceptanceTestId, x.role])).toEqual([
+      ["ac-2", ids[0], "driver"], ["ac-1", ids[1], "regression"],
+    ]);
+  });
 });
 
 describe("checkRedGreenSequence", () => {
