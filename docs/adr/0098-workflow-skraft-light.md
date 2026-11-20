@@ -54,7 +54,15 @@ que les **copier**. Le deuxième impose de toucher au serveur pour offrir un poi
 9. **L'architecture est gelée après ARCHI** (`.skraft/*/archi/**` ajouté aux fichiers gelés), sauf pour
    l'architecte lui-même. Un refus à la ratification compte comme un essai de la phase ; au-delà, la
    phase escalade comme les autres.
-10. **Même branche, état séparé.** La branche reste `skraft/<slug>`, que le serveur suppose pour la PR
+10. **L'architecture n'est figée qu'une fois toutes ses questions tranchées.** Le premier tour de
+    l'architecte est une analyse : il lève toutes les questions métier qui conditionnent
+    l'architecture (« Questions ouvertes »). Le code les pose toutes à la fois, puis relance le même
+    agent, **dans une session neuve**, sur son brouillon et les réponses. Une question tranchée encore
+    listée fait refuser le document (`trierLesQuestions`). Au-delà de deux tours de questions
+    (`TOURS_DE_QUESTIONS`), l'humain relance ou abandonne. La ratification du mode `nouvelle` vient
+    après. La session n'est pas prolongée : le moteur ouvre une session par tour d'agent et rejoue
+    son journal, une réponse peut arriver après un redémarrage ; le brouillon tient lieu de mémoire.
+11. **Même branche, état séparé.** La branche reste `skraft/<slug>`, que le serveur suppose pour la PR
     et la préparation d'issue ; l'état de reprise est écrit dans `etat-light.json`, pour qu'aucun des
     deux workflows ne reprenne la session de l'autre.
 
@@ -68,6 +76,8 @@ que les **copier**. Le deuxième impose de toucher au serveur pour offrir un poi
 - L'architecte n'a pas de revue à lentilles : comme RESEARCH dans skraft, il est tenu par une porte de
   code, et en mode `nouvelle` par la ratification humaine. Une architecture conforme mais mal choisie
   n'est rattrapée qu'en aval, par la lentille architecture de DISTILL et DELIVER.
+- Un tour d'agent de plus par tour de questions. En contrepartie, DISTILL ne reçoit jamais une
+  architecture que les réponses de l'utilisateur contredisent.
 - **Ne pas lancer skraft et skraft-light sur la même story** : ils écriraient sur la même branche.
   Rien ne l'empêche dans le code ; c'est documenté, pas garanti.
 - Le défaut relevé au contexte (DISTILL ne reçoit pas le modèle de DESIGN) n'est pas corrigé dans

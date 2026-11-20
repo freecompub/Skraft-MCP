@@ -148,7 +148,7 @@ import { essayer, PanneEnvironnement, Escalade, TourInterrompu, problemesTestsEx
 import { buildBrief, ecrirePassation } from "./brief.mjs";
 import { computeIndicators, DEFAULT_THRESHOLDS, gradeDifficulty, isDifficulty, levelEffects, shift } from "./difficulty.mjs";
 import { preselectFiles } from "./preselect.mjs";
-import { cheminArchitecture, citesDansLArchitecture, extraireArchitecture, motifsDeLArchitecture, verifierArchitecture } from "./architecte.mjs";
+import { cheminArchitecture, citesDansLArchitecture, extraireArchitecture, motifsDeLArchitecture, TOURS_DE_QUESTIONS, trierLesQuestions, verifierArchitecture } from "./architecte.mjs";
 import { skillDArchitecture } from "./architecture.mjs";
 import { parseStory, slugOf } from "./story.mjs";
 import { distiller, motifsDesScenarios, texteDeVerification } from "./distillation.mjs";
@@ -275,8 +275,6 @@ export default async function skraft(w0, entree) {
     else
       vue.phasesFaites = [{ phase: "ARCHI", fichiers: [cheminArchitecture(slug)] }];
   }
-  // Celles que l'architecte a levées sont tranchées avant DISTILL.
-  await trancher(w, vue, story.id);
   // Une phase approuvée dans la session continuée n'est pas refaite (ADR 0089).
   for (const [phase, faire] of [["DISTILL", distiller], ["DELIVER", livrer]]) {
     if (dejaFaite(phase) || vue.phasesSautees.includes(phase))
@@ -463,37 +461,36 @@ async function evaluerDifficulte(w, story, indicateurs, confirmer, registre) {
   return isDifficulty(d.decision) ? d.decision : propose.level;
 }
 /**
-* Un essai d'ARCHI : l'architecte, ses questions bloquantes, la porte du code, puis, en mode `nouvelle`,
-* la ratification de l'humain ; un refus est le motif de l'essai suivant (ADR 0098).
+* Un essai d'ARCHI : l'architecte, ses questions bloquantes, la porte du code, ses questions ouvertes,
+* puis, en mode `nouvelle`, la ratification de l'humain ; un refus est le motif de l'essai suivant
+* (ADR 0098). L'architecture n'est figée qu'une fois toutes ses questions tranchées : tant qu'il en
+* lève, le code les pose toutes, puis le relance sur son brouillon avec les réponses ; au-delà de
+* `TOURS_DE_QUESTIONS` tours, l'humain tranche avant tout nouveau tour.
 */
 function architecturer(w, vue, max, relance) {
   const document = cheminArchitecture(vue.slug);
+  let tours = 0;
   // Relancée après une escalade : le premier essai reçoit son motif (D15 de docs/12).
   return essayer(w, { max, motifs: relance }, async (motifs) => {
+    let porte;
     for (;;) {
-      await w.etape("ARCHI");
-      const utiles = preselectFiles(vue.story, await w.listerFichiers());
-      await ecrirePassation(w, vue);
-      const consigne = [
-        buildBrief(vue, "ARCHI", motifs, leconsPour(vue, "ARCHI", "skraft-architecte")),
-        `Document à écrire : ${document}`,
-        ...(utiles.length ? ["Fichiers utiles (présélection) :", ...utiles.map((f) => `  - ${f}`)] : []),
-      ].join("\n");
-      // L'architecte vérifie son document avec la porte que le code rejouera (ADR 0082).
-      const r = await w.agent("skraft-architecte", consigne, { lectureSeule: GELÉS.filter((g) => g !== ARCHI_FIGEE), verification: { outil: "verifier_architecture", fichiers: [document], donnees: { chemin: document } } });
-      if (r.verification)
-        vue.verifications = [...(vue.verifications ?? []), { phase: "ARCHI", agent: "skraft-architecte", appels: r.verification.appels }];
-      if (r.sortie)
+      await rediger(w, vue, document, motifs, tours > 0);
+      porte = await porteArchitecture(w, vue, document);
+      if (porte.motifs.length)
+        return { motifs: porte.motifs, porte: "architecture" };
+      const { nouvelles, motifs: nonIntegrees } = trierLesQuestions(porte.openQuestions, vue.questions);
+      if (nonIntegrees.length)
+        return { motifs: nonIntegrees, porte: "architecture" };
+      if (!nouvelles.length)
         break;
-      // Question bloquante (D31) : l'humain répond, l'agent repart avec la réponse dans son dossier, et le même motif (D9 de docs/12).
-      const choix = r.blocage.choix.length ? r.blocage.choix : ["Répondre"];
-      await w.etape("BLOCKED");
-      const d = await w.humain("blocage", "Question de l'agent (ARCHI)", choix.map((c) => ({ id: c, label: c })), { detail: r.blocage.question });
-      vue.reponses = [...vue.reponses, { question: r.blocage.question, answer: d.commentaire ? `${d.decision} (${d.commentaire})` : d.decision }];
+      if (tours >= TOURS_DE_QUESTIONS) {
+        await relancerOuAbandonner(w, `Après ${TOURS_DE_QUESTIONS} tours de questions, l'architecte en pose encore : ${nouvelles.join(" ; ")}`, vue.registre);
+        tours = 0;
+      }
+      tours += 1;
+      vue.questions = [...vue.questions, ...nouvelles.map((text, i) => ({ id: `q${vue.questions.length + i + 1}`, text }))];
+      await trancher(w, vue, vue.story.id);
     }
-    const porte = await porteArchitecture(w, vue, document);
-    if (porte.motifs.length)
-      return { motifs: porte.motifs, porte: "architecture" };
     const retenue = extraireArchitecture(porte.md);
     // Une architecture nouvelle engage le projet : l'humain la ratifie, comme un ADR dans skraft.
     if (retenue.mode === "nouvelle") {
@@ -505,14 +502,39 @@ function architecturer(w, vue, max, relance) {
       if (d.decision !== "accepter")
         return { motifs: [`Architecture refusée par l'utilisateur : ${d.commentaire?.trim() || "(sans précision)"}`], porte: "ratification" };
     }
-    const connues = new Set(vue.questions.map((q) => q.text));
-    const nouvelles = porte.openQuestions.filter((q) => !connues.has(q));
-    vue.questions = [...vue.questions, ...nouvelles.map((text, i) => ({ id: `q${vue.questions.length + i + 1}`, text }))];
     // Transmises à DISTILL et DELIVER par le dossier de passation.
     vue.recherche = { conventions: retenue.conventions, existant: retenue.existant };
     vue.architectureRetenue = retenue;
     return [];
   });
+}
+/**
+* Un tour de l'architecte, jusqu'à sa sortie : chaque question bloquante va à l'humain, et l'agent repart
+* avec la réponse. `brouillon` : il reprend son document avec les réponses à ses questions ouvertes.
+*/
+async function rediger(w, vue, document, motifs, brouillon) {
+  for (;;) {
+    await w.etape("ARCHI");
+    const utiles = preselectFiles(vue.story, await w.listerFichiers());
+    await ecrirePassation(w, vue);
+    const consigne = [
+      buildBrief(vue, "ARCHI", motifs, leconsPour(vue, "ARCHI", "skraft-architecte")),
+      `Document à écrire : ${document}`,
+      ...(brouillon ? [`Brouillon précédent : ${document}. Relis-le, intègre les réponses de l'utilisateur à l'architecture et retire de « Questions ouvertes » celles qui sont tranchées.`] : []),
+      ...(utiles.length ? ["Fichiers utiles (présélection) :", ...utiles.map((f) => `  - ${f}`)] : []),
+    ].join("\n");
+    // L'architecte vérifie son document avec la porte que le code rejouera (ADR 0082).
+    const r = await w.agent("skraft-architecte", consigne, { lectureSeule: GELÉS.filter((g) => g !== ARCHI_FIGEE), verification: { outil: "verifier_architecture", fichiers: [document], donnees: { chemin: document } } });
+    if (r.verification)
+      vue.verifications = [...(vue.verifications ?? []), { phase: "ARCHI", agent: "skraft-architecte", appels: r.verification.appels }];
+    if (r.sortie)
+      return;
+    // Question bloquante (D31) : l'humain répond, l'agent repart avec la réponse dans son dossier, et le même motif (D9 de docs/12).
+    const choix = r.blocage.choix.length ? r.blocage.choix : ["Répondre"];
+    await w.etape("BLOCKED");
+    const d = await w.humain("blocage", "Question de l'agent (ARCHI)", choix.map((c) => ({ id: c, label: c })), { detail: r.blocage.question });
+    vue.reponses = [...vue.reponses, { question: r.blocage.question, answer: d.commentaire ? `${d.decision} (${d.commentaire})` : d.decision }];
+  }
 }
 /** La porte d'ARCHI, sur le document et les fichiers qu'il cite : le même calcul que `verifier_architecture`. */
 async function porteArchitecture(w, vue, chemin) {

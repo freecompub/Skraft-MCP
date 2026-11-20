@@ -80,6 +80,67 @@ describe("skraft-light — US → ARCHI → DISTILL → DELIVER (ADR 0098)", () 
     expect(bilan.phases).toEqual(["ARCHI", "DISTILL", "DELIVER"]);
   }, 90_000);
 
+  it("questions de l'architecte : toutes posées avant de figer ; il reprend son brouillon avec les réponses", async () => {
+    const prompts: string[] = [];
+    const acceptance: string[] = [];
+    const accept = acceptanceWriter(root);
+    const runtime = simulatedAgents(new ScriptedRuntime(), root, {
+      "skraft-architecte": architecte(root, prompts, (n) => (n === 1
+        ? architectureDoc({ "Architecture retenue": "Brouillon 1.", "Questions ouvertes": "- Le plafond est-il par prise ?\n- Faut-il historiser le plafond ?" })
+        : architectureDoc({ "Architecture retenue": "Version 2, plafond par prise." }))),
+      "skraft-acceptance": async (t) => {
+        acceptance.push(t.prompt);
+        await accept(t);
+      },
+    }, { workflow: "skraft-light" });
+    const app = await assemble(root, runtime, tasksDir, { workflow: SKRAFT_LIGHT });
+    answerQuestions(app);
+    const id = await lancerWorkflow(app, "stories/us-12.md", undefined, "skraft-light");
+    const bilan = await fin(app, id, 60_000);
+    expect(prompts).toHaveLength(2);
+    expect(prompts[1]).toContain(`Brouillon précédent : ${DOC}`);
+    expect(prompts[1]).toContain("Le plafond est-il par prise ? → par prise");
+    expect(prompts[1]).toContain("Faut-il historiser le plafond ? → par prise");
+    expect(acceptance[0]).toContain("Version 2, plafond par prise.");
+    expect(acceptance[0]).not.toContain("Brouillon 1.");
+    expect(bilan.phases).toEqual(["ARCHI", "DISTILL", "DELIVER"]);
+  }, 90_000);
+
+  it("questions de l'architecte : au-delà de deux tours, l'humain tranche avant tout nouveau tour", async () => {
+    const prompts: string[] = [];
+    const runtime = simulatedAgents(new ScriptedRuntime(), root, {
+      "skraft-architecte": architecte(root, prompts, (n) => architectureDoc({ "Questions ouvertes": `- Question ${n} ?` })),
+    }, { workflow: "skraft-light" });
+    const app = await assemble(root, runtime, tasksDir, { workflow: SKRAFT_LIGHT });
+    answerQuestions(app);
+    await lancerWorkflow(app, "stories/us-12.md", undefined, "skraft-light");
+    await until(async () => (await app.interactions.pending()).some((p) => p.title.includes("bloqué")), 60_000);
+    const escalade = (await app.interactions.pending()).find((p) => p.title.includes("bloqué"))!;
+    expect(escalade.detail).toContain("Après 2 tours de questions, l'architecte en pose encore : Question 3 ?");
+    expect(prompts).toHaveLength(3);
+  }, 90_000);
+
+  it("question bloquante de l'architecte : l'humain répond, l'architecte repart avec la réponse", async () => {
+    const prompts: string[] = [];
+    const ecrire = architecte(root, [], () => architectureDoc());
+    const runtime = simulatedAgents(new ScriptedRuntime(), root, {
+      "skraft-architecte": async (t) => {
+        prompts.push(t.prompt);
+        if (prompts.length === 1)
+          return void (await t.callTool("report_blocker", { question: "Quelle unité pour le plafond ?", choices: ["U", "mL"] }));
+        await ecrire(t);
+      },
+    }, { workflow: "skraft-light" });
+    const app = await assemble(root, runtime, tasksDir, { workflow: SKRAFT_LIGHT });
+    answerQuestions(app);
+    const id = await lancerWorkflow(app, "stories/us-12.md", undefined, "skraft-light");
+    await until(async () => (await app.interactions.pending()).some((p) => p.title === "Question de l'agent (ARCHI)"), 60_000);
+    const q = (await app.interactions.pending()).find((p) => p.title === "Question de l'agent (ARCHI)")!;
+    await app.interactions.respond(q.id, q.options.find((o) => o.id.endsWith("U"))!.id);
+    await fin(app, id, 60_000);
+    expect(prompts[1]).toContain("Quelle unité pour le plafond ? → U");
+  }, 90_000);
+
   it("porte d'ARCHI : un document qui cite un fichier inexistant est rendu à l'architecte avec le motif", async () => {
     const prompts: string[] = [];
     const runtime = simulatedAgents(new ScriptedRuntime(), root, {

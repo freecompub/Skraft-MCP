@@ -4,7 +4,7 @@
  * ce qu'il exige.
  */
 import { describe, expect, it } from "vitest";
-import { ARCHI_SECTIONS, checkArchitecture, extraireArchitecture, verifierArchitecture } from "../../../workflows/skraft-light/architecte.mjs";
+import { ARCHI_SECTIONS, checkArchitecture, extraireArchitecture, trierLesQuestions, verifierArchitecture } from "../../../workflows/skraft-light/architecte.mjs";
 
 function doc(over: Partial<Record<string, string>> = {}): string {
   const body: Record<string, string> = {
@@ -91,5 +91,30 @@ describe("Porte d'ARCHI (ADR 0098)", () => {
     expect(await verifierArchitecture({ fichiers: { [chemin]: doc() }, donnees: { chemin }, lire })).toBe("Aucun motif : la porte d'ARCHI accepterait ce document en l'état.");
     expect(await verifierArchitecture({ fichiers: { [chemin]: doc({ Mode: "" }) }, donnees: { chemin }, lire })).toContain("La porte « architecture » refuserait ce document :");
     expect(await verifierArchitecture({ fichiers: {}, donnees: { chemin }, lire })).toContain(`Document d'architecture absent : ${chemin}`);
+  });
+});
+
+describe("Questions de l'architecte : l'architecture n'est figée qu'une fois toutes tranchées", () => {
+  const connues = [
+    { text: "Le plafond s'applique-t-il par prise ?", answer: "par prise" },
+    { text: "Quelle unité ?", answer: "(question reportée par l'utilisateur)" },
+    { text: "Question de la story sans réponse" },
+  ];
+
+  it("une question jamais posée est nouvelle : le code la pose avant de figer", () => {
+    expect(trierLesQuestions(["Faut-il historiser le plafond ?"], connues)).toEqual({ nouvelles: ["Faut-il historiser le plafond ?"], motifs: [] });
+  });
+
+  it("une question tranchée encore listée est un motif, avec sa réponse : l'architecte doit l'intégrer", () => {
+    const r = trierLesQuestions(["Le plafond s'applique-t-il par prise ?", "Quelle unité ?"], connues);
+    expect(r.nouvelles).toEqual([]);
+    expect(r.motifs).toEqual([
+      "Question déjà tranchée, encore listée dans « Questions ouvertes » : « Le plafond s'applique-t-il par prise ? » → par prise. Intègre la réponse à l'architecture et retire la question.",
+      "Question déjà tranchée, encore listée dans « Questions ouvertes » : « Quelle unité ? » → (question reportée par l'utilisateur). Intègre la réponse à l'architecture et retire la question.",
+    ]);
+  });
+
+  it("une question connue mais pas encore répondue n'est ni nouvelle ni un motif : elle sera posée", () => {
+    expect(trierLesQuestions(["Question de la story sans réponse"], connues)).toEqual({ nouvelles: [], motifs: [] });
   });
 });

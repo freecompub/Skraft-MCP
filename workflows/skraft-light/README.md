@@ -5,7 +5,7 @@ l'existant ou nouvelle —, puis les scénarios d'acceptance et la livraison en 
 leurs revues. Ni RESEARCH ni DESIGN, ni ADR : le document d'architecture est la seule décision du run.
 
 ```
-INIT → CLASSIFY → (questions) → ARCHI → (questions) → DISTILL → DELIVER
+INIT → CLASSIFY → (questions) → ARCHI ⟲ (questions de l'architecte) → DISTILL → DELIVER
 ```
 
 ## Lancer
@@ -17,7 +17,7 @@ Un run part de l'outil MCP `skraft_demarrer_leger`, mêmes entrées que `skraft_
 `auto`, `archi`, `accord`, `projet`). L'accord se rattache à l'empreinte de ce dossier, distincte de
 celle de skraft.
 
-La branche est celle de skraft, `skraft/<slug>` : `skraft_publier_pr` publie un run de skraft-light
+La branche est celle de skraft, `skraft/<slug>` : `skraft_pr` publie un run de skraft-light
 comme un autre. L'état de reprise est dans `.skraft/<slug>/etat-light.json`, pour qu'aucun des deux
 workflows ne reprenne la session de l'autre. Ne lance pas les deux sur la même story.
 
@@ -31,6 +31,11 @@ fichier, et un plan de conception non vide ; l'agent la consulte pendant son tou
 `verifier_architecture` (ADR 0082). En mode `conforme`, il faut citer au moins un élément existant ;
 en mode `nouvelle`, une justification, et l'utilisateur **ratifie** : un refus renvoie l'architecte
 avec son commentaire.
+
+L'architecte analyse d'abord et lève **toutes** ses questions métier (« Questions ouvertes ») ; le
+code les pose toutes, puis le relance sur son brouillon avec les réponses. L'architecture n'est
+figée qu'une fois aucune question ouverte ; au-delà de deux tours de questions, l'utilisateur relance
+ou abandonne. Une question tranchée encore listée fait refuser le document.
 
 Une fois la phase approuvée, le document est figé : DISTILL et DELIVER reçoivent l'architecture
 retenue et son plan dans leur dossier de passation, et ne peuvent pas le réécrire.

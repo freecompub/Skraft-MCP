@@ -114,6 +114,23 @@ function questionsOuvertes(secs) {
   return [...texte.matchAll(/^\s*[-*]\s+(.+)$/gm)].map((m) => m[1].trim()).filter(Boolean);
 }
 
+/** Tours de questions de l'architecte avant escalade : l'architecture n'est figée qu'une fois toutes tranchées. */
+export const TOURS_DE_QUESTIONS = 2;
+
+/**
+ * Les questions ouvertes du document, au regard de celles déjà connues (`{ text, answer? }`) : les
+ * nouvelles sont à poser ; une question tranchée encore listée est un motif, l'architecte n'a pas
+ * intégré la réponse. Une question connue sans réponse sera posée avec les autres.
+ */
+export function trierLesQuestions(ouvertes, connues) {
+  const parTexte = new Map(connues.map((q) => [q.text, q]));
+  const nouvelles = [...new Set(ouvertes.filter((q) => !parTexte.has(q)))];
+  const motifs = ouvertes
+    .filter((q) => parTexte.get(q)?.answer !== undefined)
+    .map((q) => `Question déjà tranchée, encore listée dans « Questions ouvertes » : « ${q} » → ${parTexte.get(q).answer}. Intègre la réponse à l'architecture et retire la question.`);
+  return { nouvelles, motifs };
+}
+
 /** La porte sur des contenus déjà lus (chemin → contenu des fichiers cités qui existent). */
 export function motifsDeLArchitecture(md, contenus) {
   return checkArchitecture(md, {
