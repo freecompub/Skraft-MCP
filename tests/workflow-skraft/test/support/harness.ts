@@ -96,7 +96,23 @@ export async function createProject(): Promise<string> {
   return root;
 }
 
-export const ROLE = (name: string) => `workflow.skraft-workflow/${name}`;
+export const ROLE = (name: string, workflow = "skraft-workflow") => `workflow.${workflow}/${name}`;
+
+/** Document d'architecture de skraft-light (ADR 0098), conforme au gabarit, citations valides sur le projet de démonstration. */
+export function architectureDoc(over: Partial<Record<string, string>> = {}): string {
+  const body: Record<string, string> = {
+    Périmètre: "Plafonner la dose proposée au maximum défini par le médecin.",
+    "Fichiers analysés": "- `src/domain/bolus-calculator.ts:1-1`\n- `src/settings/max-bolus-setting.ts`",
+    "Conventions du projet": "Objets-valeurs immuables dans le domaine.",
+    Mode: "conforme",
+    "Architecture retenue": "Le plafond est un objet-valeur du domaine, appliqué par `BolusCalculator`.",
+    Justification: "Le calcul vit déjà dans le domaine.",
+    "Plan de conception": "- `BolusCap` → `src/domain/bolus-cap.ts`",
+    "Existant réutilisable": "- `BolusCalculator` → `src/domain/bolus-calculator.ts`",
+    ...over,
+  };
+  return ["# Architecture", ...Object.entries(body).map(([h, t]) => `## ${h}\n\n${t}`)].join("\n\n");
+}
 
 /** Document de recherche conforme au gabarit (§7.1), citations valides sur le projet de démonstration. */
 export function researchDoc(over: Partial<Record<string, string>> = {}): string {
@@ -189,7 +205,7 @@ export function simulatedAgents(
   runtime: ScriptedRuntime,
   root: string,
   over: Partial<Record<string, ScriptedBehavior>> = {},
-  opts: { usage?: boolean } = {},
+  opts: { usage?: boolean; workflow?: string } = {},
 ): ScriptedRuntime {
   const writer = (rel: string, content: string): ScriptedBehavior => async (t) => {
     await put(root, rel, content);
@@ -208,6 +224,13 @@ export function simulatedAgents(
       await put(root, rel, researchDoc());
       // Comme on l'attend d'un agent réel : il vérifie avec la porte avant de rendre (ADR 0082).
       await t.callTool("verifier_recherche", {});
+      await t.callTool("report_phase", { summary: `écrit ${rel}`, files: [rel] });
+    },
+    "skraft-architecte": async (t) => {
+      const slug = /Dossier de travail : \.skraft\/([^/]+)\//.exec(t.prompt)?.[1] ?? "x";
+      const rel = `.skraft/${slug}/archi/architecture.md`;
+      await put(root, rel, architectureDoc());
+      await t.callTool("verifier_architecture", {});
       await t.callTool("report_phase", { summary: `écrit ${rel}`, files: [rel] });
     },
     "skraft-architect-model": async (t) => {
@@ -244,7 +267,7 @@ export function simulatedAgents(
           await behavior(t);
         }
       : behavior;
-    runtime.behave(ROLE(name), measured);
+    runtime.behave(ROLE(name, opts.workflow), measured);
   }
   return runtime;
 }
@@ -281,6 +304,15 @@ function withHang(ws: Workspace, hang: HangPoint | undefined): Workspace {
 /** Le workflow fourni avec l'application, tel qu'on le copie dans un projet. */
 export const WORKFLOW_DIR = resolve(import.meta.dirname, "../../../../workflows/skraft");
 
+/** Un workflow à installer : son dossier source et le nom de son dossier dans le projet. */
+export interface CibleWorkflow {
+  dir: string;
+  nom: string;
+}
+export const SKRAFT: CibleWorkflow = { dir: WORKFLOW_DIR, nom: "skraft-workflow" };
+/** L'alternative légère (ADR 0098) : ARCHI, puis DISTILL et DELIVER. */
+export const SKRAFT_LIGHT: CibleWorkflow = { dir: resolve(import.meta.dirname, "../../../../workflows/skraft-light"), nom: "skraft-light" };
+
 let runtime: Promise<string> | undefined;
 /** Runtime du processus enfant des workflows, construit une fois pour toute la suite. */
 function runtimeEnfant(): Promise<string> {
@@ -297,8 +329,8 @@ function runtimeEnfant(): Promise<string> {
  * Installe le workflow dans le projet et le commite : non suivi, un rembobinage (`git clean`)
  * l'emporterait — un workflow de projet se versionne avec le projet.
  */
-export async function installerWorkflow(root: string): Promise<void> {
-  await cp(WORKFLOW_DIR, join(root, ".skraft/workflows/skraft-workflow"), { recursive: true });
+export async function installerWorkflow(root: string, cible: CibleWorkflow = SKRAFT): Promise<void> {
+  await cp(cible.dir, join(root, `.skraft/workflows/${cible.nom}`), { recursive: true });
   git(root, "add", "-A", ".skraft/workflows");
   // Déjà installé (redémarrage sur le même projet) : rien à commiter.
   if (git(root, "status", "--porcelain", ".skraft/workflows")) git(root, "commit", "-qm", "chore: workflow skraft");
@@ -353,7 +385,7 @@ export function fakeStack(): StackAdapter {
   };
 }
 
-export async function assemble(root: string, runtime: ScriptedRuntime, tasksDir: string, opts: { hang?: HangPoint; commitEchoue?: (message: string) => boolean; stack?: StackAdapter } = {}) {
+export async function assemble(root: string, runtime: ScriptedRuntime, tasksDir: string, opts: { hang?: HangPoint; commitEchoue?: (message: string) => boolean; stack?: StackAdapter; workflow?: CibleWorkflow } = {}) {
   const workspace = withCommitFailure(withHang(await openWorkspace(root), opts.hang), opts.commitEchoue);
   const usage = createUsageRecorder(join(tasksDir, "usage"));
   // Trace d'exécution (ADR 0032) : c'est là qu'un run dit pourquoi chaque travail a été refait.
@@ -389,7 +421,7 @@ export async function assemble(root: string, runtime: ScriptedRuntime, tasksDir:
     ids: sequentialIds(`e${Math.random().toString(36).slice(2, 6)}-`),
   };
   // Workflow trouvé dans le projet, accord retenu, exécution isolée (`docs/11` §5 à §8).
-  await installerWorkflow(root);
+  await installerWorkflow(root, opts.workflow);
   const recherche = await trouverWorkflows({ projet: join(root, ".skraft/workflows") });
   if (recherche.erreurs.length) throw new Error(`Workflow écarté : ${JSON.stringify(recherche.erreurs)}`);
   const r = await activerWorkflow(recherche.workflows[0]!, hostDeps, {

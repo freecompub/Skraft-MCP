@@ -1,4 +1,4 @@
-/** Lancement de `/skraft-workflow` et lecture de sa valeur de fin, pour les jumeaux des tests de skraft. */
+/** Lancement de `/skraft-workflow` (ou d'une autre commande) et lecture de sa valeur de fin, pour les jumeaux des tests de skraft. */
 import type { EtatWorkflow } from "@skraft-mcp/workflow";
 import type { assemble } from "./harness.js";
 import { until } from "./harness.js";
@@ -14,8 +14,8 @@ export interface Bilan {
 }
 
 /** Lance la commande et confirme la difficulté si elle est demandée ; rend l'identifiant de la tâche. */
-export async function lancerWorkflow(app: App, story: string, niveau?: string): Promise<string> {
-  await app.registry.command("skraft-workflow")!.handler(niveau ? story : `--auto ${story}`);
+export async function lancerWorkflow(app: App, story: string, niveau?: string, commande = "skraft-workflow"): Promise<string> {
+  await app.registry.command(commande)!.handler(niveau ? story : `--auto ${story}`);
   await until(async () => (await app.engine.list()).length > 0);
   if (niveau) {
     await until(async () => (await app.interactions.pending()).some((p) => p.title.startsWith("Difficulté")));

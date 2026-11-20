@@ -41,6 +41,11 @@ const REPLIS: readonly { fichier: string; valeur: string; pourquoi: string }[] =
   { fichier: "workflows/skraft/livraison-socle.mjs", valeur: ".agent-studio/projet.yaml", pourquoi: "idem pour le fichier de projet" },
   { fichier: "workflows/skraft/support.mjs", valeur: ".agent-studio/quality.yaml", pourquoi: "gelé pendant un run : un agent ne doit pas pouvoir abaisser sa barre, même à l'ancien emplacement" },
   { fichier: "workflows/skraft/support.mjs", valeur: ".agent-studio/projet.yaml", pourquoi: "idem" },
+  // skraft-light (ADR 0098) reprend ces deux modules : mêmes replis, mêmes raisons.
+  { fichier: "workflows/skraft-light/livraison-socle.mjs", valeur: ".agent-studio/quality.yaml", pourquoi: "copie de workflows/skraft (ADR 0098) : même chaîne lue que le serveur" },
+  { fichier: "workflows/skraft-light/livraison-socle.mjs", valeur: ".agent-studio/projet.yaml", pourquoi: "idem pour le fichier de projet" },
+  { fichier: "workflows/skraft-light/support.mjs", valeur: ".agent-studio/quality.yaml", pourquoi: "copie de workflows/skraft (ADR 0098) : gelé pendant un run, même à l'ancien emplacement" },
+  { fichier: "workflows/skraft-light/support.mjs", valeur: ".agent-studio/projet.yaml", pourquoi: "idem" },
 ];
 
 /**
