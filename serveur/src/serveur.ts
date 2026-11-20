@@ -21,6 +21,8 @@ export interface OptionsServeur {
   projets: Projets;
   /** Nom du workflow lancé par `skraft_demarrer` (`skraft-workflow`). */
   workflow: string;
+  /** Nom de l'alternative légère lancée par `skraft_demarrer_leger` (`skraft-light`, ADR 0098) ; sans, l'outil n'existe pas. */
+  workflowLeger?: string;
   /** Dossiers autorisés par la configuration du serveur, en plus des roots du client. */
   autorises: readonly string[];
   cwd: string;
@@ -126,11 +128,11 @@ export function createServeurSkraft(o: OptionsServeur): McpServer {
           `Ce serveur (PID ${pid}) est en consultation : le projet est piloté par le serveur skraft PID ${m.detenteur}. ${action} depuis la fenêtre de celui-ci, ou appelle skraft_reprendre une fois qu'il sera arrêté.`,
         );
 
-  mcp.registerTool(
-    "skraft_demarrer",
+  /** Un outil de démarrage : `skraft_demarrer`, et `skraft_demarrer_leger` pour l'alternative légère (ADR 0098). */
+  const outilDeDemarrage = (nomOutil: string, nomWorkflow: string, description: string) => mcp.registerTool(
+    nomOutil,
     {
-      description:
-        "Démarre skraft sur une user story : recherche, conception, scénarios, TDD, revues. Le run tourne en arrière-plan ; suis-le avec skraft_etat. Au premier lancement, rend l'accord à faire valider par l'utilisateur.",
+      description,
       inputSchema: {
         story: sansEspace("Le chemin de la story").describe("Fichier de la user story, relatif au projet ; ou une issue GitHub (URL d'issue, ou org/dépôt#n), lue avec ses commentaires et ses dépendances (ADR 0078)."),
         auto: z.boolean().optional().describe("Retenir la difficulté proposée sans la faire confirmer."),
@@ -147,14 +149,14 @@ export function createServeurSkraft(o: OptionsServeur): McpServer {
     outil(async (p, a) => {
       const refus = enConsultation(p.mode(), "Démarre le run");
       if (refus) return refus;
-      const w = (await p.services.workflows()).find((x) => x.nom === o.workflow);
-      if (!w) return erreur([`Le workflow « ${o.workflow} » n'est pas activé pour ce projet.`, ...p.messages()].join("\n\n"));
+      const w = (await p.services.workflows()).find((x) => x.nom === nomWorkflow);
+      if (!w) return erreur([`Le workflow « ${nomWorkflow} » n'est pas activé pour ce projet.`, ...p.messages()].join("\n\n"));
       if (!w.accordRetenu && !a.accord)
         return texte(
           [
             "Accord requis : rien n'a démarré.",
             `${w.accord.title}\n\n${w.accord.detail}`,
-            'Montre ce résumé à l\'utilisateur. S\'il accepte, rappelle skraft_demarrer avec les mêmes arguments et accord: "une-fois" (ce lancement seulement) ou accord: "toujours" (retenu tant que le workflow ne change pas).',
+            `Montre ce résumé à l'utilisateur. S'il accepte, rappelle ${nomOutil} avec les mêmes arguments et accord: "une-fois" (ce lancement seulement) ou accord: "toujours" (retenu tant que le workflow ne change pas).`,
           ].join("\n\n"),
         );
       // Une issue GitHub (ADR 0078) : préparée seulement maintenant, l'accord donné, pour ne pas la lire deux fois.
@@ -176,6 +178,17 @@ export function createServeurSkraft(o: OptionsServeur): McpServer {
       return texte(`${notes.map((n) => `${n}\n`).join("")}Workflow « ${w.nom} » lancé : tâche ${r.taskId}. Suis-le avec skraft_etat ; ses questions s'y affichent, réponds-y avec skraft_repondre.${ignoree}`);
     }, { agents: true }),
   );
+  outilDeDemarrage(
+    "skraft_demarrer",
+    o.workflow,
+    "Démarre skraft sur une user story : recherche, conception, scénarios, TDD, revues. Le run tourne en arrière-plan ; suis-le avec skraft_etat. Au premier lancement, rend l'accord à faire valider par l'utilisateur.",
+  );
+  if (o.workflowLeger)
+    outilDeDemarrage(
+      "skraft_demarrer_leger",
+      o.workflowLeger,
+      "Démarre skraft-light sur une user story, le chemin court (ADR 0098) : un architecte lit le code et s'y conforme ou propose une architecture nouvelle (que l'utilisateur ratifie), puis scénarios d'acceptance, TDD et revues ; ni recherche séparée ni ADR. Mêmes entrées et même suivi que skraft_demarrer.",
+    );
 
   /** Story de chaque run lancé par ce serveur : la carte d'une tâche de workflow ne porte que son nom. */
   const storyDe = new Map<string, string>();

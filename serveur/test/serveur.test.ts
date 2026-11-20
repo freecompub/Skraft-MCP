@@ -27,12 +27,20 @@ import { prendreVerrou } from "../src/verrou.js";
 let racine: string;
 let enfant: string;
 let machine: string;
+/** Une machine à deux workflows : `demo` et son alternative légère (ADR 0098). */
+let machineDouble: string;
 beforeAll(async () => {
   racine = await mkdtemp(join(tmpdir(), "mcp-serveur-"));
   enfant = join(racine, "runtime", "workflow-child.mjs");
   await bundle(resolve(import.meta.dirname, "../../moteur/workflow/src/hote/enfant-entree.ts"), enfant);
   machine = join(racine, "machine");
   await poser(join(machine, "demo"), { "workflow.mjs": DEMO, "agents/redacteur.agent.md": "Tu résumes." });
+  machineDouble = join(racine, "machine-double");
+  await poser(join(machineDouble, "demo"), { "workflow.mjs": DEMO, "agents/redacteur.agent.md": "Tu résumes." });
+  await poser(join(machineDouble, "demo-leger"), {
+    "workflow.mjs": DEMO.replace('name: "demo"', 'name: "demo-leger"').replace('commande: "demo"', 'commande: "demo-leger"').replace('"Résume "', '"Léger : résume "'),
+    "agents/redacteur.agent.md": "Tu résumes.",
+  });
 }, 60_000);
 // Un run peut encore écrire dans `.taches/` au moment du nettoyage (ENOTEMPTY vu en CI le 08/11) : nouvelles tentatives, comme ailleurs.
 afterAll(() => rm(racine, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 }));
@@ -88,10 +96,11 @@ async function projet(o: { surDisque?: boolean; fichiers?: string[]; contenus?: 
   const ecrits: string[] = [];
   const consignes: string[] = [];
   const runtime = new ScriptedRuntime();
-  runtime.behave("workflow.demo/redacteur", async (t) => {
-    consignes.push(t.prompt);
-    await t.callTool("report_phase", { summary: "résumé", files: [] });
-  });
+  for (const nom of ["demo", "demo-leger"])
+    runtime.behave(`workflow.${nom}/redacteur`, async (t) => {
+      consignes.push(t.prompt);
+      await t.callTool("report_phase", { summary: "résumé", files: [] });
+    });
   // Sur disque : les stockages JSON de production (tâches, preuves, interactions, sessions).
   const stockages = o.surDisque ? {} : { taskStore: new MemoryTaskStore(), evidenceStore: new MemoryEvidenceStore(), taskSessionStore: new MemoryTaskSessionStore() };
   const workspace = {
@@ -116,7 +125,7 @@ type Projet = Awaited<ReturnType<typeof projet>>;
  * `repondre` : le client annonce l'elicitation (ADR 0075) et l'utilisateur répond par cette fonction,
  * qui reçoit la question ; `null` : il la refuse. `depots` : dépôts acceptés « toujours ».
  */
-async function serveur(p: Projet, o: { pid: number; vivants: Set<number>; roots?: string[]; nonConnecte?: boolean; detecte?: boolean; repondre?: (question: string) => string | null; depots?: Depots; preparerUs?: (texte: string, root: string) => Promise<{ ok: true; chemin: string; notes: string[] } | { ok: false; motif: string }>; publierPr?: (o: { root: string; ref: { owner: string; repo: string; numero: number }; branche: string; bilan: string }) => Promise<{ ok: true; url: string; nouvelle: boolean } | { ok: false; motif: string }> }) {
+async function serveur(p: Projet, o: { workflowLeger?: string; pid: number; vivants: Set<number>; roots?: string[]; nonConnecte?: boolean; detecte?: boolean; repondre?: (question: string) => string | null; depots?: Depots; preparerUs?: (texte: string, root: string) => Promise<{ ok: true; chemin: string; notes: string[] } | { ok: false; motif: string }>; publierPr?: (o: { root: string; ref: { owner: string; repo: string; numero: number }; branche: string; bilan: string }) => Promise<{ ok: true; url: string; nouvelle: boolean } | { ok: false; motif: string }> }) {
   const factory = workspaceServicesFactory({
     stacks: [{ id: "typescript", layout: { acceptanceTests: [], unitTests: ["tests/**"], sources: ["src/**"] }, infrastructureModules: [], detect: async () => o.detecte ?? true, isTestFile: () => false, testFilePattern: "^tests/", runTests: async () => ({ results: [], exitCode: 0, timedOut: false, output: "", durationMs: 0 }) }],
     allowedPrograms: ["pytest"],
@@ -126,7 +135,7 @@ async function serveur(p: Projet, o: { pid: number; vivants: Set<number>; roots?
     ...p.stockages,
     clock: fixedClock(),
     ids: sequentialIds(`s${o.pid}-`),
-    workflows: { machine, launcher: createNodeLauncher(), runtimeEntry: enfant },
+    workflows: { machine: o.workflowLeger ? machineDouble : machine, launcher: createNodeLauncher(), runtimeEntry: enfant },
   });
   const projets = createProjets({
     ouvrir: (root, journal, ouverture) => ouvrirServicesSansFenetre({ factory, workspace: async () => p.workspace, runtime: async () => p.runtime, journal })(root, ouverture),
@@ -136,6 +145,7 @@ async function serveur(p: Projet, o: { pid: number; vivants: Set<number>; roots?
   const mcp = createServeurSkraft({
     projets,
     workflow: "demo",
+    ...(o.workflowLeger ? { workflowLeger: o.workflowLeger } : {}),
     autorises: [],
     cwd: p.root,
     pid: o.pid,
@@ -191,6 +201,21 @@ describe("Serveur MCP skraft (ADR 0068)", () => {
     const s = await serveur(p, { pid: 1, vivants: new Set([1]) });
     const { tools } = await s.client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual(["skraft_arreter", "skraft_attendre", "skraft_connexion", "skraft_demarrer", "skraft_etat", "skraft_lecons", "skraft_pile", "skraft_pr", "skraft_rapport", "skraft_repondre", "skraft_reprendre"]);
+    await s.fermer();
+  }, 30_000);
+
+  it("skraft_demarrer_leger lance l'alternative légère (ADR 0098), avec son propre accord", async () => {
+    const p = await projet();
+    const s = await serveur(p, { pid: 1, vivants: new Set([1]), workflowLeger: "demo-leger" });
+    expect((await s.client.listTools()).tools.map((t) => t.name)).toContain("skraft_demarrer_leger");
+    const sansAccord = await s.appel("skraft_demarrer_leger", { story: "stories/us-2.md" });
+    expect(sansAccord.texte).toContain("Exécuter le workflow « demo-leger » (machine) ?");
+    expect(sansAccord.texte).toContain("rappelle skraft_demarrer_leger");
+    const r = await s.appel("skraft_demarrer_leger", { story: "stories/us-2.md", auto: true, accord: "une-fois" });
+    expect(r.erreur).toBe(false);
+    expect(r.texte).toContain("Workflow « demo-leger » lancé");
+    await until(async () => (await s.etat()).questions.length === 1);
+    expect(p.consignes[0]).toContain("Léger : résume stories/us-2.md");
     await s.fermer();
   }, 30_000);
 

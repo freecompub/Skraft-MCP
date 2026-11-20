@@ -8,14 +8,18 @@ suit et relaie les questions à l'utilisateur. Décision : ADR 0068 ; étude : `
 Une story passe par RESEARCH, DESIGN (avec ADR), DISTILL (scénarios d'acceptance), DELIVER (TDD),
 chaque phase revue par des lentilles. Le travail est commité sur la branche `skraft/<slug>`.
 
+L'alternative légère, `workflows/skraft-light/` (ADR 0098), se lance par `skraft_demarrer_leger` : un
+architecte lit la story et le code, se conforme à l'architecture existante ou en propose une (que
+l'utilisateur ratifie), puis DISTILL et DELIVER la suivent. Ni RESEARCH, ni DESIGN, ni ADR.
+
 ## Construire
 
 ```bash
-pnpm --filter @skraft-mcp/serveur build   # dist/main.mjs, dist/workflow-child.mjs, dist/workflows/skraft/
+pnpm --filter @skraft-mcp/serveur build   # dist/main.mjs, dist/workflow-child.mjs, dist/workflows/{skraft,skraft-light}/
 ```
 
-Le workflow est **copié** dans `dist/` au build : toute modification de `workflows/skraft/` demande de
-reconstruire le serveur.
+Les workflows sont **copiés** dans `dist/` au build : toute modification de `workflows/skraft/` ou de
+`workflows/skraft-light/` demande de reconstruire le serveur.
 
 ## Prérequis
 
@@ -294,6 +298,7 @@ buildErrors:
 |---|---|---|
 | `skraft_connexion` | — | Connexion du runtime. Copilot : rend un code et une adresse à valider dans le navigateur. Claude : vérifie `claude auth status`, sinon dit de lancer `claude auth login`. Rappeler pour vérifier. |
 | `skraft_demarrer` | `story` (chemin relatif au projet), `auto`, `archi`, `pile`, `accord`, `projet` | Démarre un run, en arrière-plan. Au premier lancement, rend le **résumé à faire accepter** (agents, droits d'écriture, questions) sans rien démarrer ; rappeler avec les mêmes arguments et `accord: "une-fois"` ou `"toujours"` (retenu tant que le workflow ne change pas). `auto` : retient la difficulté proposée sans la faire confirmer. `archi` : skill d'architecture par son nom ou son langage (`java`) ; par défaut la clean architecture. |
+| `skraft_demarrer_leger` | les mêmes que `skraft_demarrer` | Démarre un run du workflow **skraft-light** (ADR 0098) : ARCHI, DISTILL, DELIVER. Accord propre à ce workflow. Ne pas lancer les deux workflows sur la même story : ils partagent la branche `skraft/<slug>`. |
 | `skraft_pile` | `action` (`proposer` par défaut, ou `diagnostiquer`), `lanceur`, `features`, `etapes`, `sansBdd`, `reponse`, `projet` | **La pile du projet** (ADR 0075, 0076). `proposer` : un agent découvre la pile en lisant le projet (BDD compris), le code la vérifie en l'exécutant (canaris) et l'écrit dans `.skraft/projet.yaml` après l'accord de l'utilisateur, que le client lui demande ; sans question possible, la proposition est rendue et rien n'est écrit. `lanceur`, `features`, `etapes` : la moitié du BDD qui n'a pas été trouvée ; `sansBdd` : le projet n'en fait pas. `reponse` : la réponse à une question de l'agent de découverte, en une phrase complète. `diagnostiquer` : programmes trouvés, emplacements, et canaris qui lancent vraiment les tests, dans une copie du projet. Le projet est relu au prochain appel. |
 | `skraft_etat` | `projet` | JSON : mode du serveur (pilote ou consultation), workflow et accord, pile retenue, runs (phase, étape, dernier rejet, usage, et **`progression`**, la ligne à montrer telle quelle), **questions en attente** (identifiant, options, réponse libre), derniers messages. |
 | `skraft_attendre` | `tache`, `delai` (secondes, 30 par défaut, 50 au plus : un client MCP abandonne souvent un appel au-delà de 60 s), `projet` | **Attend un changement**, puis rend ce qui a changé **depuis le dernier appel** (phase, étape, rejet avec sa porte et son motif, lus dans la trace du run, question à poser, réponse reçue, message, fin), la ligne de progression de chaque run, les questions en attente et `termine`. Rien ne se perd entre deux appels. Run déjà fini : réponse immédiate. |

@@ -34,6 +34,8 @@ import { prendreVerrou, processusVivant } from "./verrou.js";
 
 /** Nom du workflow livré avec le serveur (`workflows/skraft/`, `meta.name`). */
 export const WORKFLOW_SKRAFT = "skraft-workflow";
+/** L'alternative légère livrée à côté (`workflows/skraft-light/`, ADR 0098), lancée par `skraft_demarrer_leger`. */
+export const WORKFLOW_SKRAFT_LIGHT = "skraft-light";
 
 export interface OptionsAssemblage {
   home: string;
@@ -152,7 +154,7 @@ export async function assemblerServeur(o: OptionsAssemblage): Promise<{ ok: true
     const complet = /^\s*\[?[A-Za-z]\w*-\d+\]?\s*[—–:-]/.test(titre) ? titre : `US-${q.ref.numero} — ${titre || "user story"}`;
     return publierPr({ ...q, titre: complet }, avecAide);
   };
-  const mcp = createServeurSkraft({ projets, workflow: WORKFLOW_SKRAFT, autorises: config.autorises, depots: createDepotsFichier(join(donnees, "depots-acceptes.json")), cwd: o.cwd, connexion, preparerUs, publierPr: publier, version: o.version });
+  const mcp = createServeurSkraft({ projets, workflow: WORKFLOW_SKRAFT, workflowLeger: WORKFLOW_SKRAFT_LIGHT, autorises: config.autorises, depots: createDepotsFichier(join(donnees, "depots-acceptes.json")), cwd: o.cwd, connexion, preparerUs, publierPr: publier, version: o.version });
   logger.info("serveur MCP skraft prêt", { version: o.version, autorises: config.autorises.length, runtime: config.runtime });
   return { ok: true, mcp, projets };
 }

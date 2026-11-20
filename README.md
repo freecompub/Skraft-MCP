@@ -35,6 +35,7 @@ pnpm essai <projet> <story> <reponses.json> --runtime=claude --suivi=attendre   
 | `moteur/bac-a-sable` | le processus isolé, son RPC, le lancement des tests et le gel des fichiers |
 | `capacites/*` | ce que `w.*` sait faire : `agents`, `pile`, `pile-du-projet`, `depot`, `taches`, `github`, `runtime-claude`, `runtime-copilot` |
 | `workflows/skraft` | **la charge utile** : le workflow skraft — script, agents, skills, portes (GPL, copié dans `dist/` au build) |
+| `workflows/skraft-light` | l'alternative légère : ARCHI remplace RESEARCH et DESIGN, DISTILL et DELIVER repris de skraft (ADR 0098, copié dans `dist/` au build) |
 | `tests/workflow-skraft` | les tests du workflow, de bout en bout avec des agents simulés |
 | `tests/architecture` | les invariants de structure, tenus par le code (ADR 0091) |
 | `profiles` | des profils de pile d'exemple |

@@ -19,8 +19,10 @@ await build({ ...commun, banner, entryPoints: [join(racine, "src/main.ts")], out
 // Processus isolé qui rejoue un workflow, comme celui de l'application (WORKFLOW_RUNTIME). Rien
 // d'externe : sous --permission, il ne peut lire que son propre fichier, pas node_modules.
 await build({ ...commun, external: [], banner: { js: banner.js.split("\n")[1] }, entryPoints: [join(repo, "moteur/workflow/src/hote/enfant-entree.ts")], outfile: join(dist, "workflow-child.mjs") });
-// Le workflow, livré en sources (GPL-3.0-or-later : sources et LICENSE fournies).
-await cp(join(repo, "workflows/skraft"), join(dist, "workflows/skraft"), {
-  recursive: true,
-  filter: (src) => !src.includes(`${join("workflows", "skraft", "node_modules")}`),
-});
+// Les workflows, livrés en sources (GPL-3.0-or-later : sources et LICENSE fournies) : skraft et son
+// alternative légère (ADR 0098).
+for (const nom of ["skraft", "skraft-light"])
+  await cp(join(repo, "workflows", nom), join(dist, "workflows", nom), {
+    recursive: true,
+    filter: (src) => !src.includes(`${join("workflows", nom, "node_modules")}`),
+  });
