@@ -55,7 +55,7 @@ que les **copier**. Le deuxième impose de toucher au serveur pour offrir un poi
    l'architecte lui-même. Un refus à la ratification compte comme un essai de la phase ; au-delà, la
    phase escalade comme les autres.
 10. **L'architecture n'est figée qu'une fois toutes ses questions tranchées.** Le premier tour de
-    l'architecte est une analyse : il lève toutes les questions métier qui conditionnent
+    l'architecte est une analyse : il lève toutes les questions, métier ou techniques, qui conditionnent
     l'architecture (« Questions ouvertes »). Le code les pose toutes à la fois, puis relance le même
     agent sur son brouillon et les réponses. Une question tranchée encore listée fait refuser le
     document (`trierLesQuestions`). Au-delà de deux tours de questions (`TOURS_DE_QUESTIONS`),
@@ -68,6 +68,15 @@ que les **copier**. Le deuxième impose de toucher au serveur pour offrir un poi
 11. **Même branche, état séparé.** La branche reste `skraft/<slug>`, que le serveur suppose pour la PR
     et la préparation d'issue ; l'état de reprise est écrit dans `etat-light.json`, pour qu'aucun des
     deux workflows ne reprenne la session de l'autre.
+12. **L'architecte ne tranche rien seul.** Un test réel (issue #481 de prime-souscription-dab-poc) l'a
+    vu différer l'adaptateur HTTP et servir l'écran par une doublure en mémoire, faute de producteur,
+    sans rien demander : sa consigne lui laissait trancher les questions « techniques », et le mode
+    `conforme` n'est pas ratifié. Le document porte désormais une section obligatoire `## Décisions`,
+    une puce par choix, chacune sourcée par `chemin:lignes` — code existant, story ou réponse de
+    l'utilisateur (`passation.md`). La porte refuse une décision sans source et une section vide ; la
+    consigne dit qu'un choix que rien ne dicte est une question, métier ou technique, qu'une réponse
+    ambiguë appelle une relance et qu'une question reportée reste ouverte. Le code ne juge que les
+    décisions **déclarées** : une décision tue dans « Architecture retenue » lui échappe.
 
 ## Conséquences
 
@@ -83,6 +92,8 @@ que les **copier**. Le deuxième impose de toucher au serveur pour offrir un poi
   architecture que les réponses de l'utilisateur contredisent.
 - **Ne pas lancer skraft et skraft-light sur la même story** : ils écriraient sur la même branche.
   Rien ne l'empêche dans le code ; c'est documenté, pas garanti.
+- L'architecte pose plus de questions, techniques comprises ; l'utilisateur en reçoit davantage, et
+  les reports restent visibles dans l'architecture au lieu d'être comblés par une supposition.
 - Le défaut relevé au contexte (DISTILL ne reçoit pas le modèle de DESIGN) n'est pas corrigé dans
   skraft par cet ADR.
 
@@ -94,6 +105,10 @@ que les **copier**. Le deuxième impose de toucher au serveur pour offrir un poi
 - **Permettre à un workflow d'importer les modules d'un autre.** Écarté : il faudrait changer la règle
   d'imports du compilateur et la portée de l'empreinte d'accord, qui garantit que l'utilisateur
   accepte exactement le code exécuté.
+- **Un agent critique qui traque les décisions non déclarées** (point 12). Écarté pour l'instant : un
+  tour d'agent de plus par tour de questions. À reprendre si des décisions tues passent la porte.
+- **Ratifier aussi le mode `conforme`.** Écarté : l'utilisateur valide un document entier plutôt que
+  chaque choix, et le mode conforme redeviendrait aussi lent que `nouvelle`.
 - **Un seul agent jusqu'au Gherkin, transmis directement à DELIVER.** Écarté : il se validerait
   lui-même, et DELIVER perdrait les portes de DISTILL (valeurs, plan de test, RED, gel) qui donnent
   au TDD sa garantie.

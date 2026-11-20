@@ -27,12 +27,14 @@ L'agent `skraft-architecte` lit la story et le code, puis écrit `.skraft/<slug>
 (gabarit dans `agents/skraft-architecte.agent.md`). Le **mode** est `conforme` (suivre l'architecture
 en place) ou `nouvelle` (en proposer une). La porte du code (`architecte.mjs`) vérifie les sections,
 le mode, chaque fichier et plage cités, que chaque élément de l'existant réutilisable figure dans son
-fichier, et un plan de conception non vide ; l'agent la consulte pendant son tour avec
+fichier, un plan de conception non vide, et que chaque choix de la section « Décisions » est sourcé
+(code existant, story ou réponse de l'utilisateur) — un choix que rien ne dicte est une question ; l'agent la consulte pendant son tour avec
 `verifier_architecture` (ADR 0082). En mode `conforme`, il faut citer au moins un élément existant ;
 en mode `nouvelle`, une justification, et l'utilisateur **ratifie** : un refus renvoie l'architecte
 avec son commentaire.
 
-L'architecte analyse d'abord et lève **toutes** ses questions métier (« Questions ouvertes ») ; le
+L'architecte analyse d'abord et lève **toutes** ses questions, métier ou techniques (« Questions
+ouvertes ») ; le
 code les pose toutes, puis le relance sur son brouillon avec les réponses. L'architecture n'est
 figée qu'une fois aucune question ouverte ; au-delà de deux tours de questions, l'utilisateur relance
 ou abandonne. Une question tranchée encore listée fait refuser le document.

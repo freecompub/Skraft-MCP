@@ -13,6 +13,7 @@ function doc(over: Partial<Record<string, string>> = {}): string {
     "Conventions du projet": "Objets-valeurs immuables dans le domaine.",
     Mode: "conforme",
     "Architecture retenue": "Domaine pur, réglages injectés : `src/domain/bolus-calculator.ts:1-3`.",
+    Décisions: "- Le plafond vit dans le domaine, comme le calcul : `src/domain/bolus-calculator.ts:1-3`.",
     Justification: "La story s'inscrit dans le calcul existant.",
     "Plan de conception": "- `BolusCap` dans `src/domain/bolus-cap.ts`, appelé par `BolusCalculator`.",
     "Existant réutilisable": "- `BolusCalculator` → `src/domain/bolus-calculator.ts`",
@@ -34,6 +35,27 @@ describe("Porte d'ARCHI (ADR 0098)", () => {
     const md = doc().replace(/\n\n## Plan de conception\n\n[^\n]*/, "");
     expect(checkArchitecture(md, index).reasons).toEqual(["Section manquante : « Plan de conception »."]);
     expect(ARCHI_SECTIONS).toContain("Existant réutilisable");
+    expect(ARCHI_SECTIONS).toContain("Décisions");
+  });
+
+  it("décision sans source : refusée, à sourcer ou à poser en question — l'architecte ne tranche pas seul", () => {
+    const decisions = [
+      "- Adaptateur HTTP différé, doublure en mémoire en attendant.",
+      "- Même découpage que le calcul : `src/domain/bolus-calculator.ts`.",
+      "- Plafond par prise : `passation.md:4`.",
+      "- Domaine pur : `src/domain/bolus-calculator.ts:1-3`.",
+    ].join("\n");
+    const consigne = "Source-la par `chemin:lignes` (le code existant, la story, ou la réponse de l'utilisateur dans passation.md) ; si rien ne la dicte, retire-la et pose-la dans « Questions ouvertes ».";
+    expect(checkArchitecture(doc({ Décisions: decisions }), index).reasons).toEqual([
+      `Décision sans source : « Adaptateur HTTP différé, doublure en mémoire en attendant. ». ${consigne}`,
+      `Décision sans source : « Même découpage que le calcul : \`src/domain/bolus-calculator.ts\`. ». ${consigne}`,
+    ]);
+  });
+
+  it("décisions vides : refusées, une architecture retenue est faite de choix", () => {
+    expect(checkArchitecture(doc({ Décisions: "aucune" }), index).reasons).toEqual([
+      "Décisions vide : liste chaque choix de l'architecture retenue, une puce par choix, avec sa source (`chemin:lignes`).",
+    ]);
   });
 
   it("mode absent, inconnu ou ambigu : refusé", () => {

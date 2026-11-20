@@ -106,6 +106,7 @@ export function architectureDoc(over: Partial<Record<string, string>> = {}): str
     "Conventions du projet": "Objets-valeurs immuables dans le domaine.",
     Mode: "conforme",
     "Architecture retenue": "Le plafond est un objet-valeur du domaine, appliqué par `BolusCalculator`.",
+    Décisions: "- Le plafond vit dans le domaine, comme le calcul : `src/domain/bolus-calculator.ts:1-1`.",
     Justification: "Le calcul vit déjà dans le domaine.",
     "Plan de conception": "- `BolusCap` → `src/domain/bolus-cap.ts`",
     "Existant réutilisable": "- `BolusCalculator` → `src/domain/bolus-calculator.ts`",

@@ -12,6 +12,7 @@ export const ARCHI_SECTIONS = [
   "Conventions du projet",
   "Mode",
   "Architecture retenue",
+  "Décisions",
   "Justification",
   "Plan de conception",
   "Existant réutilisable",
@@ -98,10 +99,29 @@ export function checkArchitecture(md, index) {
     if (mode === "conforme" && !elements.length)
       reasons.push("Mode conforme : cite au moins un élément de l'existant réutilisable (« `Nom` → `chemin` ») ; se conformer à rien n'est pas se conformer.");
   }
+  reasons.push(...motifsDesDecisions(secs.get(norm("Décisions"))));
   if (mode === "nouvelle" && secs.has(norm("Justification")) && !secs.get(norm("Justification")))
     reasons.push("Mode nouvelle : la justification est absente.");
   return { reasons, mode, openQuestions: questionsOuvertes(secs) };
 }
+
+/**
+ * L'architecte ne tranche pas seul : chaque choix est déclaré et sourcé par une ligne précise du code
+ * existant, de la story ou de la réponse de l'utilisateur (`passation.md`). Ce qui n'a pas de source
+ * est une question. Le code ne voit que les décisions déclarées ; la consigne fait le reste.
+ */
+function motifsDesDecisions(texte) {
+  if (texte === undefined)
+    return [];
+  const decisions = puces(texte);
+  if (!decisions.length)
+    return ["Décisions vide : liste chaque choix de l'architecture retenue, une puce par choix, avec sa source (`chemin:lignes`)."];
+  return decisions
+    .filter((d) => !parseCitations(d).paths.some((c) => c.start !== undefined))
+    .map((d) => `Décision sans source : « ${d} ». Source-la par \`chemin:lignes\` (le code existant, la story, ou la réponse de l'utilisateur dans passation.md) ; si rien ne la dicte, retire-la et pose-la dans « Questions ouvertes ».`);
+}
+
+const puces = (texte) => [...texte.matchAll(/^\s*[-*]\s+(.+)$/gm)].map((m) => m[1].trim()).filter(Boolean);
 
 /** Un fichier que seul le plan de conception nomme est un fichier à créer, pas une citation fausse. */
 function citeSeulementDansLePlan(secs, chemin) {
@@ -110,8 +130,7 @@ function citeSeulementDansLePlan(secs, chemin) {
 }
 
 function questionsOuvertes(secs) {
-  const texte = secs.get(norm("Questions ouvertes")) ?? "";
-  return [...texte.matchAll(/^\s*[-*]\s+(.+)$/gm)].map((m) => m[1].trim()).filter(Boolean);
+  return puces(secs.get(norm("Questions ouvertes")) ?? "");
 }
 
 /** Tours de questions de l'architecte avant escalade : l'architecture n'est figée qu'une fois toutes tranchées. */
