@@ -57,11 +57,14 @@ que les **copier**. Le deuxième impose de toucher au serveur pour offrir un poi
 10. **L'architecture n'est figée qu'une fois toutes ses questions tranchées.** Le premier tour de
     l'architecte est une analyse : il lève toutes les questions métier qui conditionnent
     l'architecture (« Questions ouvertes »). Le code les pose toutes à la fois, puis relance le même
-    agent, **dans une session neuve**, sur son brouillon et les réponses. Une question tranchée encore
-    listée fait refuser le document (`trierLesQuestions`). Au-delà de deux tours de questions
-    (`TOURS_DE_QUESTIONS`), l'humain relance ou abandonne. La ratification du mode `nouvelle` vient
-    après. La session n'est pas prolongée : le moteur ouvre une session par tour d'agent et rejoue
-    son journal, une réponse peut arriver après un redémarrage ; le brouillon tient lieu de mémoire.
+    agent sur son brouillon et les réponses. Une question tranchée encore listée fait refuser le
+    document (`trierLesQuestions`). Au-delà de deux tours de questions (`TOURS_DE_QUESTIONS`),
+    l'humain relance ou abandonne. La ratification du mode `nouvelle` vient après.
+    Le second tour **reprend la session** du premier (clé de continuité tâche/workflow/rôle, ADR 0030
+    et 0039) : l'architecte garde ce qu'il a lu du dépôt. Les sessions reprenables vivent en mémoire
+    du serveur ; après un redémarrage, il repart dans une session neuve, et le brouillon, nommé dans
+    sa consigne, tient lieu de mémoire. Ce sont le code et le journal qui relaient la question, pas
+    l'agent : son tour se termine, une réponse peut arriver des heures plus tard.
 11. **Même branche, état séparé.** La branche reste `skraft/<slug>`, que le serveur suppose pour la PR
     et la préparation d'issue ; l'état de reprise est écrit dans `etat-light.json`, pour qu'aucun des
     deux workflows ne reprenne la session de l'autre.

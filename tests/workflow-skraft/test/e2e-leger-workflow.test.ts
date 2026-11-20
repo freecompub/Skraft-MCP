@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ScriptedRuntime, type ScriptedBehavior } from "@skraft-mcp/agents/testing";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { acceptanceWriter, answerQuestions, architectureDoc, assemble, createProject, git, put, shutdownHosts, simulatedAgents, SKRAFT_LIGHT, until } from "./support/harness.js";
+import { acceptanceWriter, answerQuestions, architectureDoc, assemble, createProject, git, put, ROLE, shutdownHosts, simulatedAgents, SKRAFT_LIGHT, until } from "./support/harness.js";
 import { fin, lancerWorkflow } from "./support/fin.js";
 
 const DOC = ".skraft/us12-f15ade30/archi/architecture.md";
@@ -103,6 +103,10 @@ describe("skraft-light — US → ARCHI → DISTILL → DELIVER (ADR 0098)", () 
     expect(prompts[1]).toContain("Faut-il historiser le plafond ? → par prise");
     expect(acceptance[0]).toContain("Version 2, plafond par prise.");
     expect(acceptance[0]).not.toContain("Brouillon 1.");
+    // Même tâche, même rôle : le second tour reprend la session du premier (ADR 0030, 0039), avec tout ce qu'il a lu.
+    const sessions = runtime.history.filter((x) => runtime.configs.get(x.id)?.role === ROLE("skraft-architecte", "skraft-light")).map((x) => x.id);
+    expect(sessions).toHaveLength(2);
+    expect(new Set(sessions).size).toBe(1);
     expect(bilan.phases).toEqual(["ARCHI", "DISTILL", "DELIVER"]);
   }, 90_000);
 
