@@ -260,6 +260,7 @@ tests:
   coverage: cobertura-xml
 mutation:
   command: [dotnet, stryker, --config-file, stryker-config-core.json, --output, "{dossier}"]
+  cible: [-m, "{fichier}"]
   report: stryker-json
 format:
   command: [dotnet, format, --verify-no-changes]
@@ -281,6 +282,11 @@ buildErrors:
   (un dossier, un rapport par projet de test, tous réunis), `{couverture}` et `{dossier}` (dossiers
   de sortie), `{fichiers}` (fichiers à vérifier). Ce qui les entoure passe tel quel
   (`{assembly}` est un jeton du lanceur).
+- **`mutation.cible`** (ADR 0099), facultatif : comment limiter la mutation aux fichiers demandés par
+  le workflow. Ce gabarit est ajouté après la commande. `{liste}` reçoit les fichiers séparés par des
+  virgules (StrykerJS : `[--mutate, "{liste}"]`) ; `{fichier}` répète le gabarit pour chaque fichier
+  (Stryker.NET : `[-m, "{fichier}"]`). Sans `cible`, tout le projet est muté. Les caractères de glob
+  ne sont pas échappés.
 - **`bdd`** (ADR 0074) : `false` ou absent, les scénarios Gherkin sont une spécification dans
   `.skraft/<slug>/` et les tests d'acceptance sont ordinaires ; une liste de couples
   `{ lanceur, features, etapes }`, les `.feature` du projet **sont** les tests d'acceptance. Lanceurs
@@ -343,6 +349,7 @@ workflow est refusé au chargement.
 | `escalade` | une phase échoue (budget épuisé, même refus deux fois) : relancer, sauter, abandonner |
 | `arbitrer`, `arbitrer-mutation`, `arbitrer-couverture` | un agent conteste un défaut, un mutant, une ligne non couverte |
 | `ratifier-adr` | un ADR proposé en DESIGN |
+| `lancer-mutation` | skraft-light, fin de DELIVER : lancer ou non la mutation des fichiers modifiés (ADR 0099) |
 
 ## Pendant un run
 

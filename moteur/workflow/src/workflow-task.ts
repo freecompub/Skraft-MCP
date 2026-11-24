@@ -279,12 +279,12 @@ async function executer(kind: Exclude<NomAppel, "phase">, a: Args, x: Execution)
     case "format":
       return ctx.stack.format({ signal, ...(a.fichiers ? { files: a.fichiers } : {}) });
     case "mutation":
-      return ctx.stack.mutation({ signal });
+      return ctx.stack.mutation({ signal, ...(a.fichiers ? { files: a.fichiers } : {}) });
     case "empreinte":
       return ctx.workspace.fingerprint(a.motifs);
     case "disposition": {
       const { acceptanceTests, unitTests, sources } = ctx.stack.layout;
-      return { pile: ctx.stack.id, acceptanceTests, unitTests, sources, infrastructureModules: [...ctx.stack.infrastructureModules], ...(ctx.stack.bdd ? { bdd: ctx.stack.bdd.map((c) => ({ ...c })) } : {}), ...(ctx.stack.bddNonDecide ? { bddNonDecide: [...ctx.stack.bddNonDecide] } : {}) };
+      return { pile: ctx.stack.id, acceptanceTests, unitTests, sources, infrastructureModules: [...ctx.stack.infrastructureModules], ...(ctx.stack.bdd ? { bdd: ctx.stack.bdd.map((c) => ({ ...c })) } : {}), ...(ctx.stack.bddNonDecide ? { bddNonDecide: [...ctx.stack.bddNonDecide] } : {}), ...(ctx.stack.mutationDisponible ? { mutation: true } : {}) };
     }
     case "brancher":
       return ctx.git.branch(a.nom, a.ecraser ? { ecraser: true, ...(a.depuis ? { depuis: a.depuis } : {}) } : undefined);

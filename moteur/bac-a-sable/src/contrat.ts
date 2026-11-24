@@ -225,8 +225,10 @@ export interface StackApi {
   /** Exécution par le cœur ; avec `evidence`, la preuve est enregistrée (source « gate »). */
   runTests(opts?: { signal?: AbortSignal; evidence?: EvidenceTag }): Promise<TestRun>;
   isTestFile(path: string): boolean;
-  /** Tests de mutation de l'adaptateur ; `null` si la stack n'en propose pas (§9.6). */
-  mutation(opts?: { signal?: AbortSignal }): Promise<MutationReport | null>;
+  /** La pile propose un outil de mutation : le workflow le sait sans la lancer (ADR 0099). */
+  readonly mutationDisponible?: boolean;
+  /** Tests de mutation de l'adaptateur ; `null` si la stack n'en propose pas (§9.6). `files` les limite à ces fichiers (ADR 0099). */
+  mutation(opts?: { signal?: AbortSignal; files?: readonly string[] }): Promise<MutationReport | null>;
   /** Contrôle des règles de dépendance entre modules ; `null` si la stack ne sait pas l'analyser. */
   architecture(rules: DependencyRule[]): Promise<ArchitectureReport | null>;
   /**

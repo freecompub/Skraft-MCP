@@ -100,7 +100,7 @@ export async function rejouer(decl: DeclarationWorkflow<never>, etat: EtatWorkfl
     architecture: (regles) => appeler("architecture", { regles: regles.map((r) => ({ ...r })) }),
     lint: (fichiers) => appeler("lint", fichiers ? { fichiers: [...fichiers] } : {}),
     format: (fichiers) => appeler("format", fichiers ? { fichiers: [...fichiers] } : {}),
-    mutation: () => appeler("mutation", {}),
+    mutation: (fichiers) => appeler("mutation", fichiers ? { fichiers: [...fichiers] } : {}),
     empreinte: (motifs) => appeler("empreinte", { motifs: [...motifs] }),
     disposition: () => appeler("disposition", {}),
     brancher: (nom, opts = {}) => appeler("brancher", { nom, ...(opts.ecraser ? { ecraser: true, ...(opts.depuis ? { depuis: opts.depuis } : {}) } : {}) }),

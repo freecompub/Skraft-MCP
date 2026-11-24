@@ -360,10 +360,16 @@ describe("Hôte d'extension en processus", () => {
     let ctx!: ExtensionContext;
     await activateInProcess({ manifest: MANIFEST, module: { activate: (c) => void (ctx = c) } }, env.deps);
     expect(await ctx.stack.mutation()).toBeNull();
+    expect(ctx.stack.mutationDisponible).toBe(false);
     expect(await ctx.stack.architecture([])).toBeNull();
     env.deps.stack.mutation = async (o) => ({ score: o.root === "/projets/demo" ? 100 : 0, files: [] });
+    // Le workflow sait, sans lancer la mutation, si la pile en propose une (ADR 0099).
+    expect(ctx.stack.mutationDisponible).toBe(true);
     env.deps.stack.architecture = async (o) => ({ modules: [], violations: o.rules.map((r) => ({ module: r.module, file: "f", imported: r.forbidden[0]! })) });
     expect(await ctx.stack.mutation()).toEqual({ score: 100, files: [] });
+    // Les fichiers demandés vont à l'adaptateur : la mutation peut se limiter au changement.
+    env.deps.stack.mutation = async (o) => ({ score: 0, files: (o.files ?? []).map((file) => ({ file, score: 0, survived: [] })) });
+    expect((await ctx.stack.mutation({ files: ["src/a.ts"] }))?.files.map((f) => f.file)).toEqual(["src/a.ts"]);
     expect((await ctx.stack.architecture([{ module: "Domain", forbidden: ["UI"] }]))?.violations).toEqual([{ module: "Domain", file: "f", imported: "UI" }]);
   });
 

@@ -1,3 +1,4 @@
+// Repris de workflows/skraft/livraison-corrections.mjs le 2026-11-24 (ADR 0098, 0099) : l'utilisateur décide de lancer la mutation de fin de DELIVER.
 // Extrait de livraison.mjs le 2026-11-14 ; provenance : extensions/skraft-workflow/src/livraison.ts (ADR 0055).
 /**
 * Corrections ciblées en fin de DELIVER (ADR 0062) : les défauts de la revue, les lignes non
@@ -13,8 +14,27 @@ import { arbitrerCouverture, arbitrerMutants } from "./livraison-arbitrages.mjs"
 import { porteScenario } from "./livraison-portes.mjs";
 import { escaladeScenario, pas } from "./livraison-scenario.mjs";
 import { ScenarioEchoue, autreAgent, barreDeQualite, elementDe, muter, natures, pourDev, pourTests } from "./livraison-socle.mjs";
+export const MUTATION_REFUSEE = "Mutation non lancée : l'utilisateur l'a refusée en fin de DELIVER.";
+
+/** Lancer la mutation ? Rend `lancer` ou `passer`. */
+async function demanderMutation(w, fichiers) {
+  const rep = await w.humain("lancer-mutation", "Lancer les tests de mutation sur les fichiers modifiés ?", [
+    { id: "lancer", label: "Lancer la mutation" },
+    { id: "passer", label: "Ne pas la lancer" },
+  ], {
+    detail: [
+      `Fichiers de production modifiés par DELIVER (${fichiers.length}) :`,
+      ...fichiers.map((f) => `- ${f}`),
+      "",
+      "La mutation modifie le code pour vérifier que les tests le remarquent : un mutant qui survit révèle un test trop faible, à renforcer. Elle peut être longue.",
+      "Sans elle, la livraison n'atteste pas la solidité des tests ; le bilan le dira.",
+    ].join("\n"),
+  });
+  return rep.decision === "passer" ? "passer" : "lancer";
+}
+
 /** Mutation de fin de DELIVER (ADR 0049, moment par défaut) : une exécution sur tout ce que la phase a modifié. */
-export async function mutationDeFin(w, L, cpPhase, derogations) {
+export async function mutationDeFin(w, d, L, cpPhase) {
   const { barre, notes } = await barreDeQualite(w, L.disp);
   if (!barre.mutation.active)
     return { motifs: [], faits: [], notes: [...notes, "Mutation désactivée par la barre de qualité du projet."] };
@@ -24,7 +44,13 @@ export async function mutationDeFin(w, L, cpPhase, derogations) {
   const changes = (await w.fichiersModifies(cpPhase)).filter((f) => f.status !== "deleted" && k.production(f.path) && matchesAny(L.disp.sources, f.path));
   if (changes.length === 0)
     return { motifs: [], faits: [], notes };
-  const r = await muter(w, barre, changes, "fin de DELIVER", derogations);
+  // skraft-light (ADR 0098, point 13) : l'utilisateur décide de lancer la mutation, une fois par run ;
+  // sa réponse vaut pour les passages suivants (après une correction, à un nouvel essai de la phase).
+  // Une pile sans outil de mutation ne pose pas de question sans objet : `muter` dira « non mesurée ».
+  if (L.disp.mutation) d.mutationDeFin ??= await demanderMutation(w, changes.map((f) => f.path));
+  if (d.mutationDeFin === "passer")
+    return { motifs: [], faits: [], notes: [...notes, MUTATION_REFUSEE] };
+  const r = await muter(w, barre, changes, "fin de DELIVER", d.derogations);
   return { motifs: r.motifs, mutants: r.mutants, faits: r.faits, notes: [...notes, ...r.notes] };
 }
 

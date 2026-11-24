@@ -6,8 +6,9 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ScriptedRuntime, type ScriptedBehavior } from "@skraft-mcp/agents/testing";
+import type { StackAdapter } from "@skraft-mcp/pile";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { acceptanceWriter, answerQuestions, architectureDoc, assemble, createProject, git, put, ROLE, shutdownHosts, simulatedAgents, SKRAFT_LIGHT, until } from "./support/harness.js";
+import { acceptanceWriter, answerQuestions, architectureDoc, assemble, createProject, fakeStack, git, put, ROLE, shutdownHosts, simulatedAgents, SKRAFT_LIGHT, until } from "./support/harness.js";
 import { fin, lancerWorkflow } from "./support/fin.js";
 
 const DOC = ".skraft/us12-f15ade30/archi/architecture.md";
@@ -156,4 +157,43 @@ describe("skraft-light — US → ARCHI → DISTILL → DELIVER (ADR 0098)", () 
     await fin(app, id, 60_000);
     expect(prompts[1]).toContain("`src/domain/absent.ts` : fichier inexistant dans le dépôt.");
   }, 90_000);
+
+  describe("mutation de fin de DELIVER : l'utilisateur décide de la lancer", () => {
+    /** Pile qui sait muter, et note les fichiers demandés à chaque mutation. */
+    const pileQuiMute = (appels: (readonly string[] | undefined)[]): StackAdapter => ({
+      ...fakeStack(),
+      mutation: async ({ files }) => (appels.push(files), { score: 100, files: [] }),
+    });
+    const repondreMutation = async (app: Awaited<ReturnType<typeof assemble>>, choix: "lancer" | "passer") => {
+      await until(async () => (await app.interactions.pending()).some((p) => p.title.startsWith("Lancer les tests de mutation")), 60_000);
+      const q = (await app.interactions.pending()).find((p) => p.title.startsWith("Lancer les tests de mutation"))!;
+      await app.interactions.respond(q.id, q.options.find((o) => o.id.endsWith(`:${choix}`))!.id);
+      return q;
+    };
+
+    it("lancée : sur les seuls fichiers de production modifiés, que la question cite", async () => {
+      const appels: (readonly string[] | undefined)[] = [];
+      const app = await assemble(root, simulatedAgents(new ScriptedRuntime(), root, {}, { workflow: "skraft-light" }), tasksDir, { workflow: SKRAFT_LIGHT, stack: pileQuiMute(appels) });
+      answerQuestions(app);
+      const id = await lancerWorkflow(app, "stories/us-12.md", undefined, "skraft-light");
+      const q = await repondreMutation(app, "lancer");
+      expect(q.detail).toContain("src/domain/bolus-cap.ts");
+      const bilan = await fin(app, id, 60_000);
+      expect(bilan.phases).toEqual(["ARCHI", "DISTILL", "DELIVER"]);
+      expect(appels).toEqual([["src/domain/bolus-cap.ts"]]);
+    }, 90_000);
+
+    it("refusée : aucune mutation, et le bilan le dit", async () => {
+      const appels: (readonly string[] | undefined)[] = [];
+      const app = await assemble(root, simulatedAgents(new ScriptedRuntime(), root, {}, { workflow: "skraft-light" }), tasksDir, { workflow: SKRAFT_LIGHT, stack: pileQuiMute(appels) });
+      answerQuestions(app);
+      const id = await lancerWorkflow(app, "stories/us-12.md", undefined, "skraft-light");
+      await repondreMutation(app, "passer");
+      const bilan = await fin(app, id, 60_000);
+      expect(bilan.phases).toEqual(["ARCHI", "DISTILL", "DELIVER"]);
+      expect(appels).toEqual([]);
+      expect(bilan.livraison?.notes).toContain("Mutation non lancée : l'utilisateur l'a refusée en fin de DELIVER.");
+      expect(app.posted.at(-1)).toContain("Mutation non lancée : l'utilisateur l'a refusée en fin de DELIVER.");
+    }, 90_000);
+  });
 });

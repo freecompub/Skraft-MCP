@@ -113,7 +113,10 @@ export function createComposedAdapter(composants: readonly Composant[]): StackAd
       ? {
           async mutation(opts): Promise<MutationReport> {
             const rapports: { c: Composant; r: MutationReport }[] = [];
-            for (const c of avec("mutation")) rapports.push({ c, r: await c.adapter.mutation!({ ...opts, root: racineDe(opts.root, c) }) });
+            // Fichiers demandés : seuls les composants touchés sont mutés, avec leurs fichiers (ADR 0099).
+            const lances = opts.files ? parComposant(opts.files).filter((x) => x.files.length && x.c.adapter.mutation) : avec("mutation").map((c) => ({ c, files: undefined }));
+            for (const { c, files } of lances) rapports.push({ c, r: await c.adapter.mutation!({ ...opts, root: racineDe(opts.root, c), ...(files ? { files } : {}) }) });
+            if (!rapports.length) return { score: 100, files: [] };
             const files = rapports.flatMap(({ c, r }) => r.files.map((f) => ({ ...f, file: vers(c, f.file) })));
             const poids = rapports.reduce((n, x) => n + Math.max(1, x.r.files.length), 0);
             return { score: rapports.reduce((n, x) => n + x.r.score * Math.max(1, x.r.files.length), 0) / poids, files };

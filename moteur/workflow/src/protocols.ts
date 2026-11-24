@@ -179,13 +179,15 @@ export interface W {
   lint(fichiers?: readonly string[]): Promise<LintReport | null>;
   /** Mise en forme vérifiée par l'outil du projet (ADR 0071) ; `null` si le profil n'en déclare pas. */
   format(fichiers?: readonly string[]): Promise<FormatReport | null>;
-  mutation(): Promise<MutationReport | null>;
+  /** Tests de mutation ; `fichiers` les limite à ces fichiers quand la pile sait cibler (ADR 0099). */
+  mutation(fichiers?: readonly string[]): Promise<MutationReport | null>;
   /** Pile du projet (identifiant de l'adaptateur) et ses emplacements (tests d'acceptance, tests unitaires, sources), en motifs. */
   /**
    * Emplacements de la pile ; `bdd`, ses couples quand elle en déclare (ADR 0074) ; `bddNonDecide`, les
-   * racines des composants dont la pile ne dit rien du BDD (08/11).
+   * racines des composants dont la pile ne dit rien du BDD (08/11) ; `mutation`, présent quand la pile
+   * propose un outil de mutation (ADR 0099).
    */
-  disposition(): Promise<{ pile: string; acceptanceTests: string[]; unitTests: string[]; sources: string[]; infrastructureModules: string[]; bdd?: { lanceur: string; features: string; etapes: string }[]; bddNonDecide?: string[] }>;
+  disposition(): Promise<{ pile: string; acceptanceTests: string[]; unitTests: string[]; sources: string[]; infrastructureModules: string[]; bdd?: { lanceur: string; features: string; etapes: string }[]; bddNonDecide?: string[]; mutation?: true }>;
   /** Empreinte des fichiers correspondant aux motifs : geler des tests, puis vérifier le gel (D21). */
   empreinte(motifs: readonly string[]): Promise<string>;
   /** Se place sur la branche, créée si besoin ; `ecraser` : la recrée depuis `depuis` (ou la tête), ce qu'elle portait est perdu (ADR 0089). */

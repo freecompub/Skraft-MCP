@@ -95,6 +95,15 @@ lint:
     expect(erreur(avecLint.replace("eslint, --format", "wget, x"), programmes)).toMatch(/wget/);
   });
 
+  it("mutation.cible : gabarit qui porte {liste} ou {fichier}, un seul des deux ; sinon refusé", () => {
+    const avec = (cible: string) => `${MINIMAL}\nmutation:\n  command: [npx, stryker, run]\n  report: stryker-json\n  cible: ${cible}\n`;
+    const programmes = ["pytest", "npx"];
+    expect(ok(avec('[--mutate, "{liste}"]'), programmes).mutation).toEqual({ command: ["npx", "stryker", "run"], report: "stryker-json", cible: ["--mutate", "{liste}"] });
+    expect(ok(avec('[-m, "{fichier}"]'), programmes).mutation?.cible).toEqual(["-m", "{fichier}"]);
+    expect(erreur(avec("[--mutate, src]"), programmes)).toMatch(/mutation\.cible/);
+    expect(erreur(avec('[-m, "{fichier}", "{liste}"]'), programmes)).toMatch(/mutation\.cible/);
+  });
+
   it("les modules d'infrastructure sont déclarés par le projet, jamais devinés", () => {
     const p = ok(`${MINIMAL}\ninfrastructureModules: [django, sqlalchemy]\n`);
     expect(p.infrastructureModules).toEqual(["django", "sqlalchemy"]);

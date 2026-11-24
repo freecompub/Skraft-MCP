@@ -198,5 +198,28 @@ layout:
     expect(dossier.startsWith(racine)).toBe(false);
     expect(m).toEqual({ score: 50, files: [{ file: "src/Montant.cs", score: 50, killed: 1, total: 2, killedLines: [14], survived: [{ line: 25, operator: "Arithmetic mutation" }] }] });
   });
+
+  it("cible : les fichiers demandés passent par le gabarit — {liste} une fois, {fichier} une fois par fichier ; sans fichiers, rien d'ajouté", async () => {
+    const { mkdir } = await import("node:fs/promises");
+    const argsAjoutes = async (cible: string | null, files?: string[]) => {
+      const yaml = cible ? STRYKER.replace("  report: stryker-json", `  report: stryker-json\n  cible: ${cible}`) : STRYKER;
+      const r = parseStackProfile(yaml, { allowedPrograms: ["dotnet"] });
+      if ("error" in r) throw new Error(r.error);
+      const run = runner(async (_cmd, args) => {
+        const dossier = args[args.indexOf("--output") + 1]!;
+        await mkdir(join(dossier, "reports"), { recursive: true });
+        await writeFile(join(dossier, "reports", "mutation-report.json"), JSON.stringify({ schemaVersion: "2", thresholds: { high: 80, low: 60 }, files: {} }));
+        return sortie();
+      });
+      await createProfileAdapter(r.profile, { runner: run }).mutation!({ root: racine, ...(files ? { files } : {}) });
+      const args = run.appels[0]!.args;
+      return args.slice(args.indexOf("--output") + 2);
+    };
+    expect(await argsAjoutes('[--mutate, "{liste}"]', ["src/A.cs", "src/B.cs"])).toEqual(["--mutate", "src/A.cs,src/B.cs"]);
+    expect(await argsAjoutes('[-m, "{fichier}"]', ["src/A.cs", "src/B.cs"])).toEqual(["-m", "src/A.cs", "-m", "src/B.cs"]);
+    expect(await argsAjoutes('[-m, "{fichier}"]')).toEqual([]);
+    // Sans gabarit, l'outil ne sait pas cibler : tout le projet est muté, comme avant.
+    expect(await argsAjoutes(null, ["src/A.cs"])).toEqual([]);
+  });
 });
 

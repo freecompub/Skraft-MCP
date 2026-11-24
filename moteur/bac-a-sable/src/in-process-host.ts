@@ -291,10 +291,13 @@ export async function activateInProcess(ext: LoadedExtension, deps: HostDeps): P
       infrastructureModules: deps.stack.infrastructureModules,
       ...(deps.stack.bdd ? { bdd: deps.stack.bdd } : {}),
       ...(deps.stack.bddNonDecide ? { bddNonDecide: deps.stack.bddNonDecide } : {}),
+      get mutationDisponible() {
+        return deps.stack.mutation !== undefined;
+      },
       async mutation(opts) {
         perm.require("shell:test");
         if (!deps.stack.mutation) return null;
-        return deps.stack.mutation({ root: deps.workspace.root, ...(opts?.signal ? { signal: opts.signal } : {}) });
+        return deps.stack.mutation({ root: deps.workspace.root, ...(opts?.signal ? { signal: opts.signal } : {}), ...(opts?.files ? { files: opts.files } : {}) });
       },
       async architecture(rules) {
         perm.require("fs:read");

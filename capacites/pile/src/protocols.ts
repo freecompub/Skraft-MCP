@@ -145,8 +145,11 @@ export interface StackAdapter {
   isTestFile(path: string): boolean;
   /** Motif (source d'expression régulière) équivalent à `isTestFile`, transmissible à un autre processus. */
   readonly testFilePattern: string;
-  /** Tests de mutation (facultatif selon la stack). */
-  mutation?(opts: { root: string; timeoutMs?: number; signal?: AbortSignal }): Promise<MutationReport>;
+  /**
+   * Tests de mutation (facultatif selon la stack). `files` limite la mutation à ces fichiers, relatifs
+   * à `root`, quand le profil sait cibler (ADR 0099) ; sinon tout le projet est muté.
+   */
+  mutation?(opts: { root: string; timeoutMs?: number; signal?: AbortSignal; files?: readonly string[] }): Promise<MutationReport>;
   /** Analyse des dépendances entre modules (facultatif selon la stack). */
   architecture?(opts: { root: string; rules: DependencyRule[] }): Promise<ArchitectureReport>;
   /**

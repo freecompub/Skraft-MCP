@@ -8,7 +8,7 @@ import type { FormatReport, LintReport, ProcessRunner, StackAdapter } from "../p
 import { compileBuildErrorSpec, readBuildErrors } from "./build-errors.js";
 import { parseCoberturaReport } from "../coverage/cobertura-report.js";
 import { lireLint, lireTests } from "./read-report.js";
-import { JETON_RAPPORT, JETON_RAPPORTS, substituer } from "./tokens.js";
+import { cibler, JETON_RAPPORT, JETON_RAPPORTS, substituer } from "./tokens.js";
 import { executerTests } from "./execution-tests.js";
 import { parseStrykerReport } from "../mutation/stryker-report.js";
 import { globToRegExp } from "../glob.js";
@@ -162,7 +162,9 @@ export function createProfileAdapter(profile: StackProfile, deps: ProfileAdapter
             const dossier = fichierTemporaire("mutation");
             await mkdir(dossier, { recursive: true });
             try {
-              const r = await runner.run(c.command[0]!, substituer(c.command.slice(1), rapport, [], "", dossier), {
+              // Fichiers demandés et gabarit déclaré : seuls ces fichiers sont mutés (ADR 0099).
+              const cible = c.cible && opts.files ? cibler(c.cible, opts.files) : [];
+              const r = await runner.run(c.command[0]!, [...substituer(c.command.slice(1), rapport, [], "", dossier), ...cible], {
                 cwd: opts.root,
                 env: envDesOutils(profile, opts.root),
                 timeoutMs: opts.timeoutMs ?? 60 * 60_000,

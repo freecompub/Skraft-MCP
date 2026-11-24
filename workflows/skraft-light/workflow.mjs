@@ -161,6 +161,7 @@ export const outils = {
   verifier_scenarios: ({ fichiers, donnees }) => texteDeVerification(motifsDesScenarios({ fichiers, ...donnees })),
 };
 import { livrer } from "./livraison.mjs";
+import { MUTATION_REFUSEE } from "./livraison-corrections.mjs";
 import { barreDeQualite } from "./livraison-socle.mjs";
 import { checkCoverage } from "./deliver.mjs";
 import { ARCHI_FIGEE, commitMessage, creerDossiers, GELÉS, LEVEL_LABELS, repositoryShape } from "./support.mjs";
@@ -338,6 +339,7 @@ function bilan(d, confirmee) {
       ? [`Lignes exemptées de la couverture du diff : ${d.derogationsCouverture.length} (détail dans .skraft/${d.slug}/deliver/derogations.md).`]
       : []),
     ...(d.nonCommitees?.length ? [`Phases non commitées : ${d.nonCommitees.join(", ")} (commit impossible ; leurs fichiers sont inclus dans le commit suivant, ou restent à commiter).`] : []),
+    ...(d.mutationDeFin === "passer" ? [MUTATION_REFUSEE] : []),
     ...(d.derogations?.length
       ? [`Dérogations de mutation : ${d.derogations.length} (détail dans .skraft/${d.slug}/deliver/derogations.md).`, ...d.derogations.map((x) => `- ${x.file}:${x.line} (${x.operator}), par ${x.par} : ${x.raison}`)]
       : []),

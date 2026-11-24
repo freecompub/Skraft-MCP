@@ -77,6 +77,11 @@ que les **copier**. Le deuxième impose de toucher au serveur pour offrir un poi
     consigne dit qu'un choix que rien ne dicte est une question, métier ou technique, qu'une réponse
     ambiguë appelle une relance et qu'une question reportée reste ouverte. Le code ne juge que les
     décisions **déclarées** : une décision tue dans « Architecture retenue » lui échappe.
+13. **L'utilisateur décide de lancer la mutation de fin de DELIVER** (ADR 0099). La question
+    `lancer-mutation` cite les fichiers de production modifiés. Elle n'est posée que si la barre de
+    qualité active la mutation en fin de phase et si la pile sait muter, et une seule fois par run.
+    « Lancer » mute ces seuls fichiers quand le profil de la pile sait cibler. « Passer » ne lance
+    rien, et le bilan le dit.
 
 ## Conséquences
 
@@ -94,6 +99,8 @@ que les **copier**. Le deuxième impose de toucher au serveur pour offrir un poi
   Rien ne l'empêche dans le code ; c'est documenté, pas garanti.
 - L'architecte pose plus de questions, techniques comprises ; l'utilisateur en reçoit davantage, et
   les reports restent visibles dans l'architecture au lieu d'être comblés par une supposition.
+- Une story de skraft-light peut être livrée sans mutation, si l'utilisateur la passe ; le bilan le
+  dit. skraft garde la mutation imposée par la barre de qualité.
 - Le défaut relevé au contexte (DISTILL ne reçoit pas le modèle de DESIGN) n'est pas corrigé dans
   skraft par cet ADR.
 

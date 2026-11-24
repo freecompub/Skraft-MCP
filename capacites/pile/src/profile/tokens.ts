@@ -29,6 +29,22 @@ export const JETON_COUVERTURE = "{couverture}";
  */
 export const JETON_DOSSIER = "{dossier}";
 
+/**
+ * Jetons du gabarit `mutation.cible` (ADR 0099), qui limite la mutation aux fichiers modifiés :
+ * `{liste}` reçoit les fichiers séparés par des virgules, dans un seul argument (StrykerJS :
+ * `--mutate a.ts,b.ts`) ; `{fichier}` répète le gabarit une fois par fichier (Stryker.NET :
+ * `-m a.cs -m b.cs`). Un gabarit porte l'un des deux, jamais les deux.
+ */
+export const JETON_LISTE = "{liste}";
+export const JETON_FICHIER = "{fichier}";
+
+/** Arguments du gabarit `cible` pour ces fichiers ; aucun fichier, aucun argument. */
+export function cibler(cible: readonly string[], fichiers: readonly string[]): string[] {
+  if (!fichiers.length) return [];
+  if (cible.some((a) => a.includes(JETON_FICHIER))) return fichiers.flatMap((f) => cible.map((a) => a.replaceAll(JETON_FICHIER, f)));
+  return cible.map((a) => a.replaceAll(JETON_LISTE, fichiers.join(",")));
+}
+
 export function substituer(args: readonly string[], rapport: string, fichiers: readonly string[], couverture = "", dossier = "", rapports = ""): string[] {
   const out: string[] = [];
   for (const a of args) {

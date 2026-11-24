@@ -1,3 +1,4 @@
+// Repris de workflows/skraft/livraison-socle.mjs le 2026-11-24 (ADR 0099) : la mutation est demandée sur les seuls fichiers modifiés.
 // Extrait de livraison.mjs le 2026-11-14 ; provenance : extensions/skraft-workflow/src/livraison.ts (ADR 0055).
 /**
 * Socle de la phase DELIVER : ce dont chaque étage a besoin et qui n'appelle rien au-dessus de lui
@@ -120,7 +121,8 @@ export const present = (texte, id) => new RegExp(`\\b${id}\\b`).test(texte);
 */
 export async function muter(w, barre, changes, etiquette, derogations = []) {
   const sources = changes.map((f) => f.path);
-  const brut = await w.mutation();
+  // Seuls les fichiers modifiés sont mutés quand la pile sait cibler (ADR 0099) ; sinon tout le projet.
+  const brut = await w.mutation(sources);
   if (!brut)
     return { motifs: [], mutants: [], faits: [], notes: ["Mutation non mesurée : la stack du projet ne propose pas d'outil de mutation."] };
   const { report: m, notes } = restreindreAuChangement(brut, changes);

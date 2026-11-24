@@ -42,12 +42,21 @@ ou abandonne. Une question tranchée encore listée fait refuser le document.
 Une fois la phase approuvée, le document est figé : DISTILL et DELIVER reçoivent l'architecture
 retenue et son plan dans leur dossier de passation, et ne peuvent pas le réécrire.
 
+## Mutation de fin de DELIVER
+
+En fin de DELIVER, si la barre de qualité active la mutation en fin de phase et si la pile sait
+muter, l'utilisateur **choisit de la lancer ou non** (question `lancer-mutation`, ADR 0099). La
+question cite les fichiers de production modifiés et n'est posée qu'une fois par run. « Lancer » mute
+ces seuls fichiers si le profil de la pile déclare `mutation.cible` ; sinon, tout le projet est muté
+et le verdict ne porte que sur le changement. « Passer » ne lance rien, et le bilan le dit.
+
 ## Contenu
 
 Copie de `workflows/skraft`, sans `research.mjs`, `design.mjs`, `conception.mjs`, `adr.mjs`, ni les
 agents et skills de RESEARCH et DESIGN. Propres à skraft-light : `architecte.mjs` et
 `agents/skraft-architecte.agent.md`. Modifiés, chacun avec sa provenance en tête : `workflow.mjs`,
-`brief.mjs`, `support.mjs`, `reprise.mjs`, `registre.mjs`, `lecons.mjs`.
+`brief.mjs`, `support.mjs`, `reprise.mjs`, `registre.mjs`, `lecons.mjs`, `livraison.mjs`,
+`livraison-socle.mjs`, `livraison-corrections.mjs`.
 
 Tout autre fichier est **identique** à celui de skraft : `tests/architecture/test/workflow-leger.test.ts`
 le vérifie. Un correctif de DISTILL ou de DELIVER se reporte donc ici, ou la garde échoue.

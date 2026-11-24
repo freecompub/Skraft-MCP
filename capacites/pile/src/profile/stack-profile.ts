@@ -3,7 +3,7 @@ import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 import { compileBuildErrorSpec } from "./build-errors.js";
 import { compilerMotifSur } from "./motif-sur.js";
-import { JETON_RAPPORT, JETON_RAPPORTS } from "./tokens.js";
+import { JETON_FICHIER, JETON_LISTE, JETON_RAPPORT, JETON_RAPPORTS } from "./tokens.js";
 
 /**
  * Profil de stack déclaratif (J5, O11) : un projet décrit sa chaîne au lieu qu'un adaptateur
@@ -118,7 +118,22 @@ const schema = z
      * aucun rapport à lire. `{fichiers}` reçoit les fichiers à vérifier.
      */
     format: z.object({ command: z.array(z.string().min(1)).min(1, "`command` doit nommer un programme et ses arguments.") }).strict().optional(),
-    mutation: commande.optional(),
+    mutation: commande
+      .extend({
+        /**
+         * Gabarit d'arguments ajouté à la commande quand le workflow limite la mutation aux fichiers
+         * modifiés (ADR 0099) : `{liste}` ou `{fichier}`, un seul des deux. Absent, tout le projet est muté.
+         */
+        cible: z
+          .array(z.string().min(1))
+          .min(1)
+          .refine(
+            (c) => c.some((a) => a.includes(JETON_LISTE)) !== c.some((a) => a.includes(JETON_FICHIER)),
+            `doit porter \`${JETON_LISTE}\` (fichiers séparés par des virgules) ou \`${JETON_FICHIER}\` (gabarit répété par fichier), un seul des deux.`,
+          )
+          .optional(),
+      })
+      .optional(),
     layout: z
       .object({
         acceptanceTests: z.array(z.string()).default([]),

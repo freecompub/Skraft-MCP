@@ -246,6 +246,15 @@ describe("Workflow rejouable (ADR 0052)", () => {
     expect((await t.record()).state.fin).toEqual({ statut: "fini", valeur: { clair: [".", "web"] } });
   });
 
+  it("w.disposition dit si la pile sait muter, pour ne pas demander une mutation impossible (ADR 0099)", async () => {
+    const f = fauxContexte();
+    const t = await lancer(decl(async (w) => (await w.disposition()).mutation ?? null), f.ctx);
+    expect((await t.record()).state.fin).toEqual({ statut: "fini", valeur: { clair: null } });
+    (f.ctx.stack as { mutationDisponible?: boolean }).mutationDisponible = true;
+    const t2 = await lancer(decl(async (w) => (await w.disposition()).mutation ?? null), f.ctx);
+    expect((await t2.record()).state.fin).toEqual({ statut: "fini", valeur: { clair: true } });
+  });
+
   it("w.preuves rend les preuves de la tâche ; w.architecture contrôle les règles de dépendance", async () => {
     const f = fauxContexte();
     const t = await lancer(

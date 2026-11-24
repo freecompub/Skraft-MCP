@@ -1,3 +1,4 @@
+// Repris de workflows/skraft/livraison.mjs le 2026-11-24 (ADR 0098, 0099) : la mutation de fin de DELIVER reçoit la passation pour y noter le choix de l'utilisateur.
 // Converti en JavaScript le 2026-10-10 depuis extensions/skraft-workflow/src/livraison.ts (ADR 0055).
 /**
 * Phase DELIVER en workflow (SPEC-skraft §7.4) : pour chaque scénario, un test unitaire rouge, puis
@@ -177,7 +178,7 @@ async function finDePhase(w, d, s, L, cpPhase, lentilles, max, tentatives, conso
         L.faits = uniq([...L.faits, ...diff.report.files.map((f) => `Couverture du diff (tâche) : ${f.file} à ${Math.round(f.score * 10) / 10} %, ${f.covered} ligne(s) sur ${f.total}.`)]);
       } else L.notes = uniq([...L.notes, "Couverture non mesurée : la commande de test du projet n'en produit pas."]);
     }
-    const m = await mutationDeFin(w, L, cpPhase, d.derogations);
+    const m = await mutationDeFin(w, d, L, cpPhase);
     if (m.motifs.length) {
       // Un défaut par mutant survivant : chacun peut être tué, ou contesté puis arbitré (ADR 0065).
       if (await correctionDeFin(w, d, L, s, max, tentatives, consommer, "mutation", m.motifs, (tour) => filsDeMutation(m.mutants, tour)))

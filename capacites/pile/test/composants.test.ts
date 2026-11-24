@@ -102,6 +102,19 @@ describe("Adaptateur composé (ADR 0074)", () => {
     expect(r.score).toBe(60);
   });
 
+  it("mutation ciblée : seuls les composants touchés tournent, avec leurs fichiers relatifs à leur racine", async () => {
+    const vus: { c: string; files?: string[] }[] = [];
+    const m = (id: string) => faux(id, { mutation: async ({ files }) => (vus.push({ c: id, ...(files ? { files: [...files] } : {}) }), { score: 100, files: [] }) }).a;
+    const k = createComposedAdapter([{ nom: "a", racine: "a", adapter: m("a") }, { nom: "b", racine: "b", adapter: m("b") }]);
+    await k.mutation!({ root: "/p", files: ["b/src/x.ts", "hors/y.ts"] });
+    expect(vus).toEqual([{ c: "b", files: ["src/x.ts"] }]);
+    vus.length = 0;
+    expect(await k.mutation!({ root: "/p", files: ["hors/y.ts"] })).toEqual({ score: 100, files: [] });
+    expect(vus).toEqual([]);
+    await k.mutation!({ root: "/p" });
+    expect(vus).toEqual([{ c: "a" }, { c: "b" }]);
+  });
+
   it("imports : une règle en chemins est ramenée à la racine de son composant ; violations ramenées à la racine du projet", async () => {
     const vues: unknown[] = [];
     const arch = faux("a", { architecture: async ({ rules }) => (vues.push(rules), { modules: [{ name: "Domain", imports: [] }], violations: [{ module: "Domain", file: "src/domain/a.ts", imported: "src/infra/db.js" }] }) });
